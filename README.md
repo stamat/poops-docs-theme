@@ -99,12 +99,18 @@ new tab. A link is dropped on the pages it covers — `docs/` disappears everywh
 ] } } }
 ```
 
-## Requirements the layout expects from the host
+## Requirements the layouts expect from the host
 
-Poops built-ins the layout uses, all present in any Poops build: the `toc`,
-`breadcrumb`, `canonical`, `og`, `jsonld` filters, a generated `nav` tree
-(`markup.nav`), a `search-index.json` (`markup.searchIndex`), and `site` config
-(`title`, `description`, `repo`, `branch`, `lang`).
+All Poops built-ins, present in any Poops build:
+
+| | `docs` | `prose` |
+| --- | --- | --- |
+| Filters | `toc`, `breadcrumb`, `canonical`, `og`, `jsonld` | `canonical`, `og`, `jsonld` |
+| Data | `nav` tree (`markup.nav`), `search-index.json` (`markup.searchIndex`) | — |
+
+Both read `site` config: `title`, `description`, `lang`, `repo`, `branch` (edit link, docs
+only), plus the optional `brand`, `brandMark`, `links` and `footer` covered under
+[Topbar config](#topbar-config).
 
 ## Preview
 

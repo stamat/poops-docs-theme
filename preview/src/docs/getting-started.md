@@ -16,22 +16,27 @@ column properly and that the footer sits where it should.
 npm install poops-docs-theme
 ```
 
-## Point a page at the layout
+## Point a page at a layout
 
 Front matter, one line:
 
 ```yaml
 ---
-layout: poops-docs-theme/docs
+layout: poops-docs-theme/docs     # or poops-docs-theme/prose
 ---
 ```
+
+`docs` is the full thing — sidebar, search, breadcrumb, TOC. `prose` is the standalone
+page: the same topbar without search or the pill, one prose body, no sidebar. Each has
+its own bundle pair, `docs.min.{css,js}` and `prose.min.{css,js}`. Never load both.
 
 ## Checklist
 
 1. Install the package.
 2. Set the layout in front matter.
-3. Build the styles and script (from source, or copy the prebuilt files).
-4. Make sure `search-index.json` and the `nav` tree exist in the build.
+3. Build the styles and script for that layout (from source, or copy the prebuilt files).
+4. For `docs`, make sure `search-index.json` and the `nav` tree exist in the build.
+   `prose` needs neither.
 
 > [!TIP]
 > If the sidebar renders but nothing is highlighted, the nav URLs and the page URL
