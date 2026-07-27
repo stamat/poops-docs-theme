@@ -1,5 +1,9 @@
 # poops-docs-theme
 
+[![npm version](https://img.shields.io/npm/v/poops-docs-theme)](https://www.npmjs.com/package/poops-docs-theme)
+[![build status](https://github.com/stamat/poops-docs-theme/actions/workflows/ci.yml/badge.svg)](https://github.com/stamat/poops-docs-theme/actions/workflows/ci.yml)
+[![license](https://img.shields.io/github/license/stamat/poops-docs-theme.svg)](https://github.com/stamat/poops-docs-theme/blob/main/LICENSE)
+
 Documentation theme for sites built with [Poops](https://github.com/stamat/poops) — two
 layouts, their self-contained styles, and the client scripts. Ships as a dependency so a
 site consumes it instead of copying files.
@@ -8,13 +12,13 @@ Requires Poops **≥ 1.9.0** (package-template resolution).
 
 ## Two layouts
 
-| | `docs` | `prose` |
-| --- | --- | --- |
-| For | a real docs site | a small project — one page |
-| Topbar | brand + `docs` pill + search + nav links + GitHub + theme switcher | brand + nav links + GitHub + theme switcher |
-| Body | sidebar nav, breadcrumb, TOC, prose, edit link | one prose article |
-| Stylesheet | `dist/css/docs.min.css` | `dist/css/prose.min.css` |
-| Script | `dist/js/docs.min.js` | `dist/js/prose.min.js` |
+|            | `docs`                                                             | `prose`                                     |
+| ---------- | ------------------------------------------------------------------ | ------------------------------------------- |
+| For        | a real docs site                                                   | a small project — one page                  |
+| Topbar     | brand + `docs` pill + search + nav links + GitHub + theme switcher | brand + nav links + GitHub + theme switcher |
+| Body       | sidebar nav, breadcrumb, TOC, prose, edit link                     | one prose article                           |
+| Stylesheet | `dist/css/docs.min.css`                                            | `dist/css/prose.min.css`                    |
+| Script     | `dist/js/docs.min.js`                                              | `dist/js/prose.min.js`                      |
 
 Pick one per page. The bundles are alternatives, not layers — `docs.min.css` already
 contains everything `prose.min.css` has, and `docs.min.js` already contains
@@ -22,20 +26,20 @@ contains everything `prose.min.css` has, and `docs.min.js` already contains
 
 ## What's in the box
 
-| File | Role |
-| --- | --- |
-| `docs.html` | full docs layout — topbar, sidebar nav, breadcrumb, TOC, prose |
-| `prose.html` | standalone layout — topbar, one prose body, no sidebar or search |
-| `topbar.html` | shared topbar macro (both layouts import it) |
-| `navtree.html` | recursive sidebar-nav macro (`docs.html` imports it) |
-| `scss/_base.scss` | tokens + element base |
-| `scss/_shell.scss` | the frame both layouts share — topbar, brand, icon buttons (GitHub + theme switcher), content column, footer |
-| `scss/_chrome.scss` | docs-only chrome — `docs` pill, search, sidebar, breadcrumb, TOC, edit link |
-| `scss/docs.scss` | entry: base + shell + chrome + prose |
-| `scss/prose-only.scss` | entry: base + shell + prose |
-| `src/prose.ts` | copy buttons + theme toggle — everything a bare page needs |
-| `src/docs.ts` | imports `prose.ts`, adds search, active nav, mobile nav |
-| `preview/src` | mock site for looking at the theme — see [Preview](#preview) |
+| File                   | Role                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `docs.html`            | full docs layout — topbar, sidebar nav, breadcrumb, TOC, prose                                               |
+| `prose.html`           | standalone layout — topbar, one prose body, no sidebar or search                                             |
+| `topbar.html`          | shared topbar macro (both layouts import it)                                                                 |
+| `navtree.html`         | recursive sidebar-nav macro (`docs.html` imports it)                                                         |
+| `scss/_base.scss`      | tokens + element base                                                                                        |
+| `scss/_shell.scss`     | the frame both layouts share — topbar, brand, icon buttons (GitHub + theme switcher), content column, footer |
+| `scss/_chrome.scss`    | docs-only chrome — `docs` pill, search, sidebar, breadcrumb, TOC, edit link                                  |
+| `scss/docs.scss`       | entry: base + shell + chrome + prose                                                                         |
+| `scss/prose-only.scss` | entry: base + shell + prose                                                                                  |
+| `src/prose.ts`         | copy buttons + theme toggle — everything a bare page needs                                                   |
+| `src/docs.ts`          | imports `prose.ts`, adds search, active nav, mobile nav                                                      |
+| `preview/src`          | mock site for looking at the theme — see [Preview](#preview)                                                 |
 
 ## Build
 
@@ -52,7 +56,7 @@ npm run build      # poops -b → dist/css/{docs,prose}.min.css, dist/js/{docs,p
 
 ```yaml
 ---
-layout: poops-docs-theme/docs     # or poops-docs-theme/prose
+layout: poops-docs-theme/docs # or poops-docs-theme/prose
 ---
 ```
 
@@ -62,8 +66,25 @@ layout: poops-docs-theme/docs     # or poops-docs-theme/prose
 
   ```json
   {
-    "styles":  [{ "in": "node_modules/poops-docs-theme/scss/docs.scss", "out": "dist/css/docs.css", "options": { "minify": true, "justMinified": true } }],
-    "scripts": [{ "in": "node_modules/poops-docs-theme/src/docs.ts",   "out": "dist/js/docs.js",  "options": { "minify": true, "justMinified": true, "format": "iife", "target": "es2019" } }]
+    "styles": [
+      {
+        "in": "node_modules/poops-docs-theme/scss/docs.scss",
+        "out": "dist/css/docs.css",
+        "options": { "minify": true, "justMinified": true }
+      }
+    ],
+    "scripts": [
+      {
+        "in": "node_modules/poops-docs-theme/src/docs.ts",
+        "out": "dist/js/docs.js",
+        "options": {
+          "minify": true,
+          "justMinified": true,
+          "format": "iife",
+          "target": "es2019"
+        }
+      }
+    ]
   }
   ```
 
@@ -97,24 +118,37 @@ new tab. A link is dropped on the pages it covers — `docs/` disappears everywh
 `/docs/`, so the docs never link to themselves. Links are hidden below 40rem.
 
 ```json
-{ "markup": { "site": { "links": [
-  { "title": "Docs", "url": "docs/" },
-  { "title": "Changelog", "url": "https://github.com/you/repo/releases" }
-] } } }
+{
+  "markup": {
+    "site": {
+      "links": [
+        { "title": "Docs", "url": "docs/" },
+        { "title": "Changelog", "url": "https://github.com/you/repo/releases" }
+      ]
+    }
+  }
+}
 ```
 
 ### Your colours
 
 Every colour is a custom property on `:root` (see `scss/_base.scss`), so a site keeps its
-own accent by overriding the handful it cares about *after* the theme. Build your own
+own accent by overriding the handful it cares about _after_ the theme. Build your own
 entry instead of the theme's:
 
 ```scss
 // src/scss/docs.scss — point poops.json at this
 @use "poops-docs-theme/scss/docs";
 
-:root, :root[data-theme="light"] { --accent: #9a6b00; --link: #8a6414; }
-:root[data-theme="dark"]         { --accent: #f6c026; --link: #f6c026; }
+:root,
+:root[data-theme="light"] {
+  --accent: #9a6b00;
+  --link: #8a6414;
+}
+:root[data-theme="dark"] {
+  --accent: #f6c026;
+  --link: #f6c026;
+}
 ```
 
 Sass resolves the bare `poops-docs-theme/...` specifier through `includePaths`, so the
@@ -127,10 +161,10 @@ consumer's `poops.json` needs `"includePaths": ["node_modules"]` (top level, not
 
 All Poops built-ins, present in any Poops build:
 
-| | `docs` | `prose` |
-| --- | --- | --- |
-| Filters | `toc`, `breadcrumb`, `canonical`, `og`, `jsonld` | `canonical`, `og`, `jsonld` |
-| Data | `nav` tree (`markup.nav`), `search-index.json` (`markup.searchIndex`) | — |
+|         | `docs`                                                                | `prose`                     |
+| ------- | --------------------------------------------------------------------- | --------------------------- |
+| Filters | `toc`, `breadcrumb`, `canonical`, `og`, `jsonld`                      | `canonical`, `og`, `jsonld` |
+| Data    | `nav` tree (`markup.nav`), `search-index.json` (`markup.searchIndex`) | —                           |
 
 Both read `site` config: `title`, `description`, `lang`, `repo`, `branch` (edit link, docs
 only), plus the optional `brand`, `brandMark`, `links` and `footer` covered under
