@@ -59,10 +59,10 @@ the `--content-max` measure so the line length can be judged.
 > Blue, same as info.
 
 > [!WARNING]
-> Orange. For things that break.
+> Yellow. For things that break.
 
 > [!CAUTION]
-> Also orange — reserved for destructive operations.
+> Red — reserved for destructive operations.
 
 ## Code
 
