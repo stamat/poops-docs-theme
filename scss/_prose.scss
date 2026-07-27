@@ -24,7 +24,9 @@
 .heading-anchor:hover { color: var(--link); }
 .prose p, .prose ul, .prose ol { margin: 0 0 1rem; }
 .prose li { margin: 0.25rem 0; }
-.prose :is(img, svg, video, embed, object) { max-width: 100%; height: auto; border-radius: var(--radius); }
+.prose :is(img, video, embed, object) { max-width: 100%; height: auto; border-radius: var(--radius); }
+// svg is usually an inline icon here, not a media block: constrain it, but no radius
+.prose svg { max-width: 100%; }
 // iframes have no intrinsic ratio; height:auto outranks the height attribute, so the ratio wins.
 .prose iframe { width: 100%; aspect-ratio: 16 / 9; height: auto; border: 0; border-radius: var(--radius); }
 .prose hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
