@@ -130,11 +130,17 @@ new tab. A link is dropped on the pages it covers — `docs/` disappears everywh
 }
 ```
 
-### Pinning light or dark
+### Pinning the theme
 
-Unset, the theme follows the OS and remembers a visitor's toggle in `localStorage`. Set
-`site.theme` to `"light"` or `"dark"` and the layout pins that mode: the attribute goes
-straight on `<html>`, the boot script and the toggle button are not rendered.
+`site.theme` takes the choice away from the visitor. Any value drops the boot script and
+the toggle button.
+
+| `site.theme` | Behaviour                                                                    |
+| ------------ | ---------------------------------------------------------------------------- |
+| unset        | follows the OS, visitor can toggle, choice kept in `localStorage` (default)   |
+| `"light"`    | always light — `data-theme="light"` on `<html>`                              |
+| `"dark"`     | always dark — `data-theme="dark"` on `<html>`                                |
+| `"system"`   | always follows the OS, no toggle, nothing remembered                          |
 
 ```json
 {
@@ -145,6 +151,10 @@ straight on `<html>`, the boot script and the toggle button are not rendered.
   }
 }
 ```
+
+`"system"` sets no attribute — the stylesheet's `prefers-color-scheme` block handles it,
+so it works with JavaScript off. That same block is why an unset `site.theme` still tracks
+the OS for a visitor whose browser blocked the inline script.
 
 ### Your colours
 
