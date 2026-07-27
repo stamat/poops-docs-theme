@@ -1,0 +1,28 @@
+{
+  "name": "poops-docs-theme",
+  "version": "0.1.0",
+  "description": "Documentation theme (layout, styles, script) for Poops-built sites.",
+  "license": "MIT",
+  "author": "Nikola Stamatovic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stamat/poops-docs-theme.git"
+  },
+  "type": "module",
+  "files": [
+    "docs.html",
+    "navtree.html",
+    "scss",
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "poops -b"
+  },
+  "peerDependencies": {
+    "poops": ">=1.9.0"
+  },
+  "devDependencies": {
+    "poops": ">=1.9.0"
+  }
+}
