@@ -15,6 +15,7 @@ Requires Poops **≥ 1.9.0** (package-template resolution).
 | `navtree.html` | recursive sidebar-nav macro (`docs.html` imports it) |
 | `scss/docs.scss` | styles — light/dark via `[data-theme]`, zero external deps |
 | `src/docs.ts` | client behavior — search, theme toggle, copy, mobile nav |
+| `preview/src` | mock docs site for looking at the theme — see [Preview](#preview) |
 
 ## Build
 
@@ -58,10 +59,25 @@ Poops built-ins the layout uses, all present in any Poops build: the `toc`,
 (`markup.nav`), a `search-index.json` (`markup.searchIndex`), and `site` config
 (`title`, `description`, `repo`, `branch`, `lang`).
 
+## Preview
+
+`preview/src` is a mock docs site — five pages of filler that exist only to render the
+layout. It builds with the theme, through the real `docs.html`, so there is no second copy
+of the markup to keep in sync.
+
+```bash
+npm run preview   # poops: build + watch + serve on http://localhost:4040
+```
+
+Then open `/docs/`. `npm run build` produces it too, at `preview/dist` (gitignored, and not
+in the published `files`). Pages: **Introduction**, **Getting started**, and a **Guide**
+section whose **Kitchen sink** page carries every element `_prose.scss` styles —
+headings, lists, table, blockquote, all five admonition flavours, highlighted code, image.
+
 ## Local development
 
-This repo builds the CSS/JS in isolation. To preview the layout with real content,
-link it into a Poops docs site (e.g. the Poops example) and build there:
+To preview against real content instead of the mock, link the theme into a Poops docs site
+(e.g. the Poops example) and build there:
 
 ```bash
 # in this repo
