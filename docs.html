@@ -1,7 +1,7 @@
 {% import "./navtree.html" as navigation %}
 {%- import "./topbar.html" as header -%}
 <!DOCTYPE html>
-<html lang="{{ page.lang or site.lang or 'en' }}">
+<html lang="{{ page.lang or site.lang or 'en' }}"{% if site.theme %} data-theme="{{ site.theme }}"{% endif %}>
 <head>
   <meta charset="UTF-8">
   <title>{% if page.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
@@ -13,7 +13,8 @@
   {{ page | jsonld(site) }}
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{ site.brandMark or '💩' }}</text></svg>">
   <link rel="stylesheet" href="{{ relativePathPrefix }}css/docs.min.css">
-  <script>(function(){try{var t=localStorage.getItem('theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+  {# site.theme pins the theme: no boot script, no toggle. Unset = follow the OS, remember the choice. #}
+  {% if not site.theme %}<script>(function(){try{var t=localStorage.getItem('theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>{% endif %}
 </head>
 <body>
   {% set repoUrl = site.repo or package.homepage %}

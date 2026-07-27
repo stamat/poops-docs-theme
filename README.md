@@ -130,6 +130,22 @@ new tab. A link is dropped on the pages it covers — `docs/` disappears everywh
 }
 ```
 
+### Pinning light or dark
+
+Unset, the theme follows the OS and remembers a visitor's toggle in `localStorage`. Set
+`site.theme` to `"light"` or `"dark"` and the layout pins that mode: the attribute goes
+straight on `<html>`, the boot script and the toggle button are not rendered.
+
+```json
+{
+  "markup": {
+    "site": {
+      "theme": "light"
+    }
+  }
+}
+```
+
 ### Your colours
 
 Every colour is a custom property on `:root` (see `scss/_base.scss`), so a site keeps its
