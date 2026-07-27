@@ -11,7 +11,7 @@
   {{ page | canonical(site) }}
   {{ page | og(site) }}
   {{ page | jsonld(site) }}
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💩</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{ site.brandMark or '💩' }}</text></svg>">
   <link rel="stylesheet" href="{{ relativePathPrefix }}css/prose.min.css">
   <script>(function(){try{var t=localStorage.getItem('theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
 </head>
@@ -25,7 +25,10 @@
     </article>
     {% block footer %}
     <footer class="page-footer">
-      {{ site.footer | safe if site.footer else site.title }}
+      {% if site.footer %}{{ site.footer | safe }}{% else %}
+      <a href="{{ package.homepage }}" target="_blank" rel="noopener">{{ site.brand or site.title }}</a> v{{ package.version }} —
+      {% if package.license %}{{ package.license }} licensed. {% endif %}Built with <a href="https://github.com/stamat/poops" target="_blank" rel="noopener">Poops</a>. 💩
+      {% endif %}
     </footer>
     {% endblock %}
   </main>

@@ -84,8 +84,12 @@ no index. The consumer produces those files.
 
 Both layouts read `site` for the header: `brand` (falls back to `title`), `brandMark`
 (the emoji, defaults to 💩), and `repo` (falls back to `package.homepage`) for the GitHub
-button — omit both and the button disappears. `prose.html` also renders `site.footer` if
-set, otherwise `site.title`.
+button — omit both and the button disappears. Both render `site.footer` (html, unescaped)
+if set; without it both fall back to the same brand/version/license/Poops line, read from
+the consuming site's `package.json` (`homepage`, `version`, `license` — a missing `license`
+just drops that clause).
+
+`brandMark` is also the tab icon, drawn as an inline svg — no favicon file needed.
 
 `site.links` adds nav links — on the `prose` layout they fill the slot search takes on
 the `docs` layout. Site-relative urls get the page's path prefix; absolute ones open in a
@@ -98,6 +102,26 @@ new tab. A link is dropped on the pages it covers — `docs/` disappears everywh
   { "title": "Changelog", "url": "https://github.com/you/repo/releases" }
 ] } } }
 ```
+
+### Your colours
+
+Every colour is a custom property on `:root` (see `scss/_base.scss`), so a site keeps its
+own accent by overriding the handful it cares about *after* the theme. Build your own
+entry instead of the theme's:
+
+```scss
+// src/scss/docs.scss — point poops.json at this
+@use "poops-docs-theme/scss/docs";
+
+:root, :root[data-theme="light"] { --accent: #9a6b00; --link: #8a6414; }
+:root[data-theme="dark"]         { --accent: #f6c026; --link: #f6c026; }
+```
+
+Sass resolves the bare `poops-docs-theme/...` specifier through `includePaths`, so the
+consumer's `poops.json` needs `"includePaths": ["node_modules"]` (top level, not inside
+`styles`). The full token set: `--bg`, `--bg-alt`, `--bg-code`, `--fg`, `--fg-muted`,
+`--border`, `--accent`, `--accent-fg`, `--link`, `--shadow`, plus `--content-max`,
+`--radius`, `--topbar-h`, `--sidebar-w`, `--font-body`, `--font-mono`.
 
 ## Requirements the layouts expect from the host
 
