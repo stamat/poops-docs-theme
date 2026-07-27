@@ -1,37 +1,12 @@
-// Chrome — topbar, search, sidebar nav, breadcrumb, TOC, footer, responsive.
+// Chrome — the docs-only frame: docs pill, search, sidebar nav, breadcrumb, TOC,
+// edit link, responsive. Topbar/brand/icon-btn/content/footer live in _shell.scss.
 
 :root {
-  --topbar-h: 3.25rem;
   --sidebar-w: 16rem;
 }
 
-html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
+.sidebar a { text-decoration: none; }
 
-// ---- Topbar ----
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  height: var(--topbar-h);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0 1rem;
-  background: var(--bg);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-.topbar a, .sidebar a { text-decoration: none; }
-.brand {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--fg);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.brand:hover { text-decoration: none; }
-.brand-mark { font-size: 1.3rem; }
 .brand-docs {
   font-weight: 600;
   font-size: 0.62rem;
@@ -43,29 +18,10 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
   padding: 0.05rem 0.3rem;
 }
 
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 0;
-  background: transparent;
-  color: var(--fg-muted);
-  cursor: pointer;
-  border-radius: var(--radius);
-  font-size: 1.1rem;
-}
-.icon-btn:hover { background: var(--bg-alt); color: var(--fg); text-decoration: none; }
 .nav-toggle { display: none; }
 
-.theme-sun { display: none; }
-.theme-moon { display: inline; }
-:root[data-theme="dark"] .theme-sun { display: inline; }
-:root[data-theme="dark"] .theme-moon { display: none; }
-
 // ---- Search ----
-.search { position: relative; margin-left: auto; width: min(22rem, 40vw); }
+.search { position: relative; width: min(22rem, 40vw); }
 .search-icon {
   position: absolute;
   left: 0.6rem;
@@ -153,16 +109,6 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
 .nav-section > details > summary::before { content: "▸ "; color: var(--fg-muted); }
 .nav-section > details[open] > summary::before { content: "▾ "; }
 
-// ---- Content ----
-.content {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 2rem clamp(1rem, 5vw, 3rem) 4rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 // ---- Breadcrumb trail ----
 .breadcrumb { width: 100%; max-width: var(--content-max); margin: 0 0 1.5rem; }
 .breadcrumb ol {
@@ -200,7 +146,7 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
 .toc .toc-h3 a { padding-left: 1.25rem; }
 .nav-list .toc .toc-h3 { display: none; }
 
-// ---- Footer ----
+// ---- Edit link ----
 .edit-link {
   display: inline-block;
   margin-top: 3rem;
@@ -213,19 +159,10 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
 
 .edit-link + .page-footer { margin-top: 1.5rem; }
 
-.page-footer {
-  width: 100%;
-  max-width: var(--content-max);
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
-  color: var(--fg-muted);
-  font-size: 0.85rem;
-}
-
 // ---- Responsive ----
 @media (max-width: 60rem) {
   .nav-toggle { display: inline-flex; }
+  .topbar-actions { flex: 1; }
   .search { width: auto; flex: 1; }
   .sidebar {
     position: fixed;

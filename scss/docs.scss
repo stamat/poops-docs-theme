@@ -1,5 +1,6 @@
-// Poops docs — full theme: tokens, base, chrome, prose. No external deps.
+// Poops docs — full theme: tokens, base, shell, docs chrome, prose. No external deps.
 
 @use "base";
+@use "shell";
 @use "chrome";
 @use "prose";

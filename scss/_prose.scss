@@ -167,8 +167,9 @@
 .admonition.tip,
 .marked-github-alert-tip { --adm: #2f9e44; }
 .admonition.warning,
-.marked-github-alert-warning,
-.marked-github-alert-caution { --adm: #e8590c; }
+.marked-github-alert-warning { --adm: #f08c00; }
+.admonition.caution,
+.marked-github-alert-caution { --adm: #e03131; }
 .admonition.note,
 .marked-github-alert-note { --adm: #7048e8; }
 

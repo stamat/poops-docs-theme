@@ -1,0 +1,41 @@
+{% import "./topbar.html" as header %}<!DOCTYPE html>
+{# Standalone page layout: docs topbar without search or the "docs" pill, one prose
+   body, no sidebar. For small projects that want a single page, not a docs site. #}
+<html lang="{{ page.lang or site.lang or 'en' }}">
+<head>
+  <meta charset="UTF-8">
+  <title>{% if page.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{ page.description or page.excerpt or site.description }}">
+  {% if page.robots %}<meta name="robots" content="{{ page.robots }}">{% endif %}
+  {{ page | canonical(site) }}
+  {{ page | og(site) }}
+  {{ page | jsonld(site) }}
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💩</text></svg>">
+  <link rel="stylesheet" href="{{ relativePathPrefix }}css/prose.min.css">
+  <script>(function(){try{var t=localStorage.getItem('theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>
+</head>
+<body>
+  {% set repoUrl = site.repo or package.homepage %}
+  {{ header.topbar(site, relativePathPrefix, false, repoUrl, page.url) }}
+
+  <main class="content">
+    <article class="prose">
+      {% block content %}{% endblock %}
+    </article>
+    {% block footer %}
+    <footer class="page-footer">
+      {{ site.footer | safe if site.footer else site.title }}
+    </footer>
+    {% endblock %}
+  </main>
+
+  {% if livereload_port %}
+  <script>document.write('<script src="http://'
+    + (location.host || 'localhost').split(':')[0]
+    + ':{{ livereload_port }}/livereload.js?snipver=1"></'
+    + 'script>')</script>
+  {% endif %}
+  <script src="{{ relativePathPrefix }}js/prose.min.js"></script>
+</body>
+</html>

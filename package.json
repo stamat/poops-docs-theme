@@ -9,16 +9,29 @@
     "url": "git+https://github.com/stamat/poops-docs-theme.git"
   },
   "homepage": "https://github.com/stamat/poops-docs-theme",
+  "keywords": [
+    "poops",
+    "poops-theme",
+    "documentation",
+    "docs",
+    "theme",
+    "static-site-generator",
+    "nunjucks",
+    "scss"
+  ],
   "type": "module",
   "files": [
     "docs.html",
+    "prose.html",
     "navtree.html",
+    "topbar.html",
     "scss",
     "src",
     "dist"
   ],
   "scripts": {
     "build": "poops -b",
+    "prepack": "npm run build",
     "preview": "poops",
     "test": "jest",
     "lint:js": "eslint .",

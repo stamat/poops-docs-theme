@@ -1,0 +1,98 @@
+// Shell — the page frame both entry points share: topbar, brand, icon buttons
+// (GitHub + theme switcher), the centred content column, and the page footer.
+// Docs-only chrome (search, sidebar, breadcrumb, TOC) lives in _chrome.scss.
+
+:root {
+  --topbar-h: 3.25rem;
+}
+
+html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
+
+// ---- Topbar ----
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.topbar a { text-decoration: none; }
+.brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.brand:hover { text-decoration: none; }
+.brand-mark { font-size: 1.3rem; }
+
+// ---- Icon buttons (GitHub link, theme switcher) ----
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  border-radius: var(--radius);
+  font-size: 1.1rem;
+}
+.icon-btn:hover { background: var(--bg-alt); color: var(--fg); text-decoration: none; }
+
+// Right-hand group: search (docs only) + GitHub + theme switcher. One `auto`
+// margin here keeps the group flush right whether or not search is in it.
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+// Optional `site.links` nav. On the prose layout it fills the slot search takes
+// on the docs layout; too cramped to keep on a phone, so it drops out there.
+// Empty once every link points at the page you are on — don't leave its gap behind.
+.topbar-links { display: flex; align-items: center; gap: 1rem; }
+.topbar-links:empty { display: none; }
+.topbar-links a { color: var(--fg-muted); font-size: 0.9rem; font-weight: 500; }
+.topbar-links a:hover { color: var(--fg); }
+
+@media (max-width: 40rem) {
+  .topbar-links { display: none; }
+}
+
+.theme-sun { display: none; }
+.theme-moon { display: inline; }
+:root[data-theme="dark"] .theme-sun { display: inline; }
+:root[data-theme="dark"] .theme-moon { display: none; }
+
+// ---- Content column ----
+.content {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2rem clamp(1rem, 5vw, 3rem) 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+// ---- Footer ----
+.page-footer {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+}

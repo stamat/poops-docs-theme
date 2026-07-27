@@ -1,6 +1,7 @@
-// Prose only — tokens, base, rendered-markdown styles. No docs chrome.
-// For pages that render markdown outside the docs layout (landing, demo, blog).
+// Prose only — tokens, base, shell (topbar, theme switcher, GitHub button, footer)
+// and rendered-markdown styles. No docs chrome: no search, no sidebar, no breadcrumb.
 // Entry is named prose-only so it doesn't collide with the _prose partial.
 
 @use "base";
+@use "shell";
 @use "prose";
