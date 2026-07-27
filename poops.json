@@ -17,9 +17,30 @@
       "target": "es2019"
     }
   }],
+  "markup": {
+    "in": "preview/src",
+    "out": "preview/dist",
+    "site": {
+      "title": "Poops docs theme",
+      "description": "Mock docs site used to preview the theme.",
+      "lang": "en",
+      "repo": "https://github.com/stamat/poops-docs-theme",
+      "branch": "main"
+    },
+    "searchIndex": "search-index.json",
+    "nav": {
+      "output": "nav.json",
+      "root": "docs"
+    }
+  },
+  "copy": [{
+    "in": ["dist/css", "dist/js"],
+    "out": "preview/dist"
+  }],
   "serve": {
-    "port": 4041
+    "port": 4040,
+    "base": "/preview/dist"
   },
   "livereload": true,
-  "watch": ["scss", "src"]
+  "watch": ["scss", "src", "preview/src", "dist"]
 }

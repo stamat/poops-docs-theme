@@ -8,6 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/stamat/poops-docs-theme.git"
   },
+  "homepage": "https://github.com/stamat/poops-docs-theme",
   "type": "module",
   "files": [
     "docs.html",
@@ -17,7 +18,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "poops -b"
+    "build": "poops -b",
+    "preview": "poops"
   },
   "peerDependencies": {
     "poops": ">=1.9.0"
