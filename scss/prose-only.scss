@@ -1,0 +1,6 @@
+// Prose only — tokens, base, rendered-markdown styles. No docs chrome.
+// For pages that render markdown outside the docs layout (landing, demo, blog).
+// Entry is named prose-only so it doesn't collide with the _prose partial.
+
+@use "base";
+@use "prose";

@@ -5,7 +5,8 @@
 .prose a { text-decoration: underline; }
 .prose a:hover { text-decoration: none; }
 
-.prose h1, .prose h2, .prose h3, .prose h4 { position: relative; line-height: 1.25; scroll-margin-top: calc(var(--topbar-h) + 1rem); }
+// --topbar-h is chrome's; falls back to 0 when prose is used standalone.
+.prose h1, .prose h2, .prose h3, .prose h4 { position: relative; line-height: 1.25; scroll-margin-top: calc(var(--topbar-h, 0rem) + 1rem); }
 .prose h1 { font-size: 2rem; margin: 0 0 1rem; }
 .prose h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
 .prose h3 { font-size: 1.2rem; margin: 2rem 0 0.75rem; }

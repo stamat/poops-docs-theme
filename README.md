@@ -13,7 +13,8 @@ Requires Poops **≥ 1.9.0** (package-template resolution).
 | --- | --- |
 | `docs.html` | Nunjucks layout — topbar, sidebar nav, breadcrumb, TOC, prose |
 | `navtree.html` | recursive sidebar-nav macro (`docs.html` imports it) |
-| `scss/docs.scss` | styles — light/dark via `[data-theme]`, zero external deps |
+| `scss/docs.scss` | full theme — tokens, base, chrome, prose; light/dark via `[data-theme]`, zero external deps |
+| `scss/prose-only.scss` | tokens, base, prose — no docs chrome, for pages outside the layout |
 | `src/docs.ts` | client behavior — search, theme toggle, copy, mobile nav |
 | `preview/src` | mock docs site for looking at the theme — see [Preview](#preview) |
 
@@ -21,8 +22,18 @@ Requires Poops **≥ 1.9.0** (package-template resolution).
 
 ```bash
 npm install
-npm run build      # poops -b → dist/css/docs.min.css, dist/js/docs.min.js
+npm run build      # poops -b → dist/css/docs.min.css, dist/css/prose.min.css, dist/js/docs.min.js
 ```
+
+Two stylesheets ship:
+
+| Bundle | Contains | Use for |
+| --- | --- | --- |
+| `docs.min.css` | tokens + base + chrome + prose | pages on the `docs.html` layout |
+| `prose.min.css` | tokens + base + prose | rendered markdown outside the layout — landing, demo, blog |
+
+They are alternatives, not layers — `docs.min.css` already contains everything
+`prose.min.css` has. Never load both.
 
 ## Use it in a Poops site
 
@@ -48,6 +59,11 @@ layout: poops-docs-theme/docs
   ```
 
 - **Prebuilt** — `copy` the theme's `dist/css/docs.min.css` and `dist/js/docs.min.js` into your output.
+
+For a page that renders markdown without the docs chrome, swap the entry for
+`scss/prose-only.scss` (or copy `dist/css/prose.min.css`) and give the markdown
+container `class="prose"`. The script is optional there — it only adds copy
+buttons and the theme toggle.
 
 The layout links `css/docs.min.css` + `js/docs.min.js` and reads `search-index.json`
 from the site root — the consumer produces those.

@@ -1,55 +1,5 @@
-// Poops docs — self-contained theme, no external deps.
-// Light/dark via [data-theme] on <html>.
+// Poops docs — full theme: tokens, base, chrome, prose. No external deps.
 
-// @use must precede all rules, so tokens/base below are emitted last.
-// Harmless: theming is via CSS custom properties, and every partial rule
-// outranks the element-level base selectors on specificity.
+@use "base";
 @use "chrome";
 @use "prose";
-
-:root {
-  --content-max: 46rem;
-  --radius: 0.5rem;
-  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
-}
-
-:root, :root[data-theme="light"] {
-  --bg: #ffffff;
-  --bg-alt: #f5f6f8;
-  --bg-code: #f5f6f8;
-  --fg: #1c2024;
-  --fg-muted: #5b6570;
-  --border: #e3e6ea;
-  --accent: #7048e8;
-  --accent-fg: #ffffff;
-  --link: #6741d9;
-  --shadow: 0 4px 20px rgba(20, 24, 30, 0.08);
-}
-
-:root[data-theme="dark"] {
-  --bg: #16181d;
-  --bg-alt: #1d2026;
-  --bg-code: #1d2026;
-  --fg: #e4e7eb;
-  --fg-muted: #98a1ad;
-  --border: #2b2f36;
-  --accent: #9775fa;
-  --accent-fg: #16181d;
-  --link: #b197fc;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  font-family: var(--font-body);
-  background: var(--bg);
-  color: var(--fg);
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-}
-
-a { color: var(--link); }
-a:hover { text-decoration: none; }

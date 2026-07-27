@@ -6,6 +6,13 @@
       "minify": true,
       "justMinified": true
     }
+  }, {
+    "in": "scss/prose-only.scss",
+    "out": "dist/css/prose.css",
+    "options": {
+      "minify": true,
+      "justMinified": true
+    }
   }],
   "scripts": [{
     "in": "src/docs.ts",
