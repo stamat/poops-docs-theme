@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run lint:js
+      - run: npm run lint:css
+      - run: npm test
+      - run: npm run build
+      - name: Check build output
+        run: |
+          test -s dist/css/docs.min.css
+          test -s dist/css/prose.min.css
+          test -s dist/js/docs.min.js
+          test -s preview/dist/docs/index.html

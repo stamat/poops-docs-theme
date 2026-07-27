@@ -243,6 +243,6 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
     position: fixed;
     inset: var(--topbar-h) 0 0 0;
     z-index: 20;
-    background: rgba(0, 0, 0, 0.35);
+    background: rgb(0 0 0 / 35%);
   }
 }

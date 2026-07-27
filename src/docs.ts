@@ -32,7 +32,7 @@ function setupTheme(): void {
   btn?.addEventListener('click', () => {
     const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
     document.documentElement.dataset.theme = next
-    try { localStorage.setItem('theme', next) } catch (e) { /* private mode */ }
+    try { localStorage.setItem('theme', next) } catch { /* private mode */ }
   })
 }
 
@@ -98,3 +98,6 @@ function boot(): void {
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot)
 else boot()
+
+export {} // makes this a module so tests can import it; esbuild's iife build ignores it
+

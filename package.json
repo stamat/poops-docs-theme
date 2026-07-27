@@ -1,6 +1,6 @@
 {
   "name": "poops-docs-theme",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Documentation theme (layout, styles, script) for Poops-built sites.",
   "license": "MIT",
   "author": "Nikola Stamatovic",
@@ -19,12 +19,26 @@
   ],
   "scripts": {
     "build": "poops -b",
-    "preview": "poops"
+    "preview": "poops",
+    "test": "jest",
+    "lint:js": "eslint .",
+    "lint:css": "stylelint \"scss/**/*.scss\"",
+    "lint": "npm run lint:js && npm run lint:css"
   },
   "peerDependencies": {
     "poops": ">=1.9.0"
   },
   "devDependencies": {
-    "poops": ">=1.9.0"
+    "@eslint/js": "^10.0.1",
+    "@types/jest": "^30.0.0",
+    "eslint": "^10.8.0",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
+    "poops": ">=1.8.0",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "ts-jest": "^29.4.12",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.65.0"
   }
 }
