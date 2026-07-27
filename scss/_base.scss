@@ -9,6 +9,8 @@
 }
 
 :root, :root[data-theme="light"] {
+  color-scheme: light; // scrollbars, form controls and autofill are UA-painted — tell it which way
+
   --bg: #fff;
   --bg-alt: #f5f6f8;
   --bg-code: #f5f6f8;
@@ -21,7 +23,9 @@
   --shadow: 0 4px 20px rgb(20 24 30 / 8%);
 }
 
-:root[data-theme="dark"] {
+@mixin dark-tokens {
+  color-scheme: dark;
+
   --bg: #16181d;
   --bg-alt: #1d2026;
   --bg-code: #1d2026;
@@ -32,6 +36,14 @@
   --accent-fg: #16181d;
   --link: #b197fc;
   --shadow: 0 4px 20px rgb(0 0 0 / 40%);
+}
+
+:root[data-theme="dark"] { @include dark-tokens; }
+
+// Script blocked or JS off: [data-theme] never lands, so follow the OS. A pinned
+// site.theme puts the attribute in the markup, which takes this back out of play.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { @include dark-tokens; }
 }
 
 * { box-sizing: border-box; }
