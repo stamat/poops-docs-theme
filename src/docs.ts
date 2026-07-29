@@ -4,10 +4,23 @@
 
 import { onReady } from './prose'
 
+// Disclosure pattern: the toggle owns aria-expanded, the sidebar owns the class.
+// Escape closes and hands focus back, since the scrim is mouse-only.
 function setupMobileNav(): void {
   const sidebar = document.querySelector('[data-sidebar]')
-  document.querySelector('[data-nav-toggle]')?.addEventListener('click', () => sidebar?.classList.toggle('open'))
-  document.querySelector('[data-nav-close]')?.addEventListener('click', () => sidebar?.classList.remove('open'))
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')
+  if (!sidebar || !toggle) return
+  const setOpen = (open: boolean): void => {
+    sidebar.classList.toggle('open', open)
+    toggle.setAttribute('aria-expanded', String(open))
+  }
+  toggle.addEventListener('click', () => setOpen(!sidebar.classList.contains('open')))
+  document.querySelector('[data-nav-close]')?.addEventListener('click', () => setOpen(false))
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !sidebar.classList.contains('open')) return
+    setOpen(false)
+    toggle.focus()
+  })
 }
 
 // Highlight the current page in the sidebar. Done client-side because the

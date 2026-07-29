@@ -27,8 +27,8 @@
   {% set tocHtml = pageBody | toc %}
 
   <div class="layout">
-    <aside class="sidebar" data-sidebar>
-      <nav class="nav">
+    <aside class="sidebar" id="sidebar-nav" data-sidebar>
+      <nav class="nav" aria-label="Documentation">
         {{ navigation.navtree(nav, page.url, relativePathPrefix, tocHtml) }}
       </nav>
     </aside>
