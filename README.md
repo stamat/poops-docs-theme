@@ -127,12 +127,12 @@ order. Opening it moves focus to the first link, Tab and the arrow keys (wrappin
 the rest, Escape closes and hands focus back, and tabbing past the last link or clicking
 outside closes it too.
 
-The docs sidebar drawer works the same way on a phone: opening it moves focus to the link
-for the page you are on, Tab and the native `<details>` sections walk the tree from there,
-and Escape — or closing it any other way — hands focus back to the toggle. It takes no
-focus trap; it marks the article `inert` while open instead, which is native and still
-leaves the topbar and the toggle reachable, where a nav drawer should let you back out to.
-Past 60rem the drawer is only the sidebar again, so focus is left where it is.
+The docs sidebar drawer is modal on a phone. Opening it moves focus to the link for the
+page you are on and marks the article `inert`; Tab then cycles the drawer's links, its
+`<details>` sections and the toggle itself — the toggle is in the loop because it is the
+way back out. Enter or Space opens a link, Escape closes and hands focus back to the
+toggle, and so does closing it any other way. Past 60rem the drawer is only the sidebar
+again: no trap, no `inert`, focus left where it is.
 
 ```json
 {

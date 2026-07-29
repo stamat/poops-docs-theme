@@ -72,6 +72,48 @@ test('the open drawer takes focus at the current page and gives it back on close
   expect(document.activeElement).toBe(toggle)
 })
 
+// Tab is dispatched at the document, where the trap listens; jsdom moves no focus
+// on its own, so whatever ends up focused is the trap's doing.
+const tab = (shiftKey = false): void => {
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey }))
+}
+
+test('the open drawer traps tab between the toggle and its own links', () => {
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+  const links = document.querySelectorAll<HTMLAnchorElement>('.sidebar a.nav-link')
+  const last = links[links.length - 1]
+  toggle.click()
+
+  last.focus()
+  tab() // past the last link, round to the toggle
+  expect(document.activeElement).toBe(toggle)
+  tab() // and back into the drawer
+  expect(document.activeElement).toBe(links[0])
+  tab(true)
+  expect(document.activeElement).toBe(toggle)
+  tab(true) // backwards off the toggle, round to the last link
+  expect(document.activeElement).toBe(last)
+
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+})
+
+test('the trap is off once the drawer is closed', () => {
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+  toggle.focus()
+  tab()
+  expect(document.activeElement).toBe(toggle) // untouched: no trap, jsdom moves nothing
+})
+
+test('space opens a sidebar link, like enter does natively', () => {
+  const link = document.querySelector<HTMLAnchorElement>('.sidebar a.nav-link')!
+  const opened = jest.fn((e: Event) => e.preventDefault())
+  link.addEventListener('click', opened)
+  link.focus()
+  link.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+  expect(opened).toHaveBeenCalled()
+  link.removeEventListener('click', opened)
+})
+
 test('growing past the breakpoint closes the drawer, so inert cannot stick', () => {
   const sidebar = document.querySelector('[data-sidebar]')!
   const main = document.querySelector('main')!

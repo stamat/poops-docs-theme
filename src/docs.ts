@@ -7,11 +7,10 @@ import { onReady } from './prose'
 // Disclosure pattern: the toggle owns aria-expanded, the sidebar owns the class.
 // Escape closes and hands focus back, since the scrim is mouse-only.
 //
-// The open drawer covers the article behind a scrim, so tabbing on past its last
-// link would put focus somewhere the visitor cannot see. `inert` on the article
-// says that natively — no hand-rolled focus trap, and unlike a trap it leaves the
-// topbar (and the toggle itself) reachable, which is where a nav drawer should
-// let you back out to.
+// Open on a phone, the drawer is modal: the article behind the scrim goes `inert`
+// and Tab cycles the toggle plus the drawer's own links, nothing else. The toggle
+// is inside the loop on purpose — it is the way back out. Above the breakpoint the
+// drawer is just the sidebar, so none of this runs.
 function setupMobileNav(): void {
   const sidebar = document.querySelector('[data-sidebar]')
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')
@@ -21,6 +20,16 @@ function setupMobileNav(): void {
   // sidebar again, focus can stay in it, and a stale `inert` would lock the
   // article for good
   const wide = window.matchMedia?.('(min-width: 60rem)')
+  const isOpen = (): boolean => sidebar.classList.contains('open')
+  const isModal = (): boolean => isOpen() && !wide?.matches
+
+  // Toggle first, then the drawer in dom order. checkVisibility drops the links
+  // inside a collapsed <details>, which are in the markup but not focusable.
+  const cycle = (): HTMLElement[] => [
+    toggle,
+    ...Array.from(sidebar.querySelectorAll<HTMLElement>('a[href], summary'))
+      .filter((el) => el.checkVisibility?.() ?? true)
+  ]
 
   const setOpen = (open: boolean): void => {
     sidebar.classList.toggle('open', open)
@@ -43,10 +52,30 @@ function setupMobileNav(): void {
   }
 
   wide?.addEventListener('change', (e) => { if (e.matches) setOpen(false) })
-  toggle.addEventListener('click', () => setOpen(!sidebar.classList.contains('open')))
+  toggle.addEventListener('click', () => setOpen(!isOpen()))
   document.querySelector('[data-nav-close]')?.addEventListener('click', () => setOpen(false))
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && sidebar.classList.contains('open')) setOpen(false)
+    if (e.key === 'Escape' && isOpen()) {
+      setOpen(false)
+      return
+    }
+    // Space opens a nav link, the way Enter already does natively — otherwise it
+    // would scroll the page behind the drawer.
+    const link = (e.target as HTMLElement | null)?.closest?.('a[href]')
+    if (e.key === ' ' && link && sidebar.contains(link)) {
+      e.preventDefault()
+      ;(link as HTMLAnchorElement).click()
+      return
+    }
+    if (e.key !== 'Tab' || !isModal()) return
+    const items = cycle()
+    const at = items.indexOf(document.activeElement as HTMLElement)
+    const last = items.length - 1
+    // focus adrift outside the loop (a stray click, say) comes back into it
+    const next = at < 0 ? (e.shiftKey ? last : 0) : (at + (e.shiftKey ? -1 : 1) + items.length) % items.length
+    e.preventDefault()
+    items[next].focus()
   })
 }
 
