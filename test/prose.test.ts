@@ -67,6 +67,30 @@ test('arrow keys walk the open panel and wrap around it', () => {
   expect(document.activeElement).toBe(btn)
 })
 
+test('the open panel traps tab between the hamburger and its own links', () => {
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu-toggle]')!
+  const [first, second] = Array.from(document.querySelectorAll<HTMLAnchorElement>('.topbar-links a'))
+  const tab = (shiftKey = false): void => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey }))
+  }
+  btn.click()
+
+  second.focus()
+  tab() // past the last link, round to the hamburger
+  expect(document.activeElement).toBe(btn)
+  tab() // and back into the panel
+  expect(document.activeElement).toBe(first)
+  tab(true)
+  expect(document.activeElement).toBe(btn)
+  tab(true) // backwards off the hamburger, round to the last link
+  expect(document.activeElement).toBe(second)
+
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+  // closed: nothing to trap, so tab is the browser's again and jsdom moves nothing
+  tab()
+  expect(document.activeElement).toBe(btn)
+})
+
 test('tabbing out of the panel closes it, moving within it does not', () => {
   const btn = document.querySelector<HTMLButtonElement>('[data-menu-toggle]')!
   const menu = document.querySelector('.topbar-links')!

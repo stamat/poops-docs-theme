@@ -38,22 +38,39 @@ export function setupTheme(): void {
   })
 }
 
+// Move focus `by` places through a list, wrapping at both ends. Focus adrift
+// outside the list — a stray click, say — comes back into it. Shared with the
+// docs sidebar, which walks its own tree the same way.
+export function focusStep(list: HTMLElement[], by: number): void {
+  const at = list.indexOf(document.activeElement as HTMLElement)
+  const next = at < 0 ? (by > 0 ? 0 : list.length - 1) : (at + by + list.length) % list.length
+  list[next]?.focus()
+}
+
 // Topbar links fold into a hamburger on phones. This is the APG *disclosure
 // navigation* pattern, not menu button: the panel holds plain links, so no
 // role="menu"/menuitem — that would cost the link semantics screen readers
 // announce. Button owns aria-expanded + aria-controls, panel owns the class.
 // Closed means display:none, which keeps the links out of the tab order; above
 // the breakpoint css shows them and the class goes inert.
+//
+// Collapsed and open, it is modal: Tab cycles the panel and the hamburger, and
+// nothing else. The hamburger is in the loop because it is the way back out.
 export function setupMenu(): void {
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]')
   const menu = document.querySelector('.topbar-links')
   if (!toggle || !menu) return
   const links = (): HTMLAnchorElement[] => Array.from(menu.querySelectorAll('a'))
   const isOpen = (): boolean => menu.classList.contains('open')
+  // past the breakpoint the links are on screen anyway: no hamburger, no panel,
+  // nothing to trap. A stale `open` class would only surprise on the way back down.
+  const collapsed = window.matchMedia?.('(max-width: 40rem)')
+  const isModal = (): boolean => isOpen() && (collapsed?.matches ?? true)
   const setOpen = (open: boolean): void => {
     menu.classList.toggle('open', open)
     toggle.setAttribute('aria-expanded', String(open))
   }
+  collapsed?.addEventListener('change', (e) => { if (!e.matches) setOpen(false) })
   // Opening moves focus to the first link. The panel sits before the button in
   // the dom — it has to, or the links would land after the whole action row in
   // the desktop tab order — so tabbing out of the button would otherwise walk
@@ -78,14 +95,19 @@ export function setupMenu(): void {
       toggle.focus()
       return
     }
-    // Tab already walks the panel; arrows are the extra the pattern allows, and
-    // they wrap, so the list can be cycled without leaving it.
-    const step = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0
-    const items = links()
-    const at = items.indexOf(document.activeElement as HTMLAnchorElement)
-    if (!step || !isOpen() || at < 0) return
+    // Arrows walk the panel itself, the hamburger left out of it — it is a button,
+    // not one of the links.
+    const by = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0
+    if (by && isOpen() && menu.contains(document.activeElement)) {
+      e.preventDefault()
+      focusStep(links(), by)
+      return
+    }
+    // Tab is the trap, so it takes the hamburger in, and only while the panel is
+    // both open and collapsed.
+    if (e.key !== 'Tab' || !isModal()) return
     e.preventDefault()
-    items[(at + step + items.length) % items.length].focus()
+    focusStep([toggle, ...links()], e.shiftKey ? -1 : 1)
   })
 }
 

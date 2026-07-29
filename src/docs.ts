@@ -2,7 +2,7 @@
 // Imports prose.ts for copy buttons + theme toggle, so this is the only script a
 // docs page loads. Vanilla, no deps, bundled to IIFE by poops.
 
-import { onReady } from './prose'
+import { focusStep, onReady } from './prose'
 
 // Disclosure pattern: the toggle owns aria-expanded, the sidebar owns the class.
 // Escape closes and hands focus back, since the scrim is mouse-only.
@@ -31,13 +31,6 @@ function setupMobileNav(): void {
       .filter((el) => el.checkVisibility?.() ?? true)
   // the trap's loop: the toggle, then the drawer
   const cycle = (): HTMLElement[] => [toggle, ...items()]
-
-  const step = (list: HTMLElement[], by: number): void => {
-    const at = list.indexOf(document.activeElement as HTMLElement)
-    // focus adrift outside the list (a stray click, say) comes back into it
-    const next = at < 0 ? (by > 0 ? 0 : list.length - 1) : (at + by + list.length) % list.length
-    list[next]?.focus()
-  }
 
   const setOpen = (open: boolean): void => {
     sidebar.classList.toggle('open', open)
@@ -82,12 +75,12 @@ function setupMobileNav(): void {
     const by = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0
     if (by && sidebar.contains(document.activeElement)) {
       e.preventDefault()
-      step(items(), by)
+      focusStep(items(), by)
       return
     }
     if (e.key !== 'Tab' || !isModal()) return
     e.preventDefault()
-    step(cycle(), e.shiftKey ? -1 : 1)
+    focusStep(cycle(), e.shiftKey ? -1 : 1)
   })
 }
 

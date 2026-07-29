@@ -123,9 +123,11 @@ Below 40rem the nav folds into a hamburger at the right end of the topbar. That 
 APG *disclosure navigation* pattern, not menu button — the panel holds links, so it keeps
 link semantics instead of `role="menu"`. The button owns `aria-expanded` and
 `aria-controls`; the closed panel is `display: none`, so its links stay out of the tab
-order. Opening it moves focus to the first link, Tab and the arrow keys (wrapping) walk
-the rest, Escape closes and hands focus back, and tabbing past the last link or clicking
-outside closes it too.
+order. Opening it moves focus to the first link and traps Tab between the panel and the
+hamburger, the hamburger included because it is the way back out; the arrow keys walk the
+links alone, wrapping. Escape closes and hands focus back, and so does a click outside.
+The trap only runs while the panel is open *and* collapsed — past 40rem the links are on
+screen anyway, so there is nothing to trap.
 
 The docs sidebar drawer is modal on a phone. Opening it moves focus to the link for the
 page you are on and marks the article `inert`; Tab then cycles the drawer's links, its
