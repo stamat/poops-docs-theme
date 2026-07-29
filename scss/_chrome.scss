@@ -49,7 +49,7 @@
   font: inherit;
   font-size: 0.9rem;
 }
-#search-input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+#search-input:focus { border-color: var(--focus); }
 .search-results {
   position: absolute;
   top: calc(100% + 0.4rem);

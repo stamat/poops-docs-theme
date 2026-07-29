@@ -20,6 +20,7 @@
   --accent: #7048e8;
   --accent-fg: #fff;
   --link: #6741d9;
+  --focus: #0060df;
   --shadow: 0 4px 20px rgb(20 24 30 / 8%);
 }
 
@@ -35,6 +36,7 @@
   --accent: #9775fa;
   --accent-fg: #16181d;
   --link: #b197fc;
+  --focus: #4dabf7; // browser blue is too dark to read on --bg here
   --shadow: 0 4px 20px rgb(0 0 0 / 40%);
 }
 
@@ -59,3 +61,7 @@ body {
 
 a { color: var(--link); }
 a:hover { text-decoration: none; }
+
+// Pin the ring to the theme — UA default takes its color from the OS accent,
+// so it drifts per machine and per browser.
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
