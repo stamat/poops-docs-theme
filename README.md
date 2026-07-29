@@ -112,6 +112,11 @@ just drops that clause).
 
 `brandMark` is also the tab icon, drawn as an inline svg — no favicon file needed.
 
+The title is its own link and goes to the site root. `site.brandUrl` retargets it — a
+site-relative url gets the page's path prefix, an absolute one opens in a new tab. On the
+`docs` layout the `docs` pill next to it is a second link, back to `docs/`, so the title
+leaves the docs section and the pill returns to it.
+
 `site.links` adds nav links — on the `prose` layout they fill the slot search takes on
 the `docs` layout. Site-relative urls get the page's path prefix; absolute ones open in a
 new tab. Every link shows on every page, and the one you are inside is marked rather than
@@ -243,7 +248,7 @@ All Poops built-ins, present in any Poops build:
 | Data    | `nav` tree (`markup.nav`), `search-index.json` (`markup.searchIndex`) | —                           |
 
 Both read `site` config: `title`, `description`, `lang`, `repo`, `branch` (edit link, docs
-only), plus the optional `brand`, `brandMark`, `links` and `footer` covered under
+only), plus the optional `brand`, `brandMark`, `brandUrl`, `links` and `footer` covered under
 [Topbar config](#topbar-config).
 
 ### Structured data

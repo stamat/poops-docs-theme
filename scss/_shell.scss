@@ -23,6 +23,13 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
   border-bottom: 1px solid var(--border);
 }
 .topbar a { text-decoration: none; }
+// Title and the docs pill are separate links, kept together with a tighter gap
+// than the topbar's own.
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
 .brand {
   font-weight: 700;
   font-size: 1.1rem;
