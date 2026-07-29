@@ -23,13 +23,21 @@ function setupMobileNav(): void {
   const isOpen = (): boolean => sidebar.classList.contains('open')
   const isModal = (): boolean => isOpen() && !wide?.matches
 
-  // Toggle first, then the drawer in dom order. checkVisibility drops the links
-  // inside a collapsed <details>, which are in the markup but not focusable.
-  const cycle = (): HTMLElement[] => [
-    toggle,
-    ...Array.from(sidebar.querySelectorAll<HTMLElement>('a[href], summary'))
+  // Everything in the drawer the keyboard can land on, in dom order.
+  // checkVisibility drops the links inside a collapsed <details>, which are in the
+  // markup but not focusable.
+  const items = (): HTMLElement[] =>
+    Array.from(sidebar.querySelectorAll<HTMLElement>('a[href], summary'))
       .filter((el) => el.checkVisibility?.() ?? true)
-  ]
+  // the trap's loop: the toggle, then the drawer
+  const cycle = (): HTMLElement[] => [toggle, ...items()]
+
+  const step = (list: HTMLElement[], by: number): void => {
+    const at = list.indexOf(document.activeElement as HTMLElement)
+    // focus adrift outside the list (a stray click, say) comes back into it
+    const next = at < 0 ? (by > 0 ? 0 : list.length - 1) : (at + by + list.length) % list.length
+    list[next]?.focus()
+  }
 
   const setOpen = (open: boolean): void => {
     sidebar.classList.toggle('open', open)
@@ -68,14 +76,18 @@ function setupMobileNav(): void {
       ;(link as HTMLAnchorElement).click()
       return
     }
+    // Arrows walk the drawer itself, wrapping, whenever focus is already in it —
+    // the toggle stays out of this one, it is not a nav item. Tab is the trap, so
+    // it takes the toggle in and only runs while the drawer is modal.
+    const by = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0
+    if (by && sidebar.contains(document.activeElement)) {
+      e.preventDefault()
+      step(items(), by)
+      return
+    }
     if (e.key !== 'Tab' || !isModal()) return
-    const items = cycle()
-    const at = items.indexOf(document.activeElement as HTMLElement)
-    const last = items.length - 1
-    // focus adrift outside the loop (a stray click, say) comes back into it
-    const next = at < 0 ? (e.shiftKey ? last : 0) : (at + (e.shiftKey ? -1 : 1) + items.length) % items.length
     e.preventDefault()
-    items[next].focus()
+    step(cycle(), e.shiftKey ? -1 : 1)
   })
 }
 

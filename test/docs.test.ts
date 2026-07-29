@@ -104,6 +104,26 @@ test('the trap is off once the drawer is closed', () => {
   expect(document.activeElement).toBe(toggle) // untouched: no trap, jsdom moves nothing
 })
 
+test('arrows walk the sidebar and wrap, at any width, without taking in the toggle', () => {
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+  const links = document.querySelectorAll<HTMLAnchorElement>('.sidebar a.nav-link')
+  const arrow = (key: string): void => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key }))
+  }
+
+  links[0].focus() // drawer closed: arrows still work inside the sidebar
+  arrow('ArrowDown')
+  expect(document.activeElement).toBe(links[1])
+  arrow('ArrowDown')
+  expect(document.activeElement).toBe(links[0]) // wraps, never onto the toggle
+  arrow('ArrowUp')
+  expect(document.activeElement).toBe(links[1])
+
+  toggle.focus() // focus outside the sidebar: arrows are the page's again
+  arrow('ArrowDown')
+  expect(document.activeElement).toBe(toggle)
+})
+
 test('space opens a sidebar link, like enter does natively', () => {
   const link = document.querySelector<HTMLAnchorElement>('.sidebar a.nav-link')!
   const opened = jest.fn((e: Event) => e.preventDefault())

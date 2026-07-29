@@ -130,9 +130,12 @@ outside closes it too.
 The docs sidebar drawer is modal on a phone. Opening it moves focus to the link for the
 page you are on and marks the article `inert`; Tab then cycles the drawer's links, its
 `<details>` sections and the toggle itself — the toggle is in the loop because it is the
-way back out. Enter or Space opens a link, Escape closes and hands focus back to the
-toggle, and so does closing it any other way. Past 60rem the drawer is only the sidebar
-again: no trap, no `inert`, focus left where it is.
+way back out. Escape closes and hands focus back to the toggle, and so does closing it any
+other way. Past 60rem the drawer is only the sidebar again: no trap, no `inert`, focus
+left where it is.
+
+Inside the sidebar, at any width, Up and Down walk the links and section headers and wrap
+around, and Enter or Space opens the focused link.
 
 ```json
 {
