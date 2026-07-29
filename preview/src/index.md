@@ -2,6 +2,8 @@
 layout: prose
 title: Standalone page
 description: The prose layout — docs topbar without search or the pill, one prose body, no sidebar.
+jsonld:
+  "@type": WebPage
 ---
 
 # Standalone page
