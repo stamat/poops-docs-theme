@@ -47,7 +47,7 @@
     "eslint": "^10.8.0",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
-    "poops": "^1.9.5",
+    "poops": "^1.9.7",
     "stylelint": "^17.14.1",
     "stylelint-config-standard-scss": "^17.0.0",
     "ts-jest": "^29.4.12",

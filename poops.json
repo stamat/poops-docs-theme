@@ -43,6 +43,7 @@
       "lang": "en",
       "repo": "https://github.com/stamat/poops-docs-theme",
       "branch": "main",
+      "jsonld": { "@type": "TechArticle" },
       "links": [
         { "title": "Docs", "url": "docs/" }
       ]

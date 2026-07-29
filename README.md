@@ -196,6 +196,22 @@ Both read `site` config: `title`, `description`, `lang`, `repo`, `branch` (edit 
 only), plus the optional `brand`, `brandMark`, `links` and `footer` covered under
 [Topbar config](#topbar-config).
 
+### Structured data
+
+The `jsonld` filter types a dateless page as `WebPage`. Documentation is `TechArticle` —
+set it once for the whole site (Poops ≥ 1.9.7), rather than per page:
+
+```json
+"markup": {
+  "site": {
+    "jsonld": { "@type": "TechArticle" }
+  }
+}
+```
+
+Precedence is defaults → `site.jsonld` → page front-matter `jsonld`, so an odd page out
+(a `FAQPage`, a `SoftwareSourceCode` listing) still overrides it locally.
+
 ## Preview
 
 `preview/src` is a mock site — filler pages that exist only to render the layouts. It

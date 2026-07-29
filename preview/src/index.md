@@ -26,10 +26,10 @@ npm install poops-docs-theme
 > Blockquotes, tables, admonitions, highlighted code — all shared with the docs layout,
 > because both stylesheets build from the same `_prose` partial.
 
-| Layout | Stylesheet | Script | Chrome |
-| --- | --- | --- | --- |
-| `docs` | `docs.min.css` | `docs.min.js` | topbar + search + sidebar + breadcrumb + TOC |
-| `prose` | `prose.min.css` | `prose.min.js` | topbar only |
+| Layout  | Stylesheet      | Script         | Chrome                                       |
+| ------- | --------------- | -------------- | -------------------------------------------- |
+| `docs`  | `docs.min.css`  | `docs.min.js`  | topbar + search + sidebar + breadcrumb + TOC |
+| `prose` | `prose.min.css` | `prose.min.js` | topbar only                                  |
 
 > [!TIP]
 > Never load both bundles — `docs.min.css` already contains everything `prose.min.css` has.
