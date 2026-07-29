@@ -15,7 +15,7 @@ Requires Poops **≥ 1.9.0** (package-template resolution).
 |            | `docs`                                                             | `prose`                                     |
 | ---------- | ------------------------------------------------------------------ | ------------------------------------------- |
 | For        | a real docs site                                                   | a small project — one page                  |
-| Topbar     | brand + `docs` pill + search + nav links + GitHub + theme switcher | brand + nav links + GitHub + theme switcher |
+| Topbar     | brand + `docs` pill + search + nav links + icon links + theme switcher | brand + nav links + icon links + theme switcher |
 | Body       | sidebar nav, breadcrumb, TOC, prose, edit link                     | one prose article                           |
 | Stylesheet | `dist/css/docs.min.css`                                            | `dist/css/prose.min.css`                    |
 | Script     | `dist/js/docs.min.js`                                              | `dist/js/prose.min.js`                      |
@@ -114,8 +114,25 @@ just drops that clause).
 
 `site.links` adds nav links — on the `prose` layout they fill the slot search takes on
 the `docs` layout. Site-relative urls get the page's path prefix; absolute ones open in a
-new tab. A link is dropped on the pages it covers — `docs/` disappears everywhere under
-`/docs/`, so the docs never link to themselves. Links are hidden below 40rem.
+new tab. Every link shows on every page, and the one you are inside is marked rather than
+hidden: `aria-current="page"` on the page itself, `aria-current="true"` anywhere under it
+(`docs/` stays lit through all of `/docs/`), styled in the accent colour. An optional
+`icon` sets a mark before the label.
+
+Below 40rem the nav folds into a hamburger at the right end of the topbar. That is the
+APG *disclosure navigation* pattern, not menu button — the panel holds links, so it keeps
+link semantics instead of `role="menu"`. The button owns `aria-expanded` and
+`aria-controls`; the closed panel is `display: none`, so its links stay out of the tab
+order. Opening it moves focus to the first link, Tab and the arrow keys (wrapping) walk
+the rest, Escape closes and hands focus back, and tabbing past the last link or clicking
+outside closes it too.
+
+The docs sidebar drawer works the same way on a phone: opening it moves focus to the link
+for the page you are on, Tab and the native `<details>` sections walk the tree from there,
+and Escape — or closing it any other way — hands focus back to the toggle. It takes no
+focus trap; it marks the article `inert` while open instead, which is native and still
+leaves the topbar and the toggle reachable, where a nav drawer should let you back out to.
+Past 60rem the drawer is only the sidebar again, so focus is left where it is.
 
 ```json
 {
@@ -123,12 +140,39 @@ new tab. A link is dropped on the pages it covers — `docs/` disappears everywh
     "site": {
       "links": [
         { "title": "Docs", "url": "docs/" },
-        { "title": "Changelog", "url": "https://github.com/you/repo/releases" }
+        { "title": "Changelog", "url": "https://github.com/you/repo/releases", "icon": "package" }
       ]
     }
   }
 }
 ```
+
+`site.iconLinks` is the same shape without labels: buttons in the row next to GitHub, for
+package registries, chat rooms, anything worth a permanent spot. They keep their spot on a
+phone rather than folding away, and `title` becomes the `aria-label`.
+
+```json
+{
+  "markup": {
+    "site": {
+      "iconLinks": [
+        { "title": "npm", "url": "https://www.npmjs.com/package/you-pkg", "icon": "npm" },
+        { "title": "Packagist", "url": "https://packagist.org/packages/you/pkg", "icon": "package" },
+        { "title": "Discord", "url": "https://discord.gg/xxxx", "icon": "💬" }
+      ]
+    }
+  }
+}
+```
+
+Both lists take the same `icon` values:
+
+| `icon`        | renders                                                        |
+| ------------- | -------------------------------------------------------------- |
+| `github`      | the GitHub mark                                                 |
+| `npm`         | the npm mark                                                    |
+| `package`     | a generic package box — use it for Packagist, PyPI, crates.io…  |
+| anything else | printed as given, so an emoji or a pasted `<svg>` works         |
 
 ### Pinning the theme
 

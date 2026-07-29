@@ -45,7 +45,11 @@
       "branch": "main",
       "jsonld": { "@type": "TechArticle" },
       "links": [
-        { "title": "Docs", "url": "docs/" }
+        { "title": "Docs", "url": "docs/" },
+        { "title": "Changelog", "url": "https://github.com/stamat/poops-docs-theme/releases", "icon": "package" }
+      ],
+      "iconLinks": [
+        { "title": "npm", "url": "https://www.npmjs.com/package/poops-docs-theme", "icon": "npm" }
       ]
     },
     "searchIndex": "search-index.json",

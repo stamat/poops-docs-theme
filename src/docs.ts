@@ -6,20 +6,47 @@ import { onReady } from './prose'
 
 // Disclosure pattern: the toggle owns aria-expanded, the sidebar owns the class.
 // Escape closes and hands focus back, since the scrim is mouse-only.
+//
+// The open drawer covers the article behind a scrim, so tabbing on past its last
+// link would put focus somewhere the visitor cannot see. `inert` on the article
+// says that natively — no hand-rolled focus trap, and unlike a trap it leaves the
+// topbar (and the toggle itself) reachable, which is where a nav drawer should
+// let you back out to.
 function setupMobileNav(): void {
   const sidebar = document.querySelector('[data-sidebar]')
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')
   if (!sidebar || !toggle) return
+  const main = document.querySelector('main')
+  // the drawer is a phone/tablet thing: past the breakpoint it is just the
+  // sidebar again, focus can stay in it, and a stale `inert` would lock the
+  // article for good
+  const wide = window.matchMedia?.('(min-width: 60rem)')
+
   const setOpen = (open: boolean): void => {
     sidebar.classList.toggle('open', open)
     toggle.setAttribute('aria-expanded', String(open))
+    main?.toggleAttribute('inert', open)
+    // The drawer sits after the whole topbar in the dom, so tab alone would walk
+    // the topbar instead of the thing that just opened: hand focus over, starting
+    // at the page you are on, and take it back to the toggle on the way out.
+    // preventScroll because the panel is still sliding in.
+    if (open) {
+      const start = sidebar.querySelector<HTMLElement>('a.active') ?? sidebar.querySelector<HTMLElement>('a, summary')
+      start?.focus({ preventScroll: true })
+      // focus is refused while the drawer still computes to hidden; the css flips
+      // it instantly on open, but engines disagree on when "instantly" lands, so
+      // take one more shot on the next frame if the first was ignored
+      if (document.activeElement !== start) requestAnimationFrame(() => start?.focus({ preventScroll: true }))
+    } else if (!wide?.matches && sidebar.contains(document.activeElement)) {
+      toggle.focus()
+    }
   }
+
+  wide?.addEventListener('change', (e) => { if (e.matches) setOpen(false) })
   toggle.addEventListener('click', () => setOpen(!sidebar.classList.contains('open')))
   document.querySelector('[data-nav-close]')?.addEventListener('click', () => setOpen(false))
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || !sidebar.classList.contains('open')) return
-    setOpen(false)
-    toggle.focus()
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) setOpen(false)
   })
 }
 
@@ -31,6 +58,7 @@ function markActiveNav(): void {
   document.querySelectorAll<HTMLAnchorElement>('.sidebar a.nav-link').forEach((a) => {
     if (norm(new URL(a.href).pathname) === here) {
       a.classList.add('active')
+      a.setAttribute('aria-current', 'page') // colour alone shouldn't carry it
       a.scrollIntoView({ block: 'center' })
     }
   })

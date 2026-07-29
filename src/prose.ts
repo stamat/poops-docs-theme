@@ -38,6 +38,57 @@ export function setupTheme(): void {
   })
 }
 
+// Topbar links fold into a hamburger on phones. This is the APG *disclosure
+// navigation* pattern, not menu button: the panel holds plain links, so no
+// role="menu"/menuitem — that would cost the link semantics screen readers
+// announce. Button owns aria-expanded + aria-controls, panel owns the class.
+// Closed means display:none, which keeps the links out of the tab order; above
+// the breakpoint css shows them and the class goes inert.
+export function setupMenu(): void {
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]')
+  const menu = document.querySelector('.topbar-links')
+  if (!toggle || !menu) return
+  const links = (): HTMLAnchorElement[] => Array.from(menu.querySelectorAll('a'))
+  const isOpen = (): boolean => menu.classList.contains('open')
+  const setOpen = (open: boolean): void => {
+    menu.classList.toggle('open', open)
+    toggle.setAttribute('aria-expanded', String(open))
+  }
+  // Opening moves focus to the first link. The panel sits before the button in
+  // the dom — it has to, or the links would land after the whole action row in
+  // the desktop tab order — so tabbing out of the button would otherwise walk
+  // away from the panel it just opened.
+  toggle.addEventListener('click', () => {
+    setOpen(!isOpen())
+    if (isOpen()) links()[0]?.focus()
+  })
+  // anywhere else — including a link inside the panel, which navigates anyway
+  document.addEventListener('click', (e) => {
+    if (!(e.target as HTMLElement).closest('[data-menu-toggle]')) setOpen(false)
+  })
+  // tabbing past the last link leaves an open panel behind: close it, quietly,
+  // without stealing the focus the visitor just moved on to
+  document.addEventListener('focusout', (e) => {
+    const next = (e as FocusEvent).relatedTarget as Node | null
+    if (isOpen() && !(next && (menu.contains(next) || next === toggle))) setOpen(false)
+  })
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOpen()) {
+      setOpen(false)
+      toggle.focus()
+      return
+    }
+    // Tab already walks the panel; arrows are the extra the pattern allows, and
+    // they wrap, so the list can be cycled without leaving it.
+    const step = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0
+    const items = links()
+    const at = items.indexOf(document.activeElement as HTMLAnchorElement)
+    if (!step || !isOpen() || at < 0) return
+    e.preventDefault()
+    items[(at + step + items.length) % items.length].focus()
+  })
+}
+
 // Run fn once the DOM is parsed. Exported so docs.ts boots on the same tick.
 export function onReady(fn: () => void): void {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn)
@@ -47,4 +98,5 @@ export function onReady(fn: () => void): void {
 onReady(() => {
   addCopyButtons()
   setupTheme()
+  setupMenu()
 })

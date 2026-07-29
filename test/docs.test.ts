@@ -2,8 +2,17 @@
  * @jest-environment jsdom
  */
 
+// jsdom ships no matchMedia, so stand one in and keep the change handler: it is
+// what closes the drawer when a rotation crosses the breakpoint.
+let crossBreakpoint: (e: { matches: boolean }) => void
+
 // docs.ts has no exports — it boots on import. Build the DOM first, then import.
 beforeAll(async () => {
+  window.matchMedia = ((media: string) => ({
+    media,
+    matches: false,
+    addEventListener: (_: string, fn: (e: { matches: boolean }) => void) => { crossBreakpoint = fn }
+  })) as unknown as typeof window.matchMedia
   document.body.innerHTML = `
     <div class="prose"><pre>npm install poops</pre></div>
     <button data-theme-toggle></button>
@@ -13,6 +22,7 @@ beforeAll(async () => {
     </aside>
     <button data-nav-toggle></button>
     <button data-nav-close></button>
+    <main><a href="/somewhere/">In the article</a></main>
   `
   window.history.replaceState({}, '', '/docs/intro/index.html')
   Element.prototype.scrollIntoView = jest.fn()
@@ -41,10 +51,34 @@ test('theme toggle flips the root theme and persists it', () => {
   expect(document.documentElement.dataset.theme).toBe('light')
 })
 
-test('mobile nav toggle opens and closes the sidebar', () => {
+test('mobile nav toggle opens and closes the sidebar, and inerts the article while open', () => {
   const sidebar = document.querySelector('[data-sidebar]')!
+  const main = document.querySelector('main')!
   document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!.click()
   expect(sidebar.classList.contains('open')).toBe(true)
+  expect(main.hasAttribute('inert')).toBe(true)
   document.querySelector<HTMLButtonElement>('[data-nav-close]')!.click()
   expect(sidebar.classList.contains('open')).toBe(false)
+  expect(main.hasAttribute('inert')).toBe(false)
+})
+
+test('the open drawer takes focus at the current page and gives it back on close', () => {
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+  const active = document.querySelector('.sidebar a.nav-link.active')
+  toggle.click()
+  expect(document.activeElement).toBe(active)
+
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+  expect(document.activeElement).toBe(toggle)
+})
+
+test('growing past the breakpoint closes the drawer, so inert cannot stick', () => {
+  const sidebar = document.querySelector('[data-sidebar]')!
+  const main = document.querySelector('main')!
+  document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!.click()
+  expect(main.hasAttribute('inert')).toBe(true)
+
+  crossBreakpoint({ matches: true })
+  expect(sidebar.classList.contains('open')).toBe(false)
+  expect(main.hasAttribute('inert')).toBe(false)
 })

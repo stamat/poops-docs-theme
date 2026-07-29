@@ -1,6 +1,13 @@
 {# Shared topbar. `docs` = true renders the nav toggle, the "docs" pill and search;
    false renders the bare header the prose layout uses. #}
 {% macro topbar(site, prefix, docs, repo, pageUrl) %}
+{#- Built-in icons for `site.links` entries that carry an `icon`. Anything not in here is
+    printed as given, so an emoji or a pasted <svg> works as the icon too. -#}
+{%- set icons = {
+  github: '<svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>',
+  npm: '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"></path></svg>',
+  package: '<svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="m8.878.392 5.25 3.045c.54.314.872.89.872 1.514v6.098a1.75 1.75 0 0 1-.872 1.514l-5.25 3.045a1.75 1.75 0 0 1-1.756 0l-5.25-3.045A1.75 1.75 0 0 1 1 11.049V4.951c0-.624.332-1.201.872-1.514L7.122.392a1.75 1.75 0 0 1 1.756 0ZM7.875 1.69l-4.63 2.685L8 7.133l4.755-2.758-4.63-2.685a.248.248 0 0 0-.25 0ZM2.5 5.677v5.372c0 .09.047.171.125.216l4.625 2.683V8.432Zm6.25 8.271 4.625-2.683a.25.25 0 0 0 .125-.216V5.677L8.75 8.432Z"></path></svg>'
+} -%}
 {#- normalize once: "docs/index.html" and "docs/" both become "docs", "index.html" becomes "" -#}
 {%- set here = (pageUrl or '') | replace('index.html', '') -%}
 {%- if here.endsWith('/') %}{% set here = here.slice(0, -1) %}{% endif -%}
@@ -15,16 +22,16 @@
   </a>
   <div class="topbar-actions">
     {% if site.links %}
-    <nav class="topbar-links" aria-label="Site">
-      {%- for link in site.links -%}
+    <nav class="topbar-nav" aria-label="Site">
+      <ul class="topbar-links" id="topbar-links">{% for link in site.links -%}
         {%- set external = '//' in link.url -%}
         {%- set target = link.url | replace('index.html', '') -%}
         {%- if target.endsWith('/') %}{% set target = target.slice(0, -1) %}{% endif -%}
-        {#- a link to the section you are already in is dead weight: drop it -#}
-        {%- if external or not (here == target or here.startsWith(target + '/')) -%}
-        <a href="{{ link.url if external else prefix + link.url }}"{% if external %} target="_blank" rel="noopener"{% endif %}>{{ link.title }}</a>
-        {%- endif -%}
-      {%- endfor -%}
+        {#- the section you are in stays in the list, marked: "page" on the page itself,
+            "true" anywhere under it -#}
+        {%- set current = '' if external else ('page' if here == target else ('true' if here.startsWith(target + '/') else '')) -%}
+        <li><a href="{{ link.url if external else prefix + link.url }}"{% if external %} target="_blank" rel="noopener"{% endif %}{% if current %} aria-current="{{ current }}"{% endif %}>{% if link.icon %}{{ (icons[link.icon] or link.icon) | safe }}{% endif %}{{ link.title }}</a></li>
+      {%- endfor %}</ul>
     </nav>
     {% endif %}
     {% if docs %}
@@ -34,15 +41,28 @@
       <div class="search-results" id="search-results" hidden></div>
     </div>
     {% endif %}
+
+    {#- `site.iconLinks`: label-less buttons next to GitHub — package registries, chat,
+        whatever else earns a permanent spot. They stay put on a phone. -#}
+    {%- for link in site.iconLinks -%}
+      {%- set external = '//' in link.url -%}
+    <a class="icon-btn" href="{{ link.url if external else prefix + link.url }}" aria-label="{{ link.title }}"{% if external %} target="_blank" rel="noopener"{% endif %}>{{ (icons[link.icon] or link.icon) | safe }}</a>
+    {%- endfor -%}
+
     {% if repo %}
-    <a class="icon-btn" href="{{ repo }}" aria-label="GitHub" target="_blank" rel="noopener">
-      <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
-    </a>
+    <a class="icon-btn" href="{{ repo }}" aria-label="GitHub" target="_blank" rel="noopener">{{ icons.github | safe }}</a>
     {% endif %}
     {% if not site.theme %}
     <button class="icon-btn" data-theme-toggle aria-label="Toggle dark mode">
       <svg class="theme-sun" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm0-1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM8 0a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0V.75A.75.75 0 0 1 8 0Zm0 13a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 13Zm8-5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 16 8ZM3 8a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 3 8Zm10.657-5.657a.75.75 0 0 1 0 1.061l-1.061 1.06a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734l1.06-1.061a.75.75 0 0 1 1.06 0Zm-9.193 9.193a.75.75 0 0 1 0 1.06l-1.06 1.061a.75.75 0 1 1-1.061-1.06l1.06-1.061a.75.75 0 0 1 1.061 0Zm9.193 2.121a.75.75 0 0 1-1.06 0l-1.061-1.06a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l1.06 1.061a.75.75 0 0 1 0 1.06ZM4.464 4.464a.75.75 0 0 1-1.06 0L2.343 3.404a.75.75 0 0 1 1.06-1.06l1.061 1.06a.75.75 0 0 1 0 1.06Z"></path></svg>
       <svg class="theme-moon" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M9.598 1.591a.749.749 0 0 1 .785-.175 7.001 7.001 0 1 1-8.967 8.967.75.75 0 0 1 .961-.96 5.5 5.5 0 0 0 7.046-7.046.75.75 0 0 1 .175-.786Zm1.616 1.945a7 7 0 0 1-7.678 7.678 5.499 5.499 0 1 0 7.678-7.678Z"></path></svg>
+    </button>
+    {% endif %}
+    {#- Last in the row, so it sits hard right. Only the phone breakpoint shows it —
+        above that the links are already on screen. -#}
+    {% if site.links %}
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Menu" aria-expanded="false" aria-controls="topbar-links">
+      <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75Zm0 5A.75.75 0 0 1 1.75 7h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 7.75ZM1.75 12h12.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Z"></path></svg>
     </button>
     {% endif %}
   </div>
