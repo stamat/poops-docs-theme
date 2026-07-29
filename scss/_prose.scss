@@ -163,15 +163,16 @@
 }
 .admonition.info,
 .marked-github-alert-info,
-.marked-github-alert-important { --adm: #1c7ed6; }
+.admonition.note,
+.marked-github-alert-note { --adm: #1c7ed6; }
 .admonition.tip,
 .marked-github-alert-tip { --adm: #2f9e44; }
 .admonition.warning,
-.marked-github-alert-warning { --adm: #f08c00; }
+.marked-github-alert-warning { --adm: #f76707; }
 .admonition.caution,
 .marked-github-alert-caution { --adm: #e03131; }
-.admonition.note,
-.marked-github-alert-note { --adm: #7048e8; }
+.admonition.important,
+.marked-github-alert-important { --adm: #fab005; }
 
 // ---- highlight.js token colors (self-hosted, both themes) ----
 .hljs-comment, .hljs-quote { color: var(--fg-muted); font-style: italic; }
