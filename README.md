@@ -125,7 +125,8 @@ link semantics instead of `role="menu"`. The button owns `aria-expanded` and
 `aria-controls`; the closed panel is `display: none`, so its links stay out of the tab
 order. Opening it moves focus to the first link and traps Tab between the panel and the
 hamburger, the hamburger included because it is the way back out; the arrow keys walk the
-links alone, wrapping. Escape closes and hands focus back, and so does a click outside.
+links alone, wrapping, and Enter or Space opens the focused one. Escape closes and hands
+focus back, and so does a click outside.
 The trap only runs while the panel is open *and* collapsed — past 40rem the links are on
 screen anyway, so there is nothing to trap.
 

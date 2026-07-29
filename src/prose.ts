@@ -95,6 +95,14 @@ export function setupMenu(): void {
       toggle.focus()
       return
     }
+    // Space opens a link, the way Enter already does natively — otherwise it would
+    // scroll the page behind the panel. Same deal as the docs sidebar.
+    const link = (e.target as HTMLElement | null)?.closest?.('a[href]')
+    if (e.key === ' ' && link && menu.contains(link)) {
+      e.preventDefault()
+      ;(link as HTMLAnchorElement).click()
+      return
+    }
     // Arrows walk the panel itself, the hamburger left out of it — it is a button,
     // not one of the links.
     const by = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0

@@ -91,6 +91,16 @@ test('the open panel traps tab between the hamburger and its own links', () => {
   expect(document.activeElement).toBe(btn)
 })
 
+test('space opens a panel link, like enter does natively', () => {
+  const link = document.querySelector<HTMLAnchorElement>('.topbar-links a')!
+  const opened = jest.fn((e: Event) => e.preventDefault())
+  link.addEventListener('click', opened)
+  link.focus()
+  link.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+  expect(opened).toHaveBeenCalled()
+  link.removeEventListener('click', opened)
+})
+
 test('tabbing out of the panel closes it, moving within it does not', () => {
   const btn = document.querySelector<HTMLButtonElement>('[data-menu-toggle]')!
   const menu = document.querySelector('.topbar-links')!
