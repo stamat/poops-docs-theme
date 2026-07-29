@@ -147,17 +147,31 @@
 .nav-list .toc .toc-h3 { display: none; }
 
 // ---- Edit link ----
-.edit-link {
-  display: inline-block;
+// Row keeps the button inside the prose column, like .prose and .page-footer.
+.edit-link-row {
+  width: 100%;
+  max-width: var(--content-max);
   margin-top: 3rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   font-size: 0.9rem;
   color: var(--fg-muted);
   text-decoration: none;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
 
-  &:hover { color: var(--link); text-decoration: underline; }
+  &:hover { background: var(--bg-alt); color: var(--fg); text-decoration: none; }
 }
 
-.edit-link + .page-footer { margin-top: 1.5rem; }
+.edit-link-row + .page-footer { margin-top: 1.5rem; }
 
 // ---- Responsive ----
 @media (max-width: 60rem) {
