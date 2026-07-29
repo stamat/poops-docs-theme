@@ -183,3 +183,42 @@
     background: rgb(0 0 0 / 35%);
   }
 }
+
+// Phone: no room for a search field next to the brand, so it shrinks to an icon
+// button like the GitHub link. The input itself is the button — the icon sits on
+// top with pointer-events: none — so tapping it expands the field across the
+// topbar. `:has` holds it open while results are up: without it, blurring the
+// input to tap a hit would collapse the panel out from under the tap.
+@media (max-width: 40rem) {
+  $open: ":is(:focus-within, :has(.search-results:not([hidden])))";
+
+  .search { flex: 0 0 auto; width: 2.25rem; margin-left: auto; }
+  .search-icon { left: 50%; transform: translate(-50%, -50%); }
+
+  #search-input {
+    padding: 0.4rem;
+    border-color: transparent;
+    background: transparent;
+    cursor: pointer;
+
+    &::placeholder { color: transparent; }
+    &:hover { background: var(--bg-alt); }
+  }
+
+  .search#{$open} {
+    position: absolute;
+    inset: 0.5rem 1rem;
+    width: auto;
+
+    .search-icon { left: 0.6rem; transform: translateY(-50%); }
+
+    #search-input {
+      height: 100%;
+      padding: 0.4rem 0.75rem 0.4rem 2rem;
+      background: var(--bg-alt);
+      cursor: auto;
+
+      &::placeholder { color: var(--fg-muted); }
+    }
+  }
+}
