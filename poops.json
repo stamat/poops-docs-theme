@@ -20,8 +20,7 @@
     "options": {
       "minify": true,
       "justMinified": true,
-      "format": "iife",
-      "target": "es2019"
+      "format": "iife"
     }
   }, {
     "in": "src/prose.ts",
@@ -29,33 +28,34 @@
     "options": {
       "minify": true,
       "justMinified": true,
-      "format": "iife",
-      "target": "es2019"
+      "format": "iife"
     }
   }],
   "markup": {
     "in": "preview/src",
     "out": "preview/dist",
-    "site": {
-      "title": "Poops docs theme",
-      "brand": "poops-docs-theme",
-      "description": "Mock docs site used to preview the theme.",
-      "lang": "en",
-      "repo": "https://github.com/stamat/poops-docs-theme",
-      "branch": "main",
-      "jsonld": { "@type": "TechArticle" },
-      "links": [
-        { "title": "Docs", "url": "docs/" },
-        { "title": "Changelog", "url": "https://github.com/stamat/poops-docs-theme/releases", "icon": "package" }
-      ],
-      "iconLinks": [
-        { "title": "npm", "url": "https://www.npmjs.com/package/poops-docs-theme", "icon": "npm" }
-      ]
-    },
-    "searchIndex": "search-index.json",
-    "nav": {
-      "output": "nav.json",
-      "root": "docs"
+    "options": {
+      "site": {
+        "title": "Poops docs theme",
+        "brand": "poops-docs-theme",
+        "description": "Mock docs site used to preview the theme.",
+        "lang": "en",
+        "repo": "https://github.com/stamat/poops-docs-theme",
+        "branch": "main",
+        "jsonld": { "@type": "TechArticle" },
+        "links": [
+          { "title": "Docs", "url": "docs/" },
+          { "title": "Changelog", "url": "https://github.com/stamat/poops-docs-theme/releases", "icon": "package" }
+        ],
+        "iconLinks": [
+          { "title": "npm", "url": "https://www.npmjs.com/package/poops-docs-theme", "icon": "npm" }
+        ]
+      },
+      "searchIndex": "search-index.json",
+      "nav": {
+        "out": "nav.json",
+        "root": "docs"
+      }
     }
   },
   "copy": [{
@@ -63,8 +63,7 @@
     "out": "preview/dist"
   }],
   "serve": {
-    "port": 4040,
-    "base": "/preview/dist"
+    "port": 4040
   },
   "livereload": true,
   "watch": ["scss", "src", "preview/src", "dist"]

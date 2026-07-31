@@ -36,12 +36,6 @@
     {% endblock %}
   </main>
 
-  {% if livereload_port %}
-  <script>document.write('<script src="http://'
-    + (location.host || 'localhost').split(':')[0]
-    + ':{{ livereload_port }}/livereload.js?snipver=1"></'
-    + 'script>')</script>
-  {% endif %}
   <script src="{{ relativePathPrefix }}js/prose.min.js"></script>
 </body>
 </html>
