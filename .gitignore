@@ -2,3 +2,5 @@ node_modules
 dist
 preview/dist
 .DS_Store
+
+.claude

@@ -2,26 +2,57 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 
 jobs:
-  build:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
-      - run: npm ci
-      - run: npm run lint:js
-      - run: npm run lint:css
-      - run: npm test
-      - run: npm run build
-      - name: Check build output
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # the package ships dist/, so an empty bundle is a broken release rather
+      # than a broken build — poops -b exits 0 when it has nothing to compile
+      - name: Verify build output
+        shell: bash
         run: |
           test -s dist/css/docs.min.css
           test -s dist/css/prose.min.css
           test -s dist/js/docs.min.js
           test -s preview/dist/docs/index.html
+
+      # Browser-support gates on the emitted bundles: stylelint checks the CSS
+      # against .browserslistrc, es-check confirms the JS parses at the esbuild
+      # target. Both read dist/, which is gitignored, so they only run after the
+      # build step.
+      - name: Check browser compatibility
+        shell: bash
+        run: |
+          npm run lint:browsers
+          npm run lint:es
