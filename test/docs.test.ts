@@ -2,25 +2,32 @@
  * @jest-environment jsdom
  */
 
-// jsdom ships no matchMedia, so stand one in and keep the change handler: it is
-// what closes the drawer when a rotation crosses the breakpoint.
+// jsdom ships no matchMedia, so stand one in. Mutable and shared rather than a fresh object
+// per call, because the subscriber is now `<disclosure-elemental>` and it re-reads
+// `query.matches` when the change fires rather than trusting the event. Flipping
+// `mql.matches` before calling `crossBreakpoint` is what simulates a rotation.
+const mql = {
+  media: '',
+  matches: false,
+  addEventListener: (_: string, fn: (e: { matches: boolean }) => void) => { crossBreakpoint = fn },
+  removeEventListener: () => {}
+}
 let crossBreakpoint: (e: { matches: boolean }) => void
 
 // docs.ts has no exports — it boots on import. Build the DOM first, then import.
 beforeAll(async () => {
-  window.matchMedia = ((media: string) => ({
-    media,
-    matches: false,
-    addEventListener: (_: string, fn: (e: { matches: boolean }) => void) => { crossBreakpoint = fn }
-  })) as unknown as typeof window.matchMedia
+  window.matchMedia = ((media: string) => {
+    mql.media = media
+    return mql
+  }) as unknown as typeof window.matchMedia
   document.body.innerHTML = `
     <div class="prose"><pre>npm install poops</pre></div>
     <button data-theme-toggle></button>
-    <aside class="sidebar" data-sidebar>
+    <aside class="sidebar" id="sidebar-nav" data-sidebar>
       <a class="nav-link" href="http://localhost/docs/intro/">Intro</a>
       <a class="nav-link" href="http://localhost/docs/other/">Other</a>
     </aside>
-    <button data-nav-toggle></button>
+    <disclosure-elemental for="sidebar-nav" media="(min-width: 60rem)"><button data-nav-toggle></button></disclosure-elemental>
     <button data-nav-close></button>
     <main><a href="/somewhere/">In the article</a></main>
   `
@@ -51,96 +58,97 @@ test('theme toggle flips the root theme and persists it', () => {
   expect(document.documentElement.dataset.theme).toBe('light')
 })
 
-test('mobile nav toggle opens and closes the sidebar, and inerts the article while open', () => {
+test('the element owns the state: the toggle writes aria-expanded and unhides the panel', () => {
   const sidebar = document.querySelector('[data-sidebar]')!
-  const main = document.querySelector('main')!
-  document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!.click()
-  expect(sidebar.classList.contains('open')).toBe(true)
-  expect(main.hasAttribute('inert')).toBe(true)
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+  expect(toggle.getAttribute('aria-expanded')).toBe('false')
+  expect(sidebar.hasAttribute('hidden')).toBe(true)
+
+  toggle.click()
+  expect(toggle.getAttribute('aria-expanded')).toBe('true')
+  expect(sidebar.hasAttribute('hidden')).toBe(false)
+
+  toggle.click()
+  expect(toggle.getAttribute('aria-expanded')).toBe('false')
+  expect(sidebar.hasAttribute('hidden')).toBe(true)
+})
+
+// Closed is `hidden="until-found"` rather than an offscreen transform, which is what keeps
+// the links out of the tab order — and, unlike the `visibility` this replaced, still lets
+// find-in-page reach one.
+test('a closed drawer is hidden with until-found, so find-in-page still reaches it', () => {
+  const sidebar = document.querySelector('[data-sidebar]')!
+  expect(sidebar.getAttribute('hidden')).toBe('until-found')
+})
+
+test('the scrim closes the drawer', () => {
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+  toggle.click()
   document.querySelector<HTMLButtonElement>('[data-nav-close]')!.click()
-  expect(sidebar.classList.contains('open')).toBe(false)
-  expect(main.hasAttribute('inert')).toBe(false)
+  expect(toggle.getAttribute('aria-expanded')).toBe('false')
 })
 
-test('the open drawer takes focus at the current page and gives it back on close', () => {
+test('escape closes the drawer', () => {
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
-  const active = document.querySelector('.sidebar a.nav-link.active')
   toggle.click()
-  expect(document.activeElement).toBe(active)
-
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
-  expect(document.activeElement).toBe(toggle)
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  expect(toggle.getAttribute('aria-expanded')).toBe('false')
 })
 
-// Tab is dispatched at the document, where the trap listens; jsdom moves no focus
-// on its own, so whatever ends up focused is the trap's doing.
-const tab = (shiftKey = false): void => {
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey }))
-}
-
-test('the open drawer traps tab between the toggle and its own links', () => {
+// The one bit of focus management a non-modal drawer still owes: closing sets `hidden`, and
+// a focused link inside it would leave focus on <body> with the next Tab restarting from the
+// top of the document.
+test('closing while focus is inside the drawer hands it back to the toggle', () => {
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
-  const links = document.querySelectorAll<HTMLAnchorElement>('.sidebar a.nav-link')
-  const last = links[links.length - 1]
   toggle.click()
-
-  last.focus()
-  tab() // past the last link, round to the toggle
+  document.querySelector<HTMLAnchorElement>('.sidebar a')!.focus()
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
   expect(document.activeElement).toBe(toggle)
-  tab() // and back into the drawer
-  expect(document.activeElement).toBe(links[0])
-  tab(true)
-  expect(document.activeElement).toBe(toggle)
-  tab(true) // backwards off the toggle, round to the last link
-  expect(document.activeElement).toBe(last)
-
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
 })
 
-test('the trap is off once the drawer is closed', () => {
+// The panel is the last thing in the layout and its button is the first thing in the topbar,
+// so `Tab` alone would walk the brand, the search field and every icon link before reaching
+// what just opened.
+test('opening the drawer hands focus to the current page inside it', () => {
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+  toggle.click()
+  expect(document.activeElement).toBe(document.querySelector('.sidebar a.active'))
+  toggle.click()
+})
+
+// Crossing the breakpoint opens the rail too, and a rail stealing focus because the window
+// got wider is worse than the problem the handover solves.
+test('the rail does not take focus when the breakpoint opens it', () => {
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
   toggle.focus()
-  tab()
-  expect(document.activeElement).toBe(toggle) // untouched: no trap, jsdom moves nothing
-})
-
-test('arrows walk the sidebar and wrap, at any width, without taking in the toggle', () => {
-  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
-  const links = document.querySelectorAll<HTMLAnchorElement>('.sidebar a.nav-link')
-  const arrow = (key: string): void => {
-    document.dispatchEvent(new KeyboardEvent('keydown', { key }))
-  }
-
-  links[0].focus() // drawer closed: arrows still work inside the sidebar
-  arrow('ArrowDown')
-  expect(document.activeElement).toBe(links[1])
-  arrow('ArrowDown')
-  expect(document.activeElement).toBe(links[0]) // wraps, never onto the toggle
-  arrow('ArrowUp')
-  expect(document.activeElement).toBe(links[1])
-
-  toggle.focus() // focus outside the sidebar: arrows are the page's again
-  arrow('ArrowDown')
+  mql.matches = true
+  crossBreakpoint({ matches: true })
   expect(document.activeElement).toBe(toggle)
+  mql.matches = false
+  crossBreakpoint({ matches: false })
 })
 
-test('space opens a sidebar link, like enter does natively', () => {
-  const link = document.querySelector<HTMLAnchorElement>('.sidebar a.nav-link')!
-  const opened = jest.fn((e: Event) => e.preventDefault())
-  link.addEventListener('click', opened)
-  link.focus()
-  link.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
-  expect(opened).toHaveBeenCalled()
-  link.removeEventListener('click', opened)
-})
-
-test('growing past the breakpoint closes the drawer, so inert cannot stick', () => {
-  const sidebar = document.querySelector('[data-sidebar]')!
+// Not modal: the article stays reachable, which is the APG disclosure pattern and the right
+// amount for a panel that is a list of links to the same site.
+test('the article is never inerted — this is a disclosure, not a dialog', () => {
   const main = document.querySelector('main')!
   document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!.click()
-  expect(main.hasAttribute('inert')).toBe(true)
-
-  crossBreakpoint({ matches: true })
-  expect(sidebar.classList.contains('open')).toBe(false)
   expect(main.hasAttribute('inert')).toBe(false)
+})
+
+// The breakpoint is the element's `media` attribute now, not a matchMedia listener in here.
+test('crossing the breakpoint holds the rail open, and closes it again on the way back', () => {
+  const sidebar = document.querySelector('[data-sidebar]')!
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+
+  mql.matches = true
+  crossBreakpoint({ matches: true })
+  expect(toggle.getAttribute('aria-expanded')).toBe('true')
+  expect(sidebar.hasAttribute('hidden')).toBe(false)
+  expect(sidebar.getAttribute('data-mode')).toBe('pinned')
+
+  mql.matches = false
+  crossBreakpoint({ matches: false })
+  expect(sidebar.hasAttribute('hidden')).toBe(true)
+  expect(sidebar.getAttribute('data-mode')).toBe('free')
 })

@@ -1,87 +1,52 @@
 // Poops docs client — the docs-layout extras: sidebar nav, mobile nav, search.
 // Imports prose.ts for copy buttons + theme toggle, so this is the only script a
-// docs page loads. Vanilla, no deps, bundled to IIFE by poops.
+// docs page loads. Bundled to IIFE by poops.
 
-import { focusStep, onReady } from './prose'
+import { onReady } from './prose'
+// Registers `<disclosure-elemental>` on include - nothing on window, nothing to
+// instantiate. The drawer's state, its ARIA and its breakpoint are all the element's.
+import 'book-of-elementals/disclosure'
 
-// Disclosure pattern: the toggle owns aria-expanded, the sidebar owns the class.
-// Escape closes and hands focus back, since the scrim is mouse-only.
+// The drawer is `<disclosure-elemental>`: it owns `open`, writes `aria-expanded` on the
+// toggle and `hidden="until-found"` on the panel, and its `media` attribute holds the rail
+// open above the breakpoint. So there is no state here, and no matchMedia — what is left is
+// light dismiss, which the APG disclosure pattern does not owe you and a drawer over a scrim
+// still wants.
 //
-// Open on a phone, the drawer is modal: the article behind the scrim goes `inert`
-// and Tab cycles the toggle plus the drawer's own links, nothing else. The toggle
-// is inside the loop on purpose — it is the way back out. Above the breakpoint the
-// drawer is just the sidebar, so none of this runs.
+// Not modal: focus is not trapped, the article is not `inert`, and tabbing past the last
+// link leaves the drawer. That is the pattern the element implements, and for a panel that
+// is a list of links to the same site it is the right amount — a keyboard user who tabs out
+// of it has not lost anything.
 function setupMobileNav(): void {
+  const drawer = document.querySelector('disclosure-elemental')
   const sidebar = document.querySelector('[data-sidebar]')
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')
-  if (!sidebar || !toggle) return
-  const main = document.querySelector('main')
-  // the drawer is a phone/tablet thing: past the breakpoint it is just the
-  // sidebar again, focus can stay in it, and a stale `inert` would lock the
-  // article for good
-  const wide = window.matchMedia?.('(min-width: 60rem)')
-  const isOpen = (): boolean => sidebar.classList.contains('open')
-  const isModal = (): boolean => isOpen() && !wide?.matches
+  if (!drawer || !sidebar || !toggle) return
 
-  // Everything in the drawer the keyboard can land on, in dom order.
-  // checkVisibility drops the links inside a collapsed <details>, which are in the
-  // markup but not focusable.
-  const items = (): HTMLElement[] =>
-    Array.from(sidebar.querySelectorAll<HTMLElement>('a[href], summary'))
-      .filter((el) => el.checkVisibility?.() ?? true)
-  // the trap's loop: the toggle, then the drawer
-  const cycle = (): HTMLElement[] => [toggle, ...items()]
-
-  const setOpen = (open: boolean): void => {
-    sidebar.classList.toggle('open', open)
-    toggle.setAttribute('aria-expanded', String(open))
-    main?.toggleAttribute('inert', open)
-    // The drawer sits after the whole topbar in the dom, so tab alone would walk
-    // the topbar instead of the thing that just opened: hand focus over, starting
-    // at the page you are on, and take it back to the toggle on the way out.
-    // preventScroll because the panel is still sliding in.
-    if (open) {
-      const start = sidebar.querySelector<HTMLElement>('a.active') ?? sidebar.querySelector<HTMLElement>('a, summary')
-      start?.focus({ preventScroll: true })
-      // focus is refused while the drawer still computes to hidden; the css flips
-      // it instantly on open, but engines disagree on when "instantly" lands, so
-      // take one more shot on the next frame if the first was ignored
-      if (document.activeElement !== start) requestAnimationFrame(() => start?.focus({ preventScroll: true }))
-    } else if (!wide?.matches && sidebar.contains(document.activeElement)) {
-      toggle.focus()
-    }
+  const close = (): void => {
+    if (!(drawer as HTMLElement & { open?: boolean }).open) return
+    // Focus first, while the drawer is still rendered. Closing sets `hidden`, which takes
+    // the panel out of the a11y tree with the focused link inside it — focus would land on
+    // <body> and the next Tab would restart from the top of the document.
+    if (sidebar.contains(document.activeElement)) toggle.focus()
+    ;(drawer as HTMLElement & { open?: boolean }).open = false
   }
 
-  wide?.addEventListener('change', (e) => { if (e.matches) setOpen(false) })
-  toggle.addEventListener('click', () => setOpen(!isOpen()))
-  document.querySelector('[data-nav-close]')?.addEventListener('click', () => setOpen(false))
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isOpen()) {
-      setOpen(false)
-      return
-    }
-    // Space opens a nav link, the way Enter already does natively — otherwise it
-    // would scroll the page behind the drawer.
-    const link = (e.target as HTMLElement | null)?.closest?.('a[href]')
-    if (e.key === ' ' && link && sidebar.contains(link)) {
-      e.preventDefault()
-      ;(link as HTMLAnchorElement).click()
-      return
-    }
-    // Arrows walk the drawer itself, wrapping, whenever focus is already in it —
-    // the toggle stays out of this one, it is not a nav item. Tab is the trap, so
-    // it takes the toggle in and only runs while the drawer is modal.
-    const by = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0
-    if (by && sidebar.contains(document.activeElement)) {
-      e.preventDefault()
-      focusStep(items(), by)
-      return
-    }
-    if (e.key !== 'Tab' || !isModal()) return
-    e.preventDefault()
-    focusStep(cycle(), e.shiftKey ? -1 : 1)
+  // The pattern does not move focus, and for a region that sits right after its button it
+  // should not. This one does not: the toggle is the first thing in the topbar and the panel
+  // is the last thing in the layout, so between them are the brand, the search field and
+  // every icon link. A drawer five tabs from the button that opened it has opened for the
+  // mouse only. `free` matters — crossing the breakpoint opens the rail too, and a rail
+  // stealing focus because the window got wider is worse than the thing being fixed.
+  drawer.addEventListener('disclosure-toggle', (e) => {
+    if (!(e as CustomEvent<{ open: boolean }>).detail.open) return
+    if ((drawer as HTMLElement).dataset.mode !== 'free') return
+    // the current page rather than the top of the list
+    sidebar.querySelector<HTMLElement>('a.active, a[aria-current], a')?.focus()
   })
+
+  document.querySelector('[data-nav-close]')?.addEventListener('click', close)
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close() })
 }
 
 // Highlight the current page in the sidebar. Done client-side because the

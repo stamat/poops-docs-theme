@@ -1,5 +1,14 @@
-// Poops docs — full theme: tokens, base, shell, docs chrome, prose. No external deps.
+// Poops docs — full theme: tokens, base, shell, docs chrome, prose.
 
+// The sidebar drawer is `<disclosure-elemental>`, so its structure stylesheet comes with
+// it: `display: contents` on the element, a trigger hidden until the element is defined,
+// and the rules that zero a closed region's own box. Structure only — the element ships an
+// optional theme as well, and that is a look this file already has one of.
+// The `.scss` is load-bearing rather than sloppy: this resolves through the package's
+// `exports` map, whose key is literally `./disclosure/style.scss`. Dropping the extension
+// sends sass looking for a file that is not on disk under that name, and the build fails.
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/disclosure/style.scss";
 @use "base";
 @use "shell";
 @use "chrome";
