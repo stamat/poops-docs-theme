@@ -53,8 +53,11 @@
 .search-results {
   position: absolute;
   top: calc(100% + 0.4rem);
-  left: 0;
-  right: 0;
+
+  // Absolute offsets resolve against the padding box, so a bare 0 would hang the panel off the
+  // edges of the inset `.search` carries in the topbar row rather than off the field itself.
+  left: var(--actions-inset, 0);
+  right: var(--actions-inset, 0);
   max-height: 60vh;
   overflow-y: auto;
   background: var(--bg);
@@ -82,21 +85,27 @@
   top: var(--topbar-h);
   flex: 0 0 var(--sidebar-w);
   width: var(--sidebar-w);
-  // `max-height`, not `height`: a rail is as tall as its links. Pinned to the viewport it
-  // runs its border down a column that ran out of nav two sections ago, and shows a
-  // scrollbar on a list that fits. `dvh` because `100vh` on a phone is the viewport with the
-  // toolbars hidden, which leaves the last links under the address bar.
-  max-height: calc(100dvh - var(--topbar-h));
-  overflow-y: auto;
-  // the end of the nav should stop there, not hand the rest of the gesture to the article
-  overscroll-behavior: contain;
+  // The rail is as tall as the viewport, and the nav inside it is what scrolls. The border
+  // is the edge of the column rather than a box drawn around the links: sized to its
+  // content it stops wherever the nav ran out — halfway down on a short tree, somewhere
+  // else on the next page — which reads as a line that failed to finish. `dvh` because
+  // `100vh` on a phone is the viewport with the toolbars hidden, which would put the last
+  // links under the address bar.
+  height: calc(100dvh - var(--topbar-h));
   border-right: 1px solid var(--border);
 }
 
 // The inset goes on a box inside the region, never on the region itself: the element zeroes
 // a closed region's own padding, border and margin so a collapsed panel cannot leave a strip
-// behind, and it would take this padding with it.
-.sidebar > .nav { padding: 1.25rem 0.75rem 3rem; }
+// behind, and it would take this padding with it. The scroll is here for the same reason —
+// on the region it would be a scrollbar down a panel that is closed.
+.sidebar > .nav {
+  max-height: 100%;
+  overflow-y: auto;
+  // the end of the nav should stop there, not hand the rest of the gesture to the article
+  overscroll-behavior: contain;
+  padding: 1.25rem 0.75rem 3rem;
+}
 
 .sidebar-scrim { display: none; }
 
@@ -253,7 +262,9 @@ disclosure-elemental[data-mode="free"] .nav-toggle { display: inline-flex; }
 @media (max-width: 40rem) {
   $open: ":is(:focus-within, :has(.search-results:not([hidden])))";
 
-  .search { flex: 0 0 auto; width: 2.25rem; margin-left: auto; }
+  // No inset here: the field is an icon button at this width, and the input inside it is the
+  // tap target — padding on the wrapper would take the target down to the icon's own width.
+  .search { flex: 0 0 auto; width: 2.25rem; padding-inline: 0; margin-left: auto; }
   .search-icon { left: 50%; transform: translate(-50%, -50%); }
 
   #search-input {
@@ -270,6 +281,12 @@ disclosure-elemental[data-mode="free"] .nav-toggle { display: inline-flex; }
     position: absolute;
     inset: 0.5rem 1rem;
     width: auto;
+
+    // The theme switch's button is `position: relative` — it has to be, the knob is
+    // positioned against it — and it comes after the field in the row, so at `z-index:
+    // auto` the two are both positioned and dom order decides: the pill paints on top of
+    // the open field. One layer up puts the field over everything it covers.
+    z-index: 1;
 
     .search-icon { left: 0.6rem; transform: translateY(-50%); }
 

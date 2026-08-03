@@ -66,5 +66,5 @@
     "port": 4040
   },
   "livereload": true,
-  "watch": ["scss", "src", "preview/src", "dist"]
+  "watch": ["scss", "src", "preview/src", "dist", "docs.html", "prose.html", "topbar.html", "navtree.html"]
 }

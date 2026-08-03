@@ -41,17 +41,36 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
   display: flex;
   align-items: center;
   gap: 0.4rem;
+
+  // A flex item will not shrink past its min-content width unless it is told it may, and the
+  // controls beside it are all fixed-width, so on a phone the bar overflows instead — the whole
+  // document picks up a horizontal scrollbar to reach a row a few pixels too wide, and the
+  // prose under it goes with it. Which title does that, and at which width, is the site's own:
+  // everything here is one long word away from it, and the switch is wider than the icon button
+  // it replaced, so a name that used to fit no longer does.
+  min-width: 0;
 }
 .brand {
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--fg);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+
+  // The title is what gives up the room, because it is the only thing on the bar that can:
+  // everything else is a control with a hit area to keep. Truncated rather than wrapped — the
+  // bar is `--topbar-h` tall and a second line has nowhere to go.
+
+  // A block and not the flex row it used to be: `text-overflow` truncates text in a block, and
+  // the title here is a bare text node beside the mark, which in a flex row is an anonymous
+  // flex item that `text-overflow` cannot reach — it would clip mid-letter instead, which
+  // reads as a bug rather than as a title too long for the bar. The mark keeps its place on
+  // `vertical-align` and a margin now that there is no `align-items` or `gap`.
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .brand:hover { text-decoration: none; }
-.brand-mark { font-size: 1.3rem; }
+.brand-mark { font-size: 1.3rem; vertical-align: middle; margin-inline-end: 0.2rem; }
 
 // ---- Icon buttons (GitHub link, theme switcher) ----
 .icon-btn {
@@ -72,11 +91,24 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
 // Right-hand group: search (docs only) + GitHub + theme switcher. One `auto`
 // margin here keeps the group flush right whether or not search is in it.
 .topbar-actions {
+  // Every control here carries its own clear space instead of taking it from a gap, and the
+  // row's gap is zero — which is the only way the spacing comes out even. An icon button is a
+  // 2.25rem box around a 20px glyph, so it already brings 8px to each edge; a gap lands on top
+  // of that between two buttons and on nothing between a button and the switch, so one number
+  // cannot serve both. With the inset on every item instead, any two neighbours are 16px apart
+  // whichever two they are, and the nav links keep their own 1rem between themselves.
+  --actions-inset: 0.5rem;
+
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0;
   margin-left: auto;
 }
+
+// The three that have no inset of their own. The icon buttons are not in the list: theirs is
+// the 2.25rem box, and a padding on top of that would push their glyphs off centre.
+.topbar-nav,
+.search { padding-inline: var(--actions-inset); }
 
 // Optional `site.links` nav. On the prose layout it fills the slot search takes
 // on the docs layout; too cramped to keep on a phone, so it folds into the
@@ -140,13 +172,16 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
   }
 }
 
-// Two re-points into the element's look, and nothing else — the track, the knob, the travel
-// and the icon cross-fade all come from its theme.
+// One re-point into the element's look, and nothing else — the size is its `small` and `thin`
+// presets, set as classes in topbar.html, and the track, the knob, the travel and the icon
+// cross-fade all come from its theme.
 switch-elemental {
-  // A little under the icon buttons beside it: the default is sized to sit in running text,
-  // and this one sits in a 3.25rem bar.
-  --switch-elemental-width: 3rem;
-  --switch-elemental-height: 1.65rem;
+  // `display: contents` by default, which leaves the button as the flex item and nothing to
+  // pad — the element's own stylesheet says to take a box when you want one. The padding is
+  // the row's inset, so the track is spaced like every glyph beside it.
+  display: flex;
+  align-items: center;
+  padding-inline: var(--actions-inset);
 
   // The knob's on-state defaults to `Canvas`, which is the browser's page colour rather than
   // this theme's. On a dark surface that is a white knob on a dark-blue track; `--bg` is the
