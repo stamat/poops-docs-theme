@@ -104,6 +104,15 @@
   cursor: pointer;
   transition: color 0.12s, border-color 0.12s, background 0.12s;
 }
+// `code-preview` ships its own copy button, in the strip above the code, and that one can
+// copy the pane that is showing — which a button bolted onto a single `<pre>` cannot do on
+// a sample written as several fences. So the one this script adds stands down inside that
+// element, and the right padding reserved for it goes back to the sample. The element
+// hides the button from its side too; this is the half only the theme can do, since
+// 3.7rem is the theme's number.
+code-preview .copy-btn { display: none; }
+.prose code-preview pre { padding-right: 1.1rem; }
+
 .copy-btn:hover { background: var(--bg-alt); color: var(--fg); }
 .copy-btn .icon-check { display: none; }
 .copy-btn.copied { color: #2f9e44; border-color: #2f9e44; }

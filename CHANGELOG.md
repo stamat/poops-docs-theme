@@ -34,4 +34,16 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — errors get a theme colour
+
+An embedded element that paints an error had nothing to read. `code-preview`
+reaches for `--danger`, found it undefined, and fell back to its own `#cf222e` —
+a red from neither palette, fixed in both light and dark.
+
+### Added
+
+- `--danger` token, `#e03131` light and `#ff8787` dark, alongside `--link` and
+  `--focus`. Nothing in the theme itself paints an error yet; the token exists so
+  elements embedded in a page can find one. It matches the name sulphuris already
+  emits through `$color-aliases`, so a component styled against one is styled
+  against the other.

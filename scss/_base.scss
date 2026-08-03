@@ -21,6 +21,10 @@
   --accent-fg: #fff;
   --link: #6741d9;
   --focus: #0060df;
+  // Nothing in the theme paints an error, but embedded elements do — `code-preview`
+  // falls back to a fixed #cf222e that neither matches this palette nor moves in dark
+  // mode. Cheaper to name the token than to make every such element carry a theme.
+  --danger: #e03131;
   --shadow: 0 4px 20px rgb(20 24 30 / 8%);
 }
 
@@ -37,6 +41,7 @@
   --accent-fg: #16181d;
   --link: #b197fc;
   --focus: #4dabf7; // browser blue is too dark to read on --bg here
+  --danger: #ff8787; // the light red reads as brown on --bg, same reason as --focus
   --shadow: 0 4px 20px rgb(0 0 0 / 40%);
 }
 
