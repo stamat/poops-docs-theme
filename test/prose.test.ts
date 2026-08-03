@@ -6,7 +6,7 @@
 beforeAll(async () => {
   document.body.innerHTML = `
     <div class="prose"><pre>npm install poops</pre></div>
-    <button data-theme-toggle></button>
+    <switch-elemental><button data-theme-toggle aria-label="Dark mode"></button></switch-elemental>
     <nav class="topbar-nav"><ul class="topbar-links" id="topbar-links">
       <li><a href="/docs/">Docs</a></li>
       <li><a href="/blog/">Blog</a></li>
@@ -24,13 +24,21 @@ test('wraps code blocks and adds a copy button', () => {
   expect(wrap!.querySelector('button.copy-btn')).not.toBeNull()
 })
 
-test('theme toggle flips the root theme and persists it', () => {
+// The state has to reach a screen reader as well as the stylesheet, so `aria-checked` is
+// asserted beside `data-theme` — those two disagreeing is the whole failure mode a switch
+// exists to prevent.
+test('the theme switch flips the root theme, persists it, and announces it', () => {
   const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!
+  expect(btn.getAttribute('role')).toBe('switch')
+
   btn.click()
   expect(document.documentElement.dataset.theme).toBe('dark')
   expect(localStorage.getItem('theme')).toBe('dark')
+  expect(btn.getAttribute('aria-checked')).toBe('true')
+
   btn.click()
   expect(document.documentElement.dataset.theme).toBe('light')
+  expect(btn.getAttribute('aria-checked')).toBe('false')
 })
 
 test('hamburger opens the topbar links, a click elsewhere and Escape close them', () => {

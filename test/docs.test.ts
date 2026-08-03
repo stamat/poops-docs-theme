@@ -22,7 +22,7 @@ beforeAll(async () => {
   }) as unknown as typeof window.matchMedia
   document.body.innerHTML = `
     <div class="prose"><pre>npm install poops</pre></div>
-    <button data-theme-toggle></button>
+    <switch-elemental><button data-theme-toggle aria-label="Dark mode"></button></switch-elemental>
     <aside class="sidebar" id="sidebar-nav" data-sidebar>
       <a class="nav-link" href="http://localhost/docs/intro/">Intro</a>
       <a class="nav-link" href="http://localhost/docs/other/">Other</a>

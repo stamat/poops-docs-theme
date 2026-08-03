@@ -1,6 +1,10 @@
 // Poops prose client — the behavior a bare markdown page needs: copy buttons and
-// the theme toggle. Vanilla, no deps, bundled to IIFE by poops.
+// the theme toggle. Bundled to IIFE by poops.
 // docs.ts imports this, so the docs bundle gets it too. Never load both scripts.
+
+// Registers `<switch-elemental>` on include. Here rather than in docs.ts because the theme
+// toggle is in the topbar of both layouts, and prose is the one they share.
+import 'book-of-elementals/switch'
 
 // Octicons: copy-16 and check-16.
 const COPY_SVG = '<svg class="icon-copy" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>'
@@ -29,10 +33,20 @@ export function addCopyButtons(): void {
   })
 }
 
+// `<switch-elemental>` owns `checked`, and `role="switch"` plus `aria-checked` follow it. What
+// is left here is the two ends: seeding the switch from the theme the inline boot script has
+// already chosen, and writing the theme back out when it flips.
 export function setupTheme(): void {
-  const btn = document.querySelector('[data-theme-toggle]')
-  btn?.addEventListener('click', () => {
-    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+  const sw = document.querySelector('switch-elemental') as (HTMLElement & { checked?: boolean }) | null
+  if (!sw) return
+
+  // The boot script in the <head> sets data-theme before this bundle runs — from storage, or
+  // from prefers-color-scheme on a first visit. Seeding rather than defaulting to off is what
+  // stops a page that rendered dark from announcing its dark-mode switch as off.
+  sw.checked = document.documentElement.dataset.theme === 'dark'
+
+  sw.addEventListener('switch-toggle', (e) => {
+    const next = (e as CustomEvent<{ checked: boolean }>).detail.checked ? 'dark' : 'light'
     document.documentElement.dataset.theme = next
     try { localStorage.setItem('theme', next) } catch { /* private mode */ }
   })

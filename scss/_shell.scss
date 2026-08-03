@@ -2,6 +2,18 @@
 // (GitHub + theme switcher), the centred content column, and the page footer.
 // Docs-only chrome (search, sidebar, breadcrumb, TOC) lives in _chrome.scss.
 
+// The theme switcher is `<switch-elemental>`, and the topbar is in both entry points, so both
+// its stylesheets are pulled in here where they meet: structure, then the look. The look is
+// the track and knob, and it is worth taking rather than reskinning — a switch that reads as
+// a switch is half of what the role promises, and the icons cross-fade with the knob for
+// free.
+// The `.scss` is load-bearing rather than sloppy: these resolve through the package's
+// `exports` map, whose keys are literally `./switch/style.scss` and `./switch/theme.scss`.
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/switch/style.scss";
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/switch/theme.scss";
+
 :root {
   --topbar-h: 3.25rem;
 }
@@ -128,10 +140,24 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
   }
 }
 
-.theme-sun { display: none; }
-.theme-moon { display: inline; }
-:root[data-theme="dark"] .theme-sun { display: inline; }
-:root[data-theme="dark"] .theme-moon { display: none; }
+// Two re-points into the element's look, and nothing else — the track, the knob, the travel
+// and the icon cross-fade all come from its theme.
+switch-elemental {
+  // A little under the icon buttons beside it: the default is sized to sit in running text,
+  // and this one sits in a 3.25rem bar.
+  --switch-elemental-width: 3rem;
+  --switch-elemental-height: 1.65rem;
+
+  // The knob's on-state defaults to `Canvas`, which is the browser's page colour rather than
+  // this theme's. On a dark surface that is a white knob on a dark-blue track; `--bg` is the
+  // background the page actually has.
+  --switch-elemental-knob-checked: var(--bg);
+
+  // The rest of the look is mixed out of `currentcolor`, so this one line colours all of it.
+  color: var(--fg-muted);
+
+  &:hover { color: var(--fg); }
+}
 
 // ---- Content column ----
 .content {
