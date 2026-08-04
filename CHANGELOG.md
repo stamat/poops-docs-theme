@@ -51,6 +51,29 @@ GitHub release verbatim.
   on `:root`, same as `--adm` on admonitions, so a site retuning the edge sets it in its
   own `.prose kbd` block — setting it higher up will not reach.
 
+### Fixed
+
+- **Tapping the search field no longer zooms an iPhone into the topbar.** iOS Safari
+  zooms the page whenever a field under 16px takes focus, and it does not zoom back out
+  when the field is blurred — so one tap on search left the reader scrolled sideways
+  through a magnified page with no way back but a pinch. `#search-input` was `0.9rem`,
+  which is 14.4px at the default root size. It is `1rem` now: the floor iOS asks for
+  rather than a size chosen for the look, so a site retuning the field should stay at or
+  above it.
+
+### Changed
+
+- **Code blocks are set at body size.** `.prose pre` was `0.85rem` — 13.6px on a default
+  root, small enough on a phone that reading a snippet meant pinching, and pinching a
+  block that scrolls sideways zooms the page instead. It is `1rem` now, the same size as
+  the prose around it; the block's existing `overflow-x` takes the extra width. Inline
+  code and `<kbd>` are unchanged: both are sized in `em`, so they follow whatever text
+  they sit in rather than the root.
+
+  **CSS:** the selector is `.prose pre`. A site that wants the old density sets its own
+  `font-size` there — but on a phone, below about `0.9rem` a monospace line gets hard to
+  read before the horizontal scroll makes it hard to follow.
+
 ## [2.0.0] - 2026-08-04 — the header is built out of elements
 
 The theme carried its own navigation. A dark-mode button that left its state to an

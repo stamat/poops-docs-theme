@@ -52,7 +52,11 @@
   background: var(--bg-alt);
   color: var(--fg);
   font: inherit;
-  font-size: 0.9rem;
+
+  // iOS Safari zooms the whole page when a field under 16px takes focus, and it never zooms
+  // back out. 1rem is the floor, not a size choice — shrinking this to match the result rows
+  // below brings the zoom back.
+  font-size: 1rem;
 }
 #search-input:focus { border-color: var(--focus); }
 .search-results {

@@ -102,7 +102,11 @@
   border-radius: var(--radius);
   padding: 1rem 3.7rem 1rem 1.1rem;
   overflow-x: auto;
-  font-size: 0.85rem;
+
+  // Full body size, not the 0.85rem a code block usually takes: at that size a phone puts
+  // this under 14px, and the block cannot be pinched back up without taking the page with
+  // it. The horizontal scroll absorbs the extra width instead.
+  font-size: 1rem;
   line-height: 1.6;
 }
 .prose .code-wrap > pre { margin: 0; }
