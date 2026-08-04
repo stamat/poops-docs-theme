@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the header is built out of elements
+## [Unreleased]
+
+## [2.0.0] - 2026-08-04 — the header is built out of elements
 
 The theme carried its own navigation. A dark-mode button that left its state to an
 icon. A row of links that folded into a hamburger at a width typed into a stylesheet,
