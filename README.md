@@ -326,7 +326,7 @@ npm run preview   # poops: build + watch + serve on http://localhost:4040
 produces both too, at `preview/dist` (gitignored, and not in the published `files`). Docs
 pages: **Introduction**, **Getting started**, and a **Guide** section whose **Kitchen
 sink** page carries every element `_prose.scss` styles — headings, lists, table,
-blockquote, all five admonition flavours, highlighted code, image.
+blockquote, all five admonition flavours, highlighted code, keyboard keys, image.
 
 ## Local development
 

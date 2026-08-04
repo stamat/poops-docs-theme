@@ -59,6 +59,26 @@
   border: 1px solid var(--border);
 }
 
+// keyboard keys — inline-code sizing, a bottom edge below the border so it reads as a cap.
+// The edge mixes toward --fg, so it darkens in light mode and lightens in dark, where a
+// fixed color would vanish into one theme or the other.
+.prose kbd {
+  --kbd-edge: color-mix(in srgb, var(--fg) 30%, var(--border));
+
+  background: var(--bg-alt);
+  padding: 0.12em 0.4em;
+  border: 1px solid var(--kbd-edge);
+  border-radius: 0.3rem;
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--kbd-edge) 65%, var(--bg));
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  color: var(--fg);
+  white-space: nowrap;
+}
+// A chord is nested per the spec — <kbd><kbd>Ctrl</kbd>+<kbd>C</kbd></kbd> — where the
+// outer element groups rather than names a key, so only the inner ones get a cap.
+.prose kbd:has(kbd) { background: none; border: 0; box-shadow: none; padding: 0; font-size: 1em; }
+
 // tables
 .prose table { width: 100%; border-collapse: collapse; margin: 0 0 1.25rem; font-size: 0.9rem; display: block; overflow-x: auto; }
 .prose th, .prose td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }

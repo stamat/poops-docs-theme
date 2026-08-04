@@ -27,6 +27,12 @@ the `--content-max` measure so the line length can be judged.
 
 ---
 
+## Keyboard keys
+
+<kbd>Esc</kbd> closes the sidebar drawer. A chord nests: <kbd><kbd>Ctrl</kbd> + <kbd>C</kbd></kbd>
+copies, <kbd><kbd>⌘</kbd> + <kbd>C</kbd></kbd> on a Mac — the outer `kbd` groups, so only
+the inner keys get a cap.
+
 ## Lists
 
 - Unordered item
