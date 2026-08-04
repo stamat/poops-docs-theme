@@ -36,6 +36,21 @@ GitHub release verbatim.
 
 ## [Unreleased]
 
+### Added
+
+- **`<kbd>` is styled in prose.** Nothing painted it before, so a key name rendered as
+  body text and read as the word beside it. It takes the inline-code sizing — `--bg-alt`
+  fill, `--font-mono`, `0.8em`, `nowrap` so a key never wraps mid-name — plus a cap edge:
+  a 1px border and a `0 2px 0` shadow under it, both from `--kbd-edge`. That is a local
+  mix of `--fg` into `--border`, which darkens on light and lightens on dark; a fixed
+  color would have vanished into one theme or the other. A chord nests per the spec —
+  `<kbd><kbd>Ctrl</kbd> + <kbd>C</kbd></kbd>` — where the outer element groups rather than
+  names a key, so `:has(kbd)` takes the cap off it and leaves the inner two.
+
+  **CSS:** the selector is `.prose kbd`. `--kbd-edge` is declared on that rule rather than
+  on `:root`, same as `--adm` on admonitions, so a site retuning the edge sets it in its
+  own `.prose kbd` block — setting it higher up will not reach.
+
 ## [2.0.0] - 2026-08-04 — the header is built out of elements
 
 The theme carried its own navigation. A dark-mode button that left its state to an
