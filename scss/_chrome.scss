@@ -53,10 +53,13 @@
   color: var(--fg);
   font: inherit;
 
-  // iOS Safari zooms the whole page when a field under 16px takes focus, and it never zooms
-  // back out. 1rem is the floor, not a size choice — shrinking this to match the result rows
-  // below brings the zoom back.
-  font-size: 1rem;
+  // iOS Safari zooms the whole page when a field under 16px takes focus and never zooms back
+  // out. 16px is that threshold verbatim, not a size chosen for the look — `1rem` would follow
+  // a reader who set a root below it and land back under. The `1em` arm is the parent, so a bar
+  // scaled up carries the field rather than pinning it at the floor. Unconditional because both
+  // gates that look like they would scope this miss the same device: an iPad with a trackpad
+  // clears the 40rem breakpoint and reports `pointer: fine`, and its screen still gets tapped.
+  font-size: max(16px, 1em);
 }
 #search-input:focus { border-color: var(--focus); }
 .search-results {

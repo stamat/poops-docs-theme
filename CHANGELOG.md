@@ -53,26 +53,35 @@ GitHub release verbatim.
 
 ### Fixed
 
-- **Tapping the search field no longer zooms an iPhone into the topbar.** iOS Safari
-  zooms the page whenever a field under 16px takes focus, and it does not zoom back out
-  when the field is blurred — so one tap on search left the reader scrolled sideways
-  through a magnified page with no way back but a pinch. `#search-input` was `0.9rem`,
-  which is 14.4px at the default root size. It is `1rem` now: the floor iOS asks for
-  rather than a size chosen for the look, so a site retuning the field should stay at or
-  above it.
+- **Tapping the search field no longer zooms iOS into the topbar.** Safari zooms the page
+  whenever a field under 16px takes focus, and it does not zoom back out when the field is
+  blurred — so one tap on search left the reader scrolled sideways through a magnified page
+  with no way back but a pinch. `#search-input` was `0.9rem`, which is 14.4px at the default
+  root size. It is `max(16px, 1em)` now: 16px is Safari's threshold verbatim, so it holds even
+  for a reader whose root size is smaller, which a plain `rem` would follow straight back under
+  it; the `1em` arm lets a scaled topbar carry the field up.
+
+  It is not a phone-only bug and it is not gated behind a media query, because the two queries
+  that look like they would scope it both miss the same device: an iPad with a trackpad
+  attached clears the 40rem breakpoint **and** reports `pointer: fine`, and its screen still
+  gets tapped. A site retuning the field wants a floor of its own, not a bare `font-size`.
 
 ### Changed
 
-- **Code blocks are set at body size.** `.prose pre` was `0.85rem` — 13.6px on a default
-  root, small enough on a phone that reading a snippet meant pinching, and pinching a
-  block that scrolls sideways zooms the page instead. It is `1rem` now, the same size as
-  the prose around it; the block's existing `overflow-x` takes the extra width. Inline
-  code and `<kbd>` are unchanged: both are sized in `em`, so they follow whatever text
-  they sit in rather than the root.
+- **Code blocks carry the same 16px floor as the search field.** `.prose pre` was `0.85rem`
+  — 13.6px on a default root, small enough on a phone that reading a snippet meant pinching,
+  and pinching a block that scrolls sideways zooms the page instead. It is `max(16px, 1em)`
+  now: body size in an ordinary article, and never under the size iOS zooms below. That
+  second half is not only about legibility — a `code-preview` pane can make a block editable,
+  and an editable block is a field Safari will zoom into on focus like any other.
+  The extra width goes to the `overflow-x` the block already had.
 
-  **CSS:** the selector is `.prose pre`. A site that wants the old density sets its own
-  `font-size` there — but on a phone, below about `0.9rem` a monospace line gets hard to
-  read before the horizontal scroll makes it hard to follow.
+  Inline code and `<kbd>` are unchanged: both are sized in `em`, so they follow whatever text
+  they sit in rather than the root, and neither can take focus.
+
+  **CSS:** the selector is `.prose pre`. A site that wants the old density should keep a floor
+  rather than replace the declaration outright — a bare `font-size: 0.85rem` there puts an
+  editable preview back under the threshold.
 
 ## [2.0.0] - 2026-08-04 — the header is built out of elements
 

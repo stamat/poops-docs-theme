@@ -103,10 +103,13 @@
   padding: 1rem 3.7rem 1rem 1.1rem;
   overflow-x: auto;
 
-  // Full body size, not the 0.85rem a code block usually takes: at that size a phone puts
-  // this under 14px, and the block cannot be pinched back up without taking the page with
-  // it. The horizontal scroll absorbs the extra width instead.
-  font-size: 1rem;
+  // 16px is the size iOS Safari zooms the page below when a field takes focus, and a
+  // `code-preview` pane can make this block editable — so on a site using one a code block is a
+  // form field, and the threshold applies to it. The `1em` arm is the parent, so a scaled
+  // `.prose` carries the code with it. Legibility asks for the same number from the other side:
+  // the 0.85rem a code block usually takes is under 14px on a phone, and a block that scrolls
+  // sideways cannot be pinched back up without taking the page along. Width goes to that scroll.
+  font-size: max(16px, 1em);
   line-height: 1.6;
 }
 .prose .code-wrap > pre { margin: 0; }
