@@ -245,8 +245,43 @@ consumer's `poops.json` needs `"includePaths": ["node_modules"]` (top level, not
 `styles`). The theme's own stylesheets load `book-of-elementals/...` the same way — it is a
 dependency of this package, so npm installs it, and the same `includePaths` is what finds
 it. The full token set: `--bg`, `--bg-alt`, `--bg-code`, `--fg`, `--fg-muted`,
-`--border`, `--accent`, `--accent-fg`, `--link`, `--shadow`, plus `--content-max`,
-`--radius`, `--topbar-h`, `--sidebar-w`, `--font-body`, `--font-mono`.
+`--border`, `--accent`, `--accent-fg`, `--link`, `--focus`, `--danger`, `--shadow`, plus
+`--content-max`, `--radius`, `--topbar-h`, `--sidebar-w`, `--font-body`, `--font-mono`.
+
+Nothing in the theme paints an error, so `--danger` is there for elements you embed in a
+page — [Live samples](#live-samples) is the case it was added for.
+
+### Live samples
+
+A docs page that shows a sample usually wants to *run* it too.
+[`<code-preview>`](https://github.com/stamat/code-preview-element) is one way: it wraps a
+code fence and renders it in an isolated iframe above the code that produced it.
+
+**Loading it is your site's job, not the theme's** — it is not a dependency here and
+nothing in either bundle. A docs site with no live samples should not pay for an editor
+and an iframe runtime, and the sites that do want it load the bundle only on the pages
+that have a preview. Add `code-preview-element` yourself, build or copy its script and
+stylesheet in your own `poops.json`, and wrap the fences however suits your pages.
+
+What the theme does do is get out of the element's way. Three collisions, each one only
+this stylesheet can settle — the first two because the theme caused them, the third
+because the element has no palette of its own to reach for:
+
+| Collision                                                              | What the theme does                                                |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Two copy buttons — ours on every `.prose pre`, the element's own on the strip above | hides ours inside `code-preview` and gives back the 3.7rem it reserved |
+| A gap between the frame and its code: `.prose :is(figure, .code-wrap)` is two classes against the package's one-class-one-type reset | zeroes it — `code-preview` owns the spacing around itself, the block inside gets none |
+| The package's error red falls back to a fixed `#cf222e`, in no palette and dark-mode-blind | ships `--danger` for it to find                                     |
+
+Keeping ours would be the worse button, not just a second one: it copies the single `pre`
+it sits on, where the element's copies whichever pane is showing — and a sample written as
+several fences has more than one.
+
+Theming the preview itself is the package's business and needs nothing from here: its
+stylesheet reads `--border`, `--radius`, `--bg`, `--accent`, `--fg-muted` and
+`--font-mono` with fallbacks, so it wears whatever your `:root` says. Its frame is a
+separate document and inherits none of that — pass the stylesheets it should load, and
+`theme-attribute="data-theme"` to carry this theme's dark mode across the boundary.
 
 ## Requirements the layouts expect from the host
 

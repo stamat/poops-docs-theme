@@ -175,6 +175,23 @@ the icon button it replaced, and the bar it sits in had no room spare.
   emits through `$color-aliases`, so a component styled against one is styled
   against the other.
 
+- **`.prose code-preview > :is(pre, .code-wrap) { margin: 0 }`**, so a page using
+  [`<code-preview>`](https://github.com/stamat/code-preview-element) no longer has to
+  write it. The element resets that margin itself, but its `code-preview > :is(pre,
+  .code-wrap)` is one class and one type against this theme's two-class
+  `.prose :is(figure, .code-wrap)` — so the theme's 1.75rem came back as a gap between
+  the frame and the code under it, doubled once `docs.js` had wrapped the `pre` for its
+  copy button. Every site using the element was copying the same rule out of the
+  package's README; the specificity is the theme's, so the rule is now too.
+
+  The package itself stays a non-dependency and is in neither bundle: a docs site with
+  no live samples should not carry an editor and an iframe runtime. Loading it is still
+  the consuming site's `poops.json`, which is what the new **Live samples** section of
+  the README says, along with the two accommodations the theme already made (`--danger`,
+  and standing the copy button down inside the element) that were nowhere written.
+
+- `--focus` and `--danger` in the README's token list, which had neither.
+
 ### Fixed
 
 - The search icon sat on the field's rounded corner rather than inside it. `.search`

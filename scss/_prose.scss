@@ -112,6 +112,13 @@
 // 3.7rem is the theme's number.
 code-preview .copy-btn { display: none; }
 .prose code-preview pre { padding-right: 1.1rem; }
+// The element and the code under it are meant to read as one object, and the package
+// resets that block's margin itself — but `code-preview > :is(pre, .code-wrap)` is one
+// class and one type, against this file's two-class `.prose :is(figure, .code-wrap)`.
+// So the theme's 1.75rem survives inside the element as a gap, doubling once the copy
+// script has wrapped the `pre`. The fight is this stylesheet's to end: the package
+// documents the rule and every site using it was writing this same line.
+.prose code-preview > :is(pre, .code-wrap) { margin: 0; }
 
 .copy-btn:hover { background: var(--bg-alt); color: var(--fg); }
 .copy-btn .icon-check { display: none; }
