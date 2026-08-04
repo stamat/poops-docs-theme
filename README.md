@@ -37,8 +37,8 @@ contains everything `prose.min.css` has, and `docs.min.js` already contains
 | `scss/_chrome.scss`    | docs-only chrome — `docs` pill, search, sidebar, breadcrumb, TOC, edit link                                  |
 | `scss/docs.scss`       | entry: base + shell + chrome + prose                                                                         |
 | `scss/prose-only.scss` | entry: base + shell + prose                                                                                  |
-| `src/prose.ts`         | copy buttons + theme toggle — everything a bare page needs                                                   |
-| `src/docs.ts`          | imports `prose.ts`, adds search, active nav, mobile nav                                                      |
+| `src/prose.ts`         | copy buttons, theme toggle, the topbar's nav element — everything a bare page needs                          |
+| `src/docs.ts`          | imports `prose.ts`, adds search, active nav, the sidebar drawer                                              |
 | `preview/src`          | mock site for looking at the theme — see [Preview](#preview)                                                 |
 
 ## Build
@@ -117,33 +117,41 @@ site-relative url gets the page's path prefix, an absolute one opens in a new ta
 `docs` layout the `docs` pill next to it is a second link, back to `docs/`, so the title
 leaves the docs section and the pill returns to it.
 
-`site.links` adds nav links — on the `prose` layout they fill the slot search takes on
-the `docs` layout. Site-relative urls get the page's path prefix; absolute ones open in a
-new tab. Every link shows on every page, and the one you are inside is marked rather than
-hidden: `aria-current="page"` on the page itself, `aria-current="true"` anywhere under it
-(`docs/` stays lit through all of `/docs/`), styled in the accent colour. An optional
-`icon` sets a mark before the label.
+`site.links` adds nav links — a row at the right of the bar, against the search field and the
+icon buttons rather than against the brand. Site-relative
+urls get the page's path prefix; absolute ones open in a new tab. Every link shows on every
+page, and the one you are inside is marked rather than hidden: `aria-current="page"` on the
+page itself, `aria-current="true"` anywhere under it (`docs/` stays lit through all of
+`/docs/`), styled in the accent colour. An optional `icon` sets a mark before the label.
 
-Below 40rem the nav folds into a hamburger at the right end of the topbar. That is the
-APG *disclosure navigation* pattern, not menu button — the panel holds links, so it keeps
-link semantics instead of `role="menu"`. The button owns `aria-expanded` and
-`aria-controls`; the closed panel is `display: none`, so its links stay out of the tab
-order. Opening it moves focus to the first link and traps Tab between the panel and the
-hamburger, the hamburger included because it is the way back out; the arrow keys walk the
-links alone, wrapping, and Enter or Space opens the focused one. Escape closes and hands
-focus back, and so does a click outside.
-The trap only runs while the panel is open *and* collapsed — past 40rem the links are on
-screen anyway, so there is nothing to trap.
+The row is [`<navbar-elemental>`](https://github.com/stamat/book-of-elementals), which is
+where its behaviour comes from. A link that stops fitting moves into a **More** panel, one
+at a time as the room goes — measured rather than guessed, so it answers the labels you
+actually wrote in the font that actually arrived — and when the window is under 40rem, or
+only one link is left beside **More**, the whole row becomes a drawer behind a hamburger
+that crosses into an X. One link and an overflow button is not a navigation bar, which is
+what `min-bar-items="2"` says; the theme sets it only when you have given it more than one
+link, since the threshold counts the links you have as well as the ones that fit — with a
+single link it would be a drawer at every width.
+It is the APG *disclosure navigation* pattern and not a menubar: the items stay links, `Tab`
+reaches every one of them, the arrow keys walk the row, and Escape closes what is open.
+`aria-expanded`, `aria-controls` and `hidden` are the element's to write. The breakpoint is
+declared once, as the `media` attribute in `topbar.html`, and no stylesheet here repeats it.
 
-The docs sidebar drawer is modal on a phone. Opening it moves focus to the link for the
-page you are on and marks the article `inert`; Tab then cycles the drawer's links, its
-`<details>` sections and the toggle itself — the toggle is in the loop because it is the
-way back out. Escape closes and hands focus back to the toggle, and so does closing it any
-other way. Past 60rem the drawer is only the sidebar again: no trap, no `inert`, focus
-left where it is.
+Search, the icon links and the theme switch stay on the bar at every width — only the links
+fold away. Below 40rem the search field shrinks to its icon and expands across the bar when
+you tap it.
 
-Inside the sidebar, at any width, Up and Down walk the links and section headers and wrap
-around, and Enter or Space opens the focused link.
+The docs sidebar is the same idea with a different element: a rail above 60rem and a drawer
+below it, [`<disclosure-elemental>`](https://github.com/stamat/book-of-elementals) with the
+breakpoint as its `media` attribute, so a drawer left open cannot survive a rotation into a
+layout that has no drawer. It is **not** modal — focus is not trapped, the article is not
+`inert`, and tabbing past the last link leaves it, which is the disclosure pattern. What the
+theme adds is the two ends that pattern does not owe you: opening the drawer hands focus to
+the link for the page you are on (only as a drawer — a rail stealing focus because the window
+got wider would be worse), and Escape or a click on the scrim closes it and gives focus back
+to the toggle. Closed, it is `hidden="until-found"`, so find-in-page still reaches a link
+inside it and opens it.
 
 ```json
 {
@@ -234,7 +242,9 @@ entry instead of the theme's:
 
 Sass resolves the bare `poops-docs-theme/...` specifier through `includePaths`, so the
 consumer's `poops.json` needs `"includePaths": ["node_modules"]` (top level, not inside
-`styles`). The full token set: `--bg`, `--bg-alt`, `--bg-code`, `--fg`, `--fg-muted`,
+`styles`). The theme's own stylesheets load `book-of-elementals/...` the same way — it is a
+dependency of this package, so npm installs it, and the same `includePaths` is what finds
+it. The full token set: `--bg`, `--bg-alt`, `--bg-code`, `--fg`, `--fg-muted`,
 `--border`, `--accent`, `--accent-fg`, `--link`, `--shadow`, plus `--content-max`,
 `--radius`, `--topbar-h`, `--sidebar-w`, `--font-body`, `--font-mono`.
 

@@ -9,10 +9,23 @@
 // free.
 // The `.scss` is load-bearing rather than sloppy: these resolve through the package's
 // `exports` map, whose keys are literally `./switch/style.scss` and `./switch/theme.scss`.
+// Named rather than left to default, which is the file's own name: two elements' `style.scss`
+// in one file is two modules claiming the namespace `style`, and sass refuses the second.
 // stylelint-disable-next-line scss/load-partial-extension
-@use "book-of-elementals/switch/style.scss";
+@use "book-of-elementals/switch/style.scss" as switch-style;
 // stylelint-disable-next-line scss/load-partial-extension
-@use "book-of-elementals/switch/theme.scss";
+@use "book-of-elementals/switch/theme.scss" as switch-theme;
+
+// The bar itself is `<navbar-elemental>`: the row of links, the overflow panel the ones that
+// stop fitting move into, and the drawer the whole row becomes when none of them do. Same deal
+// as the switch — structure, then the look, and the look re-pointed at this theme's tokens
+// below rather than drawn again. What the theme brings that a stylesheet here would have to
+// write from scratch: the panel and drawer frames, the caret on a trigger, and the hamburger
+// crossing into an X.
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/navbar/style.scss" as navbar-style;
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/navbar/theme.scss" as navbar-theme;
 
 :root {
   --topbar-h: 3.25rem;
@@ -21,20 +34,82 @@
 html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
 
 // ---- Topbar ----
+// The header is the sticky frame and the banner landmark; the row inside it is
+// `<navbar-elemental>`. The inset is the row's rather than the header's on purpose: the drawer
+// is positioned against the element, so padding out here would be a drawer floating clear of
+// both edges of the screen.
 .topbar {
   position: sticky;
   top: 0;
   z-index: 40;
   height: var(--topbar-h);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0 1rem;
   background: var(--bg);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
 .topbar a { text-decoration: none; }
+
+.topbar > navbar-elemental {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
+  padding: 0 1rem;
+
+  // The look, mixed out of `currentcolor` and `Canvas` by default — which is the browser's
+  // page colour and not this theme's, so a panel would be white on a dark page.
+  --navbar-elemental-surface: var(--bg);
+  --navbar-elemental-border: var(--border);
+  --navbar-elemental-hover: var(--bg-alt);
+  --navbar-elemental-shadow: var(--shadow);
+  --navbar-elemental-radius: var(--radius);
+}
+
+// The row of links: a flex item that takes what the rest of the bar leaves, which is what
+// makes the measurement mean something — sized to its contents it would never overflow, and
+// nothing would ever fold away.
+.topbar .rail { flex: 1 1 0; }
+
+// The links sit at the far end of that box, against the controls, rather than against the
+// brand. The room they give up is still the whole rail, so the measurement is unchanged.
+// The copy being measured is left out of this on purpose: it has to overflow the end it is
+// read from, or the items reported as not fitting are the leading ones while the element
+// folds away the trailing ones.
+.topbar .rail > ul:not([data-navbar-probe]) { justify-content: flex-end; }
+
+.topbar .rail a,
+.topbar .rail button {
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.topbar .rail :is(a, button):hover { color: var(--fg); }
+// where you are — `page` on the page itself, `true` under its section
+.topbar .rail a[aria-current] { color: var(--link); font-weight: 600; }
+// Icons come out of the shared set at button size — pull them down to text size. A css rule
+// beats the svg's own width/height attributes.
+.topbar .rail svg { width: 1rem; height: 1rem; flex: 0 0 auto; }
+// A link carrying an icon has to stay the height of the one under it: an inline `<svg>` sits
+// on the baseline and drags the line box down with it.
+.topbar .rail li > a { display: flex; align-items: center; gap: 0.4rem; }
+
+// Two things the element's theme cannot know about this header. The drawer hangs off the
+// element's padding box, which is inside the border the header draws, so its first row of
+// pixels lands on that border — one pixel down is the header's own line handed back. And the
+// bar is full-bleed, so the panel's side borders would be lines drawn down the edges of the
+// screen.
+.topbar navbar-elemental[data-mode="stack"] .rail > ul:not([data-navbar-probe]) {
+  margin-block-start: 1px;
+  border-inline: 0;
+}
+
+// The drawer's button, sized and drawn by the element's theme. Only the colour is ours, and it
+// is the one the icon buttons beside it use.
+.topbar [data-navbar-toggle] {
+  color: var(--fg-muted);
+
+  &:hover { color: var(--fg); }
+}
 // Title and the docs pill are separate links, kept together with a tighter gap
 // than the topbar's own.
 .brand-group {
@@ -88,15 +163,15 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
 }
 .icon-btn:hover { background: var(--bg-alt); color: var(--fg); text-decoration: none; }
 
-// Right-hand group: search (docs only) + GitHub + theme switcher. One `auto`
-// margin here keeps the group flush right whether or not search is in it.
+// Right-hand group: search (docs only) + GitHub + theme switcher + the drawer's button. One
+// `auto` margin here keeps the group flush right whether or not the rail is in the row.
 .topbar-actions {
   // Every control here carries its own clear space instead of taking it from a gap, and the
-  // row's gap is zero — which is the only way the spacing comes out even. An icon button is a
+  // group's gap is zero — which is the only way the spacing comes out even. An icon button is a
   // 2.25rem box around a 20px glyph, so it already brings 8px to each edge; a gap lands on top
   // of that between two buttons and on nothing between a button and the switch, so one number
   // cannot serve both. With the inset on every item instead, any two neighbours are 16px apart
-  // whichever two they are, and the nav links keep their own 1rem between themselves.
+  // whichever two they are.
   --actions-inset: 0.5rem;
 
   display: flex;
@@ -105,72 +180,9 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
   margin-left: auto;
 }
 
-// The three that have no inset of their own. The icon buttons are not in the list: theirs is
-// the 2.25rem box, and a padding on top of that would push their glyphs off centre.
-.topbar-nav,
+// The one thing in the group with no inset of its own. The icon buttons are not in the list:
+// theirs is the 2.25rem box, and a padding on top of that would push their glyphs off centre.
 .search { padding-inline: var(--actions-inset); }
-
-// Optional `site.links` nav. On the prose layout it fills the slot search takes
-// on the docs layout; too cramped to keep on a phone, so it folds into the
-// hamburger there. Empty once every link points at the page you are on — don't
-// leave its gap behind.
-.topbar-links { display: flex; align-items: center; gap: 1rem; list-style: none; margin: 0; padding: 0; }
-// once every link points at the page you are on the list is empty: drop the whole
-// landmark, or its flex gap leaves a hole in the row
-.topbar-nav:has(.topbar-links:empty) { display: none; }
-.topbar-links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--fg-muted);
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-.topbar-links a:hover { color: var(--fg); }
-// where you are — `page` on the page itself, `true` under its section
-.topbar-links a[aria-current] { color: var(--link); font-weight: 600; }
-// Icons come out of the shared set at button size — pull them down to text size.
-// A css rule beats the svg's own width/height attributes.
-.topbar-links svg { width: 1rem; height: 1rem; flex: 0 0 auto; }
-
-.menu-toggle { display: none; }
-
-// Phones: the links become a dropdown hung off the hamburger. The panel is
-// absolute against the sticky topbar, so its dom position in the row is free.
-@media (max-width: 40rem) {
-  .menu-toggle { display: inline-flex; }
-  // nothing left to disclose: no button either
-  .topbar-nav:has(.topbar-links:empty) ~ .menu-toggle { display: none; }
-
-  // the landmark leaves the flex row so it costs no gap; the list inside it is
-  // the panel, hung under the topbar
-  .topbar-nav {
-    position: absolute;
-    top: calc(100% + 0.4rem);
-    right: 1rem;
-  }
-
-  .topbar-links {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.15rem;
-    min-width: 10rem;
-    padding: 0.35rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-
-    &:not(.open) { display: none; }
-
-    a {
-      padding: 0.5rem 0.6rem;
-      border-radius: var(--radius);
-      &:hover { background: var(--bg-alt); }
-      &[aria-current] { background: color-mix(in srgb, var(--accent) 15%, transparent); }
-    }
-  }
-}
 
 // One re-point into the element's look, and nothing else — the size is its `small` and `thin`
 // presets, set as classes in topbar.html, and the track, the knob, the travel and the icon

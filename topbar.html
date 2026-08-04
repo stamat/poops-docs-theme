@@ -11,13 +11,22 @@
 {#- normalize once: "docs/index.html" and "docs/" both become "docs", "index.html" becomes "" -#}
 {%- set here = (pageUrl or '') | replace('index.html', '') -%}
 {%- if here.endsWith('/') %}{% set here = here.slice(0, -1) %}{% endif -%}
+{#- The bar is `<navbar-elemental>` itself, not a box inside it: the drawer it opens is
+    positioned against the element, so anything wrapped around it is a drawer inset from the
+    edges of the screen by that wrapper's padding. The `<header>` around it is the banner
+    landmark and the sticky look, and carries no padding of its own. -#}
 <header class="topbar">
+{#- `min-bar-items="2"`: one link beside a **More** button is a drawer wearing a bar's
+    clothes, so it becomes the hamburger instead. Only past one link, because the threshold is
+    read against the total as well as against how many fit — a site with a single link would be
+    a drawer at every width, which is the same silliness the other way up. -#}
+  <navbar-elemental{% if site.links %} media="(min-width: 40rem)"{% if site.links.length > 1 %} min-bar-items="2"{% endif %}{% endif %}>
   {#- The panel is a flex item down in the layout and the button belongs up here, so the two
       cannot be wrapped in a `<details>`; `for` points across that distance. `media` is the
       breakpoint, declared once and only here — the element holds the rail open above it and
       hands it back to the button below. `aria-expanded` and `aria-controls` are the
       element's to write, which is why they are not in this markup. -#}
-  {% if docs %}<disclosure-elemental for="sidebar-nav" media="(min-width: 60rem)"><button class="icon-btn nav-toggle" aria-label="Toggle navigation" data-nav-toggle>
+  {% if docs %}<disclosure-elemental for="sidebar-nav" media="(min-width: 60rem)"><button class="icon-btn nav-toggle" aria-label="Documentation navigation" data-nav-toggle>
     <svg class="nav-icon-open" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="m4.177 7.823 2.396-2.396A.25.25 0 0 1 7 5.604v4.792a.25.25 0 0 1-.427.177L4.177 8.177a.25.25 0 0 1 0-.354Z"></path><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25H9.5v-13Zm12.5 13a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25H11v13Z"></path></svg>
     <svg class="nav-icon-close" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6.823 7.823a.25.25 0 0 1 0 .354l-2.396 2.396A.25.25 0 0 1 4 10.396V5.604a.25.25 0 0 1 .427-.177Z"></path><path d="M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0ZM1.5 1.75v12.5c0 .138.112.25.25.25H9.5v-13H1.75a.25.25 0 0 0-.25.25ZM11 14.5h3.25a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25H11Z"></path></svg>
   </button></disclosure-elemental>{% endif %}
@@ -31,20 +40,27 @@
     </a>
     {%- if docs %}<a href="{{ prefix }}docs/" class="brand-docs">docs</a>{% endif %}
   </div>
+  {#- The row of links, and the box the element measures a copy of it in — the landmark is
+      that box rather than something around the whole bar, which would be a "Site" navigation
+      holding a search field and a theme switch. The element fills the overflow panel; every
+      link that stops fitting moves into it, one at a time, and when the last one goes the bar
+      is a drawer. -#}
+  {% if site.links %}
+  <nav class="rail" aria-label="Site">
+    <ul>{% for link in site.links -%}
+      {%- set external = '//' in link.url -%}
+      {%- set target = link.url | replace('index.html', '') -%}
+      {%- if target.endsWith('/') %}{% set target = target.slice(0, -1) %}{% endif -%}
+      {#- the section you are in stays in the list, marked: "page" on the page itself,
+          "true" anywhere under it -#}
+      {%- set current = '' if external else ('page' if here == target else ('true' if here.startsWith(target + '/') else '')) -%}
+      <li><a href="{{ link.url if external else prefix + link.url }}"{% if external %} target="_blank" rel="noopener"{% endif %}{% if current %} aria-current="{{ current }}"{% endif %}>{% if link.icon %}{{ (icons[link.icon] or link.icon) | safe }}{% endif %}{{ link.title }}</a></li>
+    {%- endfor %}
+      <li data-navbar-more><button>More</button><ul></ul></li>
+    </ul>
+  </nav>
+  {% endif %}
   <div class="topbar-actions">
-    {% if site.links %}
-    <nav class="topbar-nav" aria-label="Site">
-      <ul class="topbar-links" id="topbar-links">{% for link in site.links -%}
-        {%- set external = '//' in link.url -%}
-        {%- set target = link.url | replace('index.html', '') -%}
-        {%- if target.endsWith('/') %}{% set target = target.slice(0, -1) %}{% endif -%}
-        {#- the section you are in stays in the list, marked: "page" on the page itself,
-            "true" anywhere under it -#}
-        {%- set current = '' if external else ('page' if here == target else ('true' if here.startsWith(target + '/') else '')) -%}
-        <li><a href="{{ link.url if external else prefix + link.url }}"{% if external %} target="_blank" rel="noopener"{% endif %}{% if current %} aria-current="{{ current }}"{% endif %}>{% if link.icon %}{{ (icons[link.icon] or link.icon) | safe }}{% endif %}{{ link.title }}</a></li>
-      {%- endfor %}</ul>
-    </nav>
-    {% endif %}
     {% if docs %}
     <div class="search">
       <svg class="search-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"></path></svg>
@@ -84,13 +100,13 @@
       </button>
     </switch-elemental>
     {% endif %}
-    {#- Last in the row, so it sits hard right. Only the phone breakpoint shows it —
-        above that the links are already on screen. -#}
+    {#- Last in the row, so it sits hard right. The element shows it only while the row is a
+        drawer, and writes the hamburger — and the X it crosses into — into the empty button,
+        so there is no icon here and no `aria-expanded` either. Both are its to write. -#}
     {% if site.links %}
-    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Menu" aria-expanded="false" aria-controls="topbar-links">
-      <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75Zm0 5A.75.75 0 0 1 1.75 7h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 7.75ZM1.75 12h12.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Z"></path></svg>
-    </button>
+    <button data-navbar-toggle aria-label="Site navigation"></button>
     {% endif %}
   </div>
+  </navbar-elemental>
 </header>
 {% endmacro %}

@@ -34,17 +34,91 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the dark-mode toggle is a switch
+## [Unreleased] — the header is built out of elements
 
-The control that turns dark mode on announced itself as a button called "Toggle
-dark mode" and left its state to the icon — nothing said whether the mode was on,
-and a reader who has never seen the other icon has no way to tell. It is a setting
-with two values, which is what the APG calls a switch, so it is one now.
+The theme carried its own navigation. A dark-mode button that left its state to an
+icon. A row of links that folded into a hamburger at a width typed into a stylesheet,
+with a focus trap and an arrow-key walker behind it. A sidebar drawer driven by a
+`matchMedia` listener. Three patterns, none of them this theme's business, and each one
+a place where the markup and the ARIA could drift apart. They are
+[book-of-elementals](https://github.com/stamat/book-of-elementals) elements now —
+`<switch-elemental>`, `<navbar-elemental>` and `<disclosure-elemental>` — and what is
+left here is the layout around them.
 
-The change brought its own three bugs on a phone, all of them width: the switch is
-wider than the icon button it replaced, and the bar it sits in had no room spare.
+The switch brought its own three bugs on a phone, all of them width: it is wider than
+the icon button it replaced, and the bar it sits in had no room spare.
 
 ### Changed
+
+- **The `site.links` row is `<navbar-elemental>`, and the topbar is that element.** The
+  old row folded into a hamburger below 40rem and did nothing at all above it — so a
+  site with five links and a search field had them overlapping at 900px, and a site with
+  two short ones hid both on a tablet with room to spare. Neither is a width anybody can
+  type: it depends on the labels, the reader's font, and whether that font has arrived
+  yet. The element measures the row instead. Links move into a **More** panel one at a
+  time as the room goes, and when only one is left beside **More** the whole row is a drawer
+  — 40rem is still there as the `media` attribute, but now it is the floor rather than the
+  whole story. That last stop is `min-bar-items="2"`: a single link beside an overflow button
+  is a drawer wearing a bar's clothes. The theme writes the attribute only for a site with
+  more than one link in `site.links`, because the threshold is read against the total as well
+  as against how many fit — set on a one-link site it would be a drawer at every width.
+
+  **DOM:** the header is `<header class="topbar"><navbar-elemental>` wrapping everything
+  in the bar. The links are `<nav class="rail" aria-label="Site"><ul>` between the brand
+  and the action group — the box takes the room the bar leaves, which is what the row is
+  measured against, and the links sit at its far end so they read as part of the controls
+  on the right rather than as a second brand. They end in a `<li data-navbar-more>` the element fills, and the
+  drawer's button is `<button data-navbar-toggle aria-label="Site navigation">` last in
+  the action group — empty, because the element writes the hamburger and the X it crosses
+  into. Gone: `.topbar-nav`, `ul.topbar-links#topbar-links`, `.menu-toggle` and its svg.
+  The sidebar's toggle is labelled "Documentation navigation" rather than "Toggle
+  navigation", now that a docs header has two navigation toggles in it.
+
+  **CSS:** `.topbar` is no longer the flex row — it is the sticky frame and the banner
+  landmark, and `.topbar > navbar-elemental` is the row, carrying the 1rem inset the
+  header used to have. That move is load-bearing: the drawer is positioned against the
+  element, so padding outside it would be a drawer floating clear of both edges of the
+  screen. The theme takes the element's two stylesheets and re-points
+  `--navbar-elemental-surface`, `--navbar-elemental-border`, `--navbar-elemental-hover`,
+  `--navbar-elemental-shadow` and `--navbar-elemental-radius` at its own tokens.
+  A page styling `.topbar-links` wants `.topbar .rail` instead. The
+  `@media (max-width: 60rem)` block that grew the search field is gone — the rail is the
+  flexible item now, and the field keeps its 16rem.
+
+  **Known limit:** a sticky header is a positioned ancestor, so it is the containing
+  block for the overflow panel and the element's `position-try-fallbacks` cannot fire
+  against the viewport. The panel stays under its own button, which is where it wants to
+  be; a bar whose **More** button ends up hard against the right edge is the case where
+  that shows.
+
+  **Script:** `setupMenu()` and `focusStep()` are gone from `src/prose.ts` — some seventy
+  lines, and the four tests that covered them with them, because what they implemented is
+  now the element's and jsdom cannot exercise a row that measures itself. `prose.ts`
+  imports `book-of-elementals/navbar`, so both bundles register it.
+
+- **The sidebar drawer is `<disclosure-elemental>`.** It was a `matchMedia` listener, a
+  class on the panel and a focus trap; the panel is the element's region now and the
+  breakpoint is its `media` attribute, declared once in `docs.html` rather than in the
+  markup and the stylesheet both. It is no longer modal — focus is not trapped and the
+  article is not `inert`, which is the APG disclosure pattern for what is, after all, a
+  list of links to the same site. What the theme still owns is the two ends the pattern
+  does not owe you: focus handed to the current page's link when the drawer opens, and
+  Escape or the scrim closing it.
+
+  **DOM:** `<disclosure-elemental for="sidebar-nav" media="(min-width: 60rem)">` wraps
+  the toggle; the element writes `aria-expanded`, `aria-controls` and
+  `hidden="until-found"`, so a closed drawer is reachable by find-in-page. **CSS:** the
+  drawer's rules key off `[data-mode="free"]` on the element and on the panel instead of
+  repeating 60rem, which also means none of them can apply before the script does. The
+  sidebar's own section toggles took the same caret while they were at it: the `▸`/`▾` text
+  markers are the chevron the elementals draw, as a mask on `summary::before` that rotates
+  with `[open]` — so every caret on the page is one caret, and it takes its colour from the
+  text it sits beside.
+
+- **`book-of-elementals` is `^0.4.0`** (was `^0.3.0`). The row needs 0.4's two fixes to
+  be usable at all: the copy it measures is clipped, so a header whose links do not fit
+  no longer hands the whole page a horizontal scrollbar, and its items say
+  `box-sizing: border-box` themselves rather than assuming the page has.
 
 - **The theme toggle is `<switch-elemental>`** from
   [book-of-elementals](https://github.com/stamat/book-of-elementals), which is a new
@@ -76,7 +150,7 @@ wider than the icon button it replaced, and the bar it sits in had no room spare
   the row. No number fixes that; the padding had to move.
 
   **CSS:** `.topbar-actions` is `gap: 0` and declares `--actions-inset` (0.5rem),
-  which `.topbar-nav`, `.search` and `switch-elemental` take as `padding-inline` —
+  which `.search` and `switch-elemental` take as `padding-inline` —
   the icon buttons already have it in their box. Any two neighbours are now 16px
   apart. `switch-elemental` is `display: flex` rather than the element's own
   `contents`, so it has a box to pad, and `.search-results` hangs off
@@ -102,6 +176,12 @@ wider than the icon button it replaced, and the bar it sits in had no room spare
   against the other.
 
 ### Fixed
+
+- The search icon sat on the field's rounded corner rather than inside it. `.search`
+  carries the action group's `--actions-inset` as padding, and an absolute offset resolves
+  against the padding box — so the icon's `left: 0.6rem` was 0.6rem from the wrapper and a
+  tenth of that into the field. It is `calc(var(--actions-inset, 0rem) + 0.6rem)` now, the
+  same compensation `.search-results` already made.
 
 - On a phone, the theme switch painted on top of the search field that opens
   over it. The switch's button is `position: relative` — the knob is positioned

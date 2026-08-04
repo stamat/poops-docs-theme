@@ -13,8 +13,9 @@ docs — brand, nav links, GitHub link, dark-mode toggle — minus the search fi
 `docs` pill and the sidebar. One body, `prose.min.css`, `prose.min.js`.
 
 Use it for a small project that wants a single good-looking page instead of a docs site.
-The **Docs** link up top comes from `site.links` and fills the slot search takes on the
-docs layout — it goes to the [docs preview →](docs/), which shows the other layout.
+The **Docs** link up top comes from `site.links`, at the right of the bar where the docs
+layout also puts search — it goes to the [docs preview →](docs/), which shows the other
+layout.
 
 ## What still works
 

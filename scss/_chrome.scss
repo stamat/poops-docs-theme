@@ -33,7 +33,12 @@
 .search { position: relative; width: min(16rem, 40vw); }
 .search-icon {
   position: absolute;
-  left: 0.6rem;
+
+  // Same reason as `.search-results` below: the offset resolves against the padding box, and
+  // `.search` carries the row's inset — so a bare 0.6rem is 0.6rem from the wrapper's edge and
+  // barely a tenth of that into the field, sitting on its rounded corner. The inset is what
+  // puts the icon inside the field rather than against it.
+  left: calc(var(--actions-inset, 0rem) + 0.6rem);
   top: 50%;
   transform: translateY(-50%);
   color: var(--fg-muted);
@@ -127,6 +132,9 @@
 .nav-section > details > summary {
   cursor: pointer;
   list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.35rem 0.6rem;
   font-weight: 700;
   font-size: 0.78rem;
@@ -135,8 +143,27 @@
   color: var(--fg);
 }
 .nav-section > details > summary::-webkit-details-marker { display: none; }
-.nav-section > details > summary::before { content: "▸ "; color: var(--fg-muted); }
-.nav-section > details[open] > summary::before { content: "▾ "; }
+
+// The same chevron the elementals draw, so the carets on the page are one caret rather than
+// a triangle up here and a chevron everywhere else. A mask and not an image, because a mask
+// takes the summary's own `color` and follows the theme switch for free.
+.nav-section > details > summary::before {
+  content: "";
+  flex: none;
+  width: 1em;
+  height: 1em;
+  rotate: -90deg; // closed, it points at its own label; open, at the list it revealed
+  background: var(--fg-muted);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L8 8.94l3.72-3.72a.749.749 0 0 1 1.06 0Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.nav-section > details > summary:dir(rtl)::before { rotate: 90deg; }
+.nav-section > details[open] > summary::before { rotate: 0deg; }
+
+// A masked icon is a painted background, and forced-colors drops author backgrounds — the
+// only thing marking the section as openable would go with it.
+@media (forced-colors: active) {
+  .nav-section > details > summary::before { background: CanvasText; }
+}
 
 // ---- Breadcrumb trail ----
 .breadcrumb { width: 100%; max-width: var(--content-max); margin: 0 0 1.5rem; }
@@ -202,16 +229,10 @@
 
 .edit-link-row + .page-footer { margin-top: 1.5rem; }
 
-// ---- Responsive ----
-// Only the topbar's own reflow is a width question. The drawer is not: the element reflects
-// which side of its `media` query it is on, so those rules key off `data-mode` and the
-// breakpoint stays declared once, in the markup, where it cannot drift from this file.
-@media (max-width: 60rem) {
-  .topbar-actions { flex: 1; }
-  .search { width: auto; flex: 1; }
-}
-
 // ---- The drawer ----
+// Not a width question, and so not a media query: the element reflects which side of its
+// `media` query it is on, so these rules key off `data-mode` and the breakpoint stays declared
+// once, in the markup, where it cannot drift from this file.
 // `free` is the element saying its query stopped matching. It arrives at upgrade, so none of
 // this can apply to a page whose script never loaded — which is the point: an off-canvas
 // panel with nothing able to bring it back would be a nav pinned over the article for good.

@@ -16,9 +16,9 @@ Nothing here is documentation. Every page is filler chosen to exercise a part of
 
 ## What to look at
 
-- The **topbar** — brand, search (try typing `config`), GitHub link, dark-mode toggle.
-  `site.links` would render between search and GitHub, but the only link here points at
-  these docs, and a link to where you already are is dropped.
+- The **topbar** — brand, the `site.links` row, search (try typing `config`), GitHub link,
+  dark-mode toggle. The links sit at the right of the bar and measure themselves: narrow the
+  window and they go behind **More** one at a time, then the whole row becomes a drawer.
 - The **sidebar** — nested sections, active link, and the TOC that opens under it.
 - The **breadcrumb** above each page title.
 - The **prose** — see [Kitchen sink](guide/kitchen-sink) for every markdown element at once.
