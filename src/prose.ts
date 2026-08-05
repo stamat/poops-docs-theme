@@ -10,31 +10,43 @@ import 'book-of-elementals/switch'
 // navigation keyboard. Nothing to instantiate and no state here — the element measures its own
 // row, so the only breakpoint anyone writes is the `media` attribute in topbar.html.
 import 'book-of-elementals/navbar'
+// And `<copy-elemental>`, which is the copy button below: the clipboard write, the copied and
+// failed states, and the live region that says which — a swapped icon announces nothing, and
+// telling a screen reader the copy landed is the whole reason the element exists. It also
+// takes the button away on a page where `navigator.clipboard` is not there to be asked, which
+// is any page served over plain `http`.
+import 'book-of-elementals/copy'
 
-// Octicons: copy-16 and check-16.
-const COPY_SVG = '<svg class="icon-copy" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>'
-const CHECK_SVG = '<svg class="icon-check" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L1.72 8.78a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"></path></svg>'
-
-// Add a copy button to every code block.
+// Put a copy button on every code block. Markdown output has none, so something has to add
+// them; what a press then does is the element's, and the button is only markup here.
 export function addCopyButtons(): void {
-  document.querySelectorAll<HTMLPreElement>('.prose pre').forEach((pre) => {
+  document.querySelectorAll<HTMLPreElement>('.prose pre').forEach((pre, i) => {
     const wrap = document.createElement('div')
     wrap.className = 'code-wrap'
     pre.parentNode!.insertBefore(wrap, pre)
     wrap.appendChild(pre)
+
+    // The element copies what `for` names, so the block needs an id — and the page it is on
+    // is someone's markdown, where a heading or a hand-written anchor may already hold the
+    // one we were about to mint. Taken rather than reused: pointing two elements at one id
+    // is a copy button that copies the wrong block.
+    if (!pre.id) {
+      let n = i
+      while (document.getElementById(`code-block-${n}`)) n++
+      pre.id = `code-block-${n}`
+    }
+
+    const copy = document.createElement('copy-elemental')
+    copy.setAttribute('for', pre.id)
     const btn = document.createElement('button')
-    btn.className = 'copy-btn'
-    btn.type = 'button'
+    // Icon-only — the stylesheet draws the octicon, and the tick it becomes — so the name is
+    // the label's job. `data-tip` is the same two words on screen; the element's own
+    // `copied-text` and `error-text` defaults are what it says out loud.
     btn.setAttribute('aria-label', 'Copy code')
     btn.dataset.tip = 'Copied'
-    btn.innerHTML = COPY_SVG + CHECK_SVG
-    btn.addEventListener('click', () => {
-      navigator.clipboard.writeText(pre.innerText).then(() => {
-        btn.classList.add('copied')
-        setTimeout(() => btn.classList.remove('copied'), 1500)
-      })
-    })
-    wrap.appendChild(btn)
+    btn.dataset.tipError = 'Copy failed'
+    copy.appendChild(btn)
+    wrap.appendChild(copy)
   })
 }
 

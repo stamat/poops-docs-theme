@@ -2,9 +2,6 @@
 // tsconfig.json and would change the build. Add the real file only if src needs it.
 export default {
   testEnvironment: 'jsdom',
-  // Fills the gaps jsdom leaves in ElementInternals — see test/setup.ts. Must run before the
-  // test file, because importing the bundle is what registers the elements.
-  setupFiles: ['<rootDir>/test/setup.ts'],
   // One entry covering ts and js, not two: ts-jest builds a single TS program, and a second
   // transform with its own inline tsconfig ends up type-checking the test files without
   // `types`, which loses `test`, `jest` and `beforeAll`.

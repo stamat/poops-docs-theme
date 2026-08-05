@@ -36,11 +36,15 @@ beforeAll(async () => {
   await import('../src/docs')
 })
 
-test('wraps code blocks and adds a copy button', () => {
+// What the copy button does is `<copy-elemental>`'s and is covered in prose.test.ts, with the
+// clipboard stub that needs. What is asserted here is the import: docs.ts leans on prose.ts
+// for the copy buttons and the theme toggle, and a dropped import is a docs page that has
+// neither while still looking like one.
+test('the docs bundle carries prose.ts, so code blocks get their copy button', () => {
   const wrap = document.querySelector('.prose .code-wrap')
   expect(wrap).not.toBeNull()
   expect(wrap!.querySelector('pre')).not.toBeNull()
-  expect(wrap!.querySelector('button.copy-btn')).not.toBeNull()
+  expect(wrap!.querySelector('copy-elemental > button')).not.toBeNull()
 })
 
 test('marks the nav link for the current page active, ignoring index.html', () => {

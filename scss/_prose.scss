@@ -1,5 +1,17 @@
 // Prose — rendered markdown: typography, tables, code blocks, admonitions, syntax colors.
 
+// The copy button on a code block is `<copy-elemental>`, so both its stylesheets come in
+// here where the block is styled: structure — which is what keeps the button out of reach
+// until the element has upgraded and found a clipboard — then the look. The look is worth
+// taking rather than drawing again: it is the copy octicon and the tick it becomes, both as
+// masks that follow the button's own colour, so the theme switch carries them for free.
+// The `.scss` is load-bearing rather than sloppy: these resolve through the package's
+// `exports` map, whose keys are literally `./copy/style.scss` and `./copy/theme.scss`.
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/copy/style.scss" as copy-style;
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/copy/theme.scss" as copy-theme;
+
 .prose { width: 100%; max-width: var(--content-max); }
 
 .prose a { text-decoration: underline; }
@@ -114,46 +126,40 @@
 }
 .prose .code-wrap > pre { margin: 0; }
 .prose pre code { font-family: var(--font-mono); background: none; border: 0; padding: 0; }
-.copy-btn {
+// The button's own look is the element's theme; what is left here is the palette it is
+// painted in and the corner it sits in. `Canvas` is the one shipped value that assumes
+// something about its surroundings — it is the UA's page colour, and this theme's `--bg` is
+// its own — so a button over a code block would be a shade off the page it is hiding code
+// against.
+copy-elemental {
+  --copy-elemental-surface: var(--bg);
+  --copy-elemental-border-color: var(--border);
+  --copy-elemental-hover: var(--bg-alt);
+  --copy-elemental-icon-size: 1rem;
+}
+
+// Square and icon-only, against the `.code-wrap` — `copy-elemental` is `display: contents`,
+// so the element itself is no containing block and the wrapper's `position: relative` is
+// what this is measured from.
+copy-elemental > button {
   position: absolute;
   top: 0.7rem;
   right: 0.7rem;
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
   width: 2rem;
   height: 2rem;
   padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 0.35rem;
-  background: var(--bg);
   color: var(--fg-muted);
-  cursor: pointer;
-  transition: color 0.12s, border-color 0.12s, background 0.12s;
 }
-// `code-preview` ships its own copy button, in the strip above the code, and that one can
-// copy the pane that is showing — which a button bolted onto a single `<pre>` cannot do on
-// a sample written as several fences. So the one this script adds stands down inside that
-// element, and the right padding reserved for it goes back to the sample. The element
-// hides the button from its side too; this is the half only the theme can do, since
-// 3.7rem is the theme's number.
-code-preview .copy-btn { display: none; }
-.prose code-preview pre { padding-right: 1.1rem; }
-// The element and the code under it are meant to read as one object, and the package
-// resets that block's margin itself — but `code-preview > :is(pre, .code-wrap)` is one
-// class and one type, against this file's two-class `.prose :is(figure, .code-wrap)`.
-// So the theme's 1.75rem survives inside the element as a gap, doubling once the copy
-// script has wrapped the `pre`. The fight is this stylesheet's to end: the package
-// documents the rule and every site using it was writing this same line.
-.prose code-preview > :is(pre, .code-wrap) { margin: 0; }
+// Only while there is no state to report: the green and the red are written at the same
+// specificity as this, and the pointer is by definition still on the button it just pressed —
+// so an unqualified hover would take the feedback back off a second after it landed.
+copy-elemental:not([data-state]) > button:hover { color: var(--fg); }
 
-.copy-btn:hover { background: var(--bg-alt); color: var(--fg); }
-.copy-btn .icon-check { display: none; }
-.copy-btn.copied { color: #2f9e44; border-color: #2f9e44; }
-.copy-btn.copied .icon-copy { display: none; }
-.copy-btn.copied .icon-check { display: inline; }
-// Tooltip shown while in copied state.
-.copy-btn.copied::after {
+// The words beside the icon, for the reader the live region cannot reach. Both states get
+// them: a red icon with nothing to read is a failure the reader has to guess at, and the
+// tick alone is the same guess in the other direction.
+copy-elemental[data-state] > button::after {
   content: attr(data-tip);
   position: absolute;
   top: 50%;
@@ -168,6 +174,23 @@ code-preview .copy-btn { display: none; }
   white-space: nowrap;
   pointer-events: none;
 }
+copy-elemental[data-state="error"] > button::after { content: attr(data-tip-error); }
+
+// `code-preview` ships its own copy button, in the strip above the code, and that one can
+// copy the pane that is showing — which a button bolted onto a single `<pre>` cannot do on
+// a sample written as several fences. So the one this script adds stands down inside that
+// element, and the right padding reserved for it goes back to the sample. The element
+// hides the button from its side too; this is the half only the theme can do, since
+// 3.7rem is the theme's number.
+code-preview copy-elemental { display: none; }
+.prose code-preview pre { padding-right: 1.1rem; }
+// The element and the code under it are meant to read as one object, and the package
+// resets that block's margin itself — but `code-preview > :is(pre, .code-wrap)` is one
+// class and one type, against this file's two-class `.prose :is(figure, .code-wrap)`.
+// So the theme's 1.75rem survives inside the element as a gap, doubling once the copy
+// script has wrapped the `pre`. The fight is this stylesheet's to end: the package
+// documents the rule and every site using it was writing this same line.
+.prose code-preview > :is(pre, .code-wrap) { margin: 0; }
 
 // ---- Admonitions ----
 .admonition,

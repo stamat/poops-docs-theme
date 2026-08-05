@@ -102,7 +102,7 @@ docker run --rm -it -v "$PWD":/app -w /app --env NODE_ENV=production node:22-alp
 | Element | Selector | Note |
 | --- | --- | --- |
 | Code block | `.prose pre` | Wrapped in `.code-wrap` by the client script |
-| Copy button | `.copy-btn` | Injected, tooltip via `data-tip` |
+| Copy button | `copy-elemental > button` | Injected, tooltip via `data-tip`, announced in a live region |
 | Admonition | `.marked-github-alert` | Color set per-flavour with `--adm` |
 | Table | `.prose table` | Scrolls on its own, zebra rows |
 

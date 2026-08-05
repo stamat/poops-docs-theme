@@ -51,6 +51,49 @@ GitHub release verbatim.
   on `:root`, same as `--adm` on admonitions, so a site retuning the edge sets it in its
   own `.prose kbd` block — setting it higher up will not reach.
 
+### Changed
+
+- **The copy button on a code block is `<copy-elemental>` now.** The one the theme drew
+  itself did the visible half and none of the other. It swapped an icon to a tick and told a
+  screen reader nothing at all, which is
+  [WCAG 2.2 SC 4.1.3 Status Messages](https://www.w3.org/WAI/WCAG22/Understanding/status-changes.html)
+  unmet — and a clipboard write that failed swapped nothing, so a refused copy and a button
+  nobody pressed looked exactly alike. Both halves are what the element exists for, so the
+  theme takes it rather than growing a live region of its own. **`book-of-elementals` is
+  `^0.5.0`** (was `^0.4.0`), which is the release the element arrived in.
+
+  **What a reader gets:** the tick is said out loud as well as drawn; a failed copy is red
+  and says **Copy failed** in the same corner tooltip the success uses; and on a page served
+  over plain `http`, where `navigator.clipboard` does not exist to be asked, there is no
+  button rather than one that quietly does nothing. What lands on the clipboard is also
+  trimmed now — leading newlines and trailing whitespace, so a pasted block does not run its
+  last command on arrival, and indentation is left alone.
+
+  **DOM this changes:** the `.code-wrap` around each `.prose pre` stays. Inside it the
+  button is now
+  `<copy-elemental for="…"><button data-tip data-tip-error></button></copy-elemental>`, plus
+  the `<span role="status">` the element appends for the announcement. The button has lost
+  its `.copy-btn` class and its two inline `<svg>`s — the icon is a CSS mask. A `<pre>` with
+  no `id` is given `code-block-N`, since `for` is how the element finds what to copy; an id
+  the page already uses is stepped over rather than taken.
+
+  **CSS this changes:** every `.copy-btn` rule is gone, and a site overriding one is
+  overriding nothing. The button is `copy-elemental > button`, its states are
+  `copy-elemental[data-state="copied"]` and `[data-state="error"]`, and the stand-down inside
+  a live sample is `code-preview copy-elemental { display: none }`. The look is the element's
+  own theme with four properties re-pointed: `--copy-elemental-surface` to `--bg`,
+  `--copy-elemental-border-color` to `--border`, `--copy-elemental-hover` to `--bg-alt`,
+  `--copy-elemental-icon-size` to `1rem`. `Canvas` is what the first of those had been —
+  the UA's page colour, which is a shade off this theme's own on a dark page.
+
+- **The sidebar drawer inherits 0.5's `<disclosure-elemental>` fixes.** Its region — which
+  here is `#sidebar-nav` — is now `display: flow-root`, so a region whose first or last child
+  carries a margin no longer slides open past where it sits and snaps back, and it carries
+  `data-state="open"` / `"closed"` alongside `hidden`. Nothing in this theme moves: the rail's
+  inset is on `.sidebar > .nav` and nothing in there was collapsing a margin out through the
+  edge. A site that gave the region a `display` of its own still wins — the rule is one
+  class — but one leaning on a child margin escaping it has that to put back.
+
 ### Fixed
 
 - **Tapping the search field no longer zooms iOS into the topbar.** Safari zooms the page

@@ -251,6 +251,35 @@ it. The full token set: `--bg`, `--bg-alt`, `--bg-code`, `--fg`, `--fg-muted`,
 Nothing in the theme paints an error, so `--danger` is there for elements you embed in a
 page — [Live samples](#live-samples) is the case it was added for.
 
+### Code blocks
+
+Every `<pre>` in `.prose` gets a copy button in its corner. The script adds it, so a page
+that loaded the stylesheet and nothing else has code blocks and no buttons, which is the
+right way round.
+
+The button is [`<copy-elemental>`](https://github.com/stamat/book-of-elementals), and what
+that brings is the half after the click. The icon becomes a tick and the same word reaches
+a screen reader, through the live region the element appends — an icon swap on its own
+announces nothing, which is
+[WCAG 2.2 SC 4.1.3](https://www.w3.org/WAI/WCAG22/Understanding/status-changes.html) unmet.
+A write the clipboard refuses turns the button red and says **Copy failed** in the same
+corner tooltip, rather than looking like a button nobody pressed. And `navigator.clipboard`
+does not exist on a page served over plain `http`: there the element takes the button away
+instead of leaving a dead one, so the code is still there to select and nothing lies about
+copying it.
+
+What lands on the clipboard is the block's text with leading newlines and trailing
+whitespace stripped — a trailing newline pasted into a terminal runs the command the reader
+was still reading. Indentation is untouched, which Python and YAML need.
+
+The DOM this produces, for a stylesheet that has to reach into it: the `<pre>` is wrapped in
+`.code-wrap`, the button is `copy-elemental > button` with `[data-state="copied"]` and
+`[data-state="error"]` on the element while there is something to report, and a `<pre>` with
+no `id` of its own is given `code-block-N` — that is how `for` finds what to copy, and an id
+the page already uses is stepped over rather than taken. The look is the element's optional
+theme with `--copy-elemental-surface`, `--copy-elemental-border-color`,
+`--copy-elemental-hover` and `--copy-elemental-icon-size` re-pointed at this theme's tokens.
+
 ### Live samples
 
 A docs page that shows a sample usually wants to *run* it too.
