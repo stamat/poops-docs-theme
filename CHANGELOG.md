@@ -36,6 +36,8 @@ GitHub release verbatim.
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-08-05
+
 ### Added
 
 - **`<kbd>` is styled in prose.** Nothing painted it before, so a key name rendered as
