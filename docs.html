@@ -4,7 +4,9 @@
 <html lang="{{ page.lang or site.lang or 'en' }}"{% if site.theme and site.theme != 'system' %} data-theme="{{ site.theme }}"{% endif %}>
 <head>
   <meta charset="UTF-8">
-  <title>{% if page.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+  {# A landing page titled after the site would read "Name · Name", so the suffix is dropped
+     when the two match. #}
+  <title>{% if page.title and page.title != site.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="{{ page.description or page.excerpt or site.description }}">
   {% if page.robots %}<meta name="robots" content="{{ page.robots }}">{% endif %}

@@ -34,7 +34,19 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — the landing page stops saying its name twice
+
+A page whose front matter `title` matched `site.title` — which a one-page site's landing
+page usually does — rendered `<title>Hydrargyri · Hydrargyri</title>`. The suffix went on
+whenever `page.title` was set at all, without asking what it was being appended to.
+
+### Fixed
+
+- **The site name is not appended to itself.** Both layouts add the ` · {{ site.title }}`
+  suffix only when `page.title` differs from it; when the two match, the tab, the bookmark
+  and the search result read the name once. A page with no `title` is unchanged, and so is
+  every reference page, whose title differs by definition. `og:title` was never affected —
+  poops emits `page.title or site.title` there, with no suffix.
 
 ## [3.0.0] - 2026-08-05
 
