@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the landing page stops saying its name twice
+## [Unreleased]
+
+## [3.0.1] - 2026-08-05 — the landing page stops saying its name twice
 
 A page whose front matter `title` matched `site.title` — which a one-page site's landing
 page usually does — rendered `<title>Hydrargyri · Hydrargyri</title>`. The suffix went on
