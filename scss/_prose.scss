@@ -227,33 +227,71 @@ code-preview copy-elemental { display: none; }
   height: 1rem;
   fill: currentColor;
 }
+// `--adm` is the border, the 7% tint behind the title and the title's own text, which is what
+// made these fail at both ends: one mid-range hue reads at 1.8:1 to 4.1:1 on a white tint and
+// again at 3.7:1 on a dark one. The light set is each hue darkened until its own tint clears
+// 4.5:1, keeping 58% to 92% of what it was; the dark set is in `prose-dark` below, because a
+// value dark enough for white is a value that disappears into #16181d.
 .admonition.info,
 .marked-github-alert-info,
 .admonition.note,
-.marked-github-alert-note { --adm: #1c7ed6; }
+.marked-github-alert-note { --adm: #1970be; }
 .admonition.tip,
-.marked-github-alert-tip { --adm: #2f9e44; }
+.marked-github-alert-tip { --adm: #267e36; }
 .admonition.warning,
-.marked-github-alert-warning { --adm: #f76707; }
+.marked-github-alert-warning { --adm: #b94d05; }
 .admonition.caution,
-.marked-github-alert-caution { --adm: #e03131; }
+.marked-github-alert-caution { --adm: #ce2d2d; }
+// Yellow is the one that cannot keep its face: #fab005 reads at 1.8:1 on its own tint, and
+// the value that clears 4.5:1 is a dark gold. Nothing about a 7%-tinted white leaves room for
+// a bright yellow, so the alternative is not a lighter fix, it is text nobody can read.
 .admonition.important,
-.marked-github-alert-important { --adm: #fab005; }
+.marked-github-alert-important { --adm: #916603; }
 
 // ---- highlight.js token colors (self-hosted, both themes) ----
+// The light values are each hue darkened until it clears 4.5:1 on `--bg-code` (#f5f6f8). The
+// bright end of a palette reads on that at 2.8:1 to 4.0:1, which is a colour scheme rather
+// than a contrast ratio. Each keeps 75% to 92% of the hue it started as, so the scheme is
+// still the same scheme. The dark values are untouched — they run 6.2:1 to 11.5:1 already.
 .hljs-comment, .hljs-quote { color: var(--fg-muted); font-style: italic; }
-.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-name { color: #cc5de8; }
-.hljs-string, .hljs-attr, .hljs-template-tag, .hljs-addition { color: #2b8a3e; }
-.hljs-number, .hljs-symbol, .hljs-bullet { color: #f76707; }
-.hljs-title, .hljs-title.function_, .hljs-selector-id, .hljs-selector-class { color: #1c7ed6; }
-.hljs-type, .hljs-class .hljs-title, .hljs-built_in { color: #a67500; }
-.hljs-attribute, .hljs-variable, .hljs-tag { color: #e8590c; }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-name { color: #a149b7; }
+.hljs-string, .hljs-attr, .hljs-template-tag, .hljs-addition { color: #287f39; }
+.hljs-number, .hljs-symbol, .hljs-bullet { color: #b94d05; }
+.hljs-title, .hljs-title.function_, .hljs-selector-id, .hljs-selector-class { color: #1971c1; }
+.hljs-type, .hljs-class .hljs-title, .hljs-built_in { color: #926700; }
+.hljs-attribute, .hljs-variable, .hljs-tag { color: #be490a; }
 .hljs-meta, .hljs-deletion { color: var(--fg-muted); }
-:root[data-theme="dark"] {
+
+// Applied under both selectors, for the reason `_base.scss` splits its own tokens that way:
+// with the script blocked `[data-theme]` never lands, the base tokens still flip on the media
+// query, and the code surface would go dark wearing the light scheme's colours — the one
+// combination neither set was ever measured against.
+@mixin prose-dark {
   .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-name { color: #e599f7; }
   .hljs-string, .hljs-attr, .hljs-template-tag, .hljs-addition { color: #69db7c; }
   .hljs-number, .hljs-symbol, .hljs-bullet { color: #ffa94d; }
   .hljs-title, .hljs-title.function_, .hljs-selector-id, .hljs-selector-class { color: #74c0fc; }
   .hljs-type, .hljs-built_in { color: #ffd43b; }
   .hljs-attribute, .hljs-variable, .hljs-tag { color: #ffa94d; }
+
+  // `tip`, `warning` and `important` keep the original hue: on the dark tint it already reads
+  // at 4.8:1, 5.4:1 and 8.5:1. Only the two that did not are lifted.
+  .admonition.info,
+  .marked-github-alert-info,
+  .admonition.note,
+  .marked-github-alert-note { --adm: #358cdb; }
+  .admonition.tip,
+  .marked-github-alert-tip { --adm: #2f9e44; }
+  .admonition.warning,
+  .marked-github-alert-warning { --adm: #f76707; }
+  .admonition.caution,
+  .marked-github-alert-caution { --adm: #e65858; }
+  .admonition.important,
+  .marked-github-alert-important { --adm: #fab005; }
+}
+
+:root[data-theme="dark"] { @include prose-dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { @include prose-dark; }
 }

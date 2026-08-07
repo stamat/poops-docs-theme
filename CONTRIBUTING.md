@@ -21,6 +21,7 @@ script/server    # builds and serves preview/ with live reload, http://localhost
 script/build     # compiles dist/ and the preview site
 script/test      # jest
 script/lint      # eslint + stylelint
+script/a11y      # axe over the preview site, in Chromium — run script/build first
 ```
 
 `preview/` is a mock docs site and the only place the theme is exercised end to
@@ -42,6 +43,25 @@ Include the theme version, the Poops version, the relevant part of your
   change when it moves. If it has to move, say so in the changelog entry.
 - **Run `script/lint`.** `eslint` and `stylelint` are the authority, and CI runs
   them on Node 22 and 24.
+- **Run `script/a11y`.** It builds nothing itself — `script/build` first — then
+  drives the preview site in Chromium and runs axe over it: as served, then with
+  everything that says it is closed opened, then with the search panel showing
+  both a list of hits and the empty state. Four passes over each page, light and
+  dark by two viewports, because the bar folds into a drawer below `40rem` and
+  the sidebar toggle only exists below `60rem` — a sweep at one width audits half
+  the theme and reports as though it did all of it. The document-level rules stay
+  on here, unlike the sibling sweep in
+  [book-of-elementals](https://github.com/stamat/book-of-elementals): a landmark,
+  a skip link, a title and a `lang` are a fragment's business nowhere and this
+  theme's business exactly. It also fails on an `aria-controls`,
+  `aria-labelledby`, `aria-describedby` or `aria-activedescendant` naming an id
+  no element has, which axe files as undecided rather than failing.
+
+  A rule it cannot decide is listed as needing review, by rule and by reason,
+  rather than failing the run — mostly contrast over a pseudo element or under
+  something overlapping it, which stays unknowable. Hover-only states and
+  anything a click cannot reach are not covered, which is what a browser and a
+  screen reader are still for.
 - **Keep the bundles supportable.** `script/build` then `npm run lint:browsers`
   and `npm run lint:es` check the compiled CSS and JS against
   [.browserslistrc](.browserslistrc) and the esbuild target. CI runs both after

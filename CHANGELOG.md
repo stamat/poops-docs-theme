@@ -34,7 +34,89 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — the theme audits itself
+
+Nothing measured this theme's own accessibility. The unit suite runs in jsdom, which has no
+layout and no colours, and the sweep in
+[book-of-elementals](https://github.com/stamat/book-of-elementals) deliberately audits the
+`<code-preview>` iframes and excludes the pages around them — because those pages are this
+theme's markup, and reporting them there would file this repo's bugs against that one. The
+hole was exactly the shape of the chrome: the topbar, the drawer, the nav tree, the prose
+styles and every contrast ratio in the palette.
+
+### Added
+
+- **`script/a11y` — axe over the preview site, in Chromium.** Each page as served, then with
+  everything that says it is closed opened, then with the search panel showing hits and
+  again showing its empty state. The document-level rules stay on, which is the opposite
+  call from the sibling sweep and for the opposite reason: a landmark, a skip link, a title
+  and a `lang` are a fragment's business nowhere and this theme's business exactly.
+
+  **Two viewports, not one.** The bar folds into a drawer below `40rem` and the sidebar
+  toggle only exists below `60rem`, so the markup a phone gets is markup a desktop never
+  renders. A sweep at one width audits half the theme and reports as though it did all of
+  it. Two themes as well, seeded through `localStorage` before the page loads rather than
+  set on the document after: the boot script reads that key and the topbar switch seeds
+  itself from what it chose, so setting `data-theme` by hand would audit a dark page with a
+  switch still reporting itself off — a disagreement the sweep would have introduced and
+  then measured.
+
+  It also fails on an `aria-controls`, `aria-labelledby`, `aria-describedby` or
+  `aria-activedescendant` naming an id no element has. axe will not decide that one — a
+  collapsed toggle may legitimately point at a panel not in the document yet — so a typo in
+  one otherwise fails no run anywhere. None are dangling today.
+
+  Contrast axe cannot compute, over a pseudo element or under something overlapping it, is
+  printed by rule and by reason rather than guessed at. New devDependencies: `axe-core` and
+  `playwright-core` — the same pair the sibling repo uses, `playwright-core` being the one
+  that ships no browser, so `npm ci` does not download one.
+
+  It found 161 violations across four rules on the first run. They are the rest of this entry,
+  and CI now runs the sweep, so the count stays at nought.
+
+### Fixed
+
+- **Syntax highlighting and admonition titles now meet AA, in both themes.** The light code
+  scheme ran 2.8:1 to 4.0:1 on `--bg-code` — a set of hues chosen against each other rather
+  than against the surface behind them. Each is now the same hue darkened until it clears
+  4.5:1, keeping 75% to 92% of what it was, so the scheme still reads as itself. The dark
+  scheme was already 6.2:1 to 11.5:1 and is untouched.
+
+  Admonitions were worse and failed at both ends, because `--adm` is one value doing three
+  jobs: the border, the 7% tint behind the title, and the title's own text. One mid-range hue
+  cannot be text on a white tint *and* text on a dark one — `important` read at **1.8:1** in
+  light, `caution` at 3.7:1 in dark. Light now takes a darkened set and dark keeps the
+  original where it already cleared. Yellow is the one that could not keep its face: nothing
+  about a 7%-tinted white leaves room for `#fab005`, so `important` is a dark gold in light
+  now. **CSS change:** the `--adm` values, and a site overriding them should recheck its own.
+
+- **The dark code scheme reaches a reader whose dark mode came from the OS.** The token
+  colours were under `:root[data-theme="dark"]` alone, while `_base.scss` sets its own tokens
+  under that *and* `prefers-color-scheme`. With the script blocked the attribute never lands,
+  so the surface went dark and the syntax colours stayed light — the one pairing neither set
+  had been measured against. Both now come from one mixin applied in both places.
+
+- **A code block and a wide table can be scrolled from the keyboard.** Both scroll sideways
+  and neither could be reached without a pointer: nothing inside a `pre` takes focus, since
+  the copy button is a sibling in the wrapper rather than a child. Both now take
+  `tabindex="0"`. Unconditionally, not from a measurement — whether the content is wider than
+  the column is a question the viewport answers, and an answer taken once is wrong at the
+  first resize. **DOM change:** `.prose pre` and `.prose table` gain `tabindex="0"`.
+
+- **The phone search field no longer leaves focus underneath itself.** Opening it expands it
+  across the whole topbar, by design — but the brand, the nav toggle and the icon links stayed
+  in the tab order behind it, so tabbing out of the field put focus on a GitHub link no one
+  could see. That is WCAG 2.2's Focus Not Obscured (2.4.11), and it was a tap target too: axe
+  measured 1px of the nav toggle left uncovered. Everything the open field covers is now
+  `visibility: hidden` for as long as it covers it, which takes it out of the tab order and
+  the accessibility tree together.
+
+- **The heading permalink is not a tab stop on nothing.** Poops writes it `aria-hidden="true"`
+  and focusable, so a keyboard landed on it once per heading with nothing to announce. Fixed
+  at the source in [poops](https://github.com/stamat/poops), but `poops` is a peer at
+  `>=2.0.0` and the versions this theme supports include the ones that write it — so the
+  theme repairs it on load as well, and is measured green against a build that has not got
+  the fix. That patch goes when the peer floor rises past the fixed release.
 
 ## [3.0.1] - 2026-08-05 — the landing page stops saying its name twice
 

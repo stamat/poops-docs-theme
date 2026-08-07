@@ -290,6 +290,22 @@ disclosure-elemental[data-mode="free"] .nav-toggle { display: inline-flex; }
 @media (max-width: 40rem) {
   $open: ":is(:focus-within, :has(.search-results:not([hidden])))";
 
+  // The same open state read from the bar instead of the field, and flattened to one `:has`
+  // because `:has` inside `:has` is not a thing the selector spec allows — `.search-results`
+  // is inside `.search` either way, so asking the bar is asking the same question.
+  $bar-open: ":has(.search:focus-within, .search-results:not([hidden]))";
+
+  // Open, the field *is* the bar: `position: absolute` across the whole row, with everything
+  // the row held sitting behind it. Behind it is not "still available" — tabbing out of the
+  // field would put focus on the GitHub link underneath, visible to nobody, which is WCAG 2.2's
+  // Focus Not Obscured (2.4.11), and a tap where the icon used to be lands on the field. So the
+  // covered controls go away for as long as they are covered. `visibility: hidden` rather than
+  // `display: none`: it takes them out of the tab order and the accessibility tree together,
+  // where `display: none` would also collapse the row the open field is measured against.
+  .topbar#{$bar-open} :is(.brand-group, .rail, disclosure-elemental, .topbar-actions > :not(.search)) {
+    visibility: hidden;
+  }
+
   // No inset here: the field is an icon button at this width, and the input inside it is the
   // tap target — padding on the wrapper would take the target down to the icon's own width.
   .search { flex: 0 0 auto; width: 2.25rem; padding-inline: 0; margin-left: auto; }

@@ -21,6 +21,13 @@ import 'book-of-elementals/copy'
 // them; what a press then does is the element's, and the button is only markup here.
 export function addCopyButtons(): void {
   document.querySelectorAll<HTMLPreElement>('.prose pre').forEach((pre, i) => {
+    // A block that scrolls sideways is a box a mouse can reach and a keyboard cannot, unless
+    // something inside it takes focus — and nothing does: the copy button is a sibling in the
+    // wrapper below, not a child of the `pre`. Set for every block rather than the ones
+    // measured to overflow, because whether the code is wider than the column is a question
+    // the viewport answers, and a tabindex decided once is wrong at the first resize.
+    pre.tabIndex = 0
+
     const wrap = document.createElement('div')
     wrap.className = 'code-wrap'
     pre.parentNode!.insertBefore(wrap, pre)
@@ -50,6 +57,31 @@ export function addCopyButtons(): void {
   })
 }
 
+// Poops writes a permalink anchor into every heading, and before 2.2.0 it wrote one that was
+// `aria-hidden="true"` and still focusable — a link a keyboard reaches once per heading and a
+// screen reader cannot name when it lands there. Fixed at the source, but `poops` is a peer
+// here at `>=2.0.0`, so the versions this theme says it supports include the ones that write
+// it. Cheap to make right from this end, and a no-op on a build that already did.
+//
+// Remove when the peer floor rises past the fixed release.
+export function fixHeadingAnchors(): void {
+  document.querySelectorAll<HTMLAnchorElement>('.heading-anchor[aria-hidden="true"]').forEach((a) => {
+    a.tabIndex = -1
+    a.removeAttribute('aria-label')
+  })
+}
+
+// A wide table scrolls sideways inside the column — `.prose table` is `display: block` with
+// `overflow-x: auto` — which is the same box a mouse can pan and a keyboard cannot. Focusable
+// for the same reason a code block is, and by the same unconditional rule: how wide the column
+// is at the moment says nothing about how wide it will be after a rotation.
+//
+// `display: block` costs the element none of its semantics here: the browser's own
+// accessibility tree still reports table, rowgroup, row, cell and columnheader for it.
+export function makeTablesScrollable(): void {
+  document.querySelectorAll<HTMLTableElement>('.prose table').forEach((table) => { table.tabIndex = 0 })
+}
+
 // `<switch-elemental>` owns `checked`, and `role="switch"` plus `aria-checked` follow it. What
 // is left here is the two ends: seeding the switch from the theme the inline boot script has
 // already chosen, and writing the theme back out when it flips.
@@ -77,5 +109,7 @@ export function onReady(fn: () => void): void {
 
 onReady(() => {
   addCopyButtons()
+  makeTablesScrollable()
+  fixHeadingAnchors()
   setupTheme()
 })

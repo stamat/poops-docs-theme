@@ -1,0 +1,289 @@
+#!/usr/bin/env node
+// Runs axe-core over the preview site, in a real browser.
+//
+// The unit suite runs in jsdom, which has no layout and no colours - so the bar folding at a
+// breakpoint, the drawer it folds into and every contrast ratio in the theme were checked by
+// hand until this existed. `npm run build` renders the mock site into `preview/dist`, and
+// this drives it.
+//
+// The whole page, chrome included, which is the opposite of the sweep in book-of-elementals:
+// that one audits the `<code-preview>` iframes and excludes the pages, because the pages are
+// this theme's markup and reporting them there would file this repo's bugs against that one.
+// Here the pages are the product. The document-level rules stay on for the same reason - a
+// landmark, a skip link, a title and a `lang` are a fragment's business nowhere and a docs
+// theme's business exactly here.
+//
+// Two viewports, because the topbar is not one layout: `site.links` sit in a rail that moves
+// them into an overflow menu one at a time as they stop fitting, and the sidebar toggle only
+// exists below `60rem`. The drawer a phone gets is markup a desktop never renders, so a sweep
+// at one width audits half the theme and reports as though it did all of it.
+//
+// Two themes, seeded through `localStorage` before the page loads rather than set on the
+// document afterwards: the boot script in the <head> reads that key, and the switch in the
+// topbar seeds itself from what the boot script chose. Setting `data-theme` by hand would
+// audit a dark page with a switch still reporting itself off - a disagreement this sweep
+// would have introduced and then measured.
+//
+// Deliberately not covered:
+// - anything a click cannot reach. The states below are what a click opens; a hover-only
+//   flyout, or a state only a key can reach, is not in this sweep.
+// - contrast axe cannot compute - a colour over a pseudo element, or under something that
+//   overlaps it. There is no ratio to hold to AA when the background is not knowable, so
+//   those are printed by reason at the end of a run rather than guessed at.
+// - the elements themselves. `<navbar-elemental>`, `<disclosure-elemental>` and
+//   `<switch-elemental>` are book-of-elementals', audited in their own repo against the APG
+//   pattern each claims. What is this theme's is the markup handed to them and the CSS
+//   wrapped around them, and that is what a violation here will be about.
+
+// The callbacks handed to `evaluate` and `waitForFunction` are serialised and run in the
+// page, not here - which is the one place in this repo where a node script writes browser
+// code, and why this file has a block of its own in `eslint.config.js` giving it both sets
+// of globals.
+import { readdirSync } from 'node:fs'
+import { createServer } from 'node:http'
+import { fileURLToPath } from 'node:url'
+import { sep } from 'node:path'
+import { chromium } from 'playwright-core'
+// poops' own static handler rather than a hand-rolled one: it already resolves directory
+// indexes and extensionless urls the way a deployed site does. An internal path, which is a
+// coupling this repo accepts - poops is a peer here and ships no exports map.
+import { createStaticHandler } from 'poops/lib/server.js'
+
+const SITE = 'preview/dist'
+const AXE = fileURLToPath(import.meta.resolve('axe-core/axe.min.js'))
+
+// WCAG only. axe's best-practice tag is opinion - useful opinion, but a run that fails on it
+// is a run nobody can keep green without arguing with the tool.
+const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
+
+const options = { runOnly: TAGS }
+
+// A closed `hidden="until-found"` region is audited open one state further down, and that is
+// the audit worth having. Left in, it is audited twice — once as the panel a reader will see,
+// and once as a rendered-but-skipped copy of it that no rule reads correctly: the drawer sets
+// `content-visibility: hidden`, which empties the subtree, so a closed navbar panel reads to
+// axe as a scrollable region with nothing focusable in it when what it holds is five links a
+// click away. The same exclusion, for the same reason, as the sweep in book-of-elementals.
+const context = { exclude: ['[hidden="until-found"]'] }
+
+// Attributes whose value is a list of IDs. axe will not decide these: a collapsed toggle
+// carrying `aria-controls` beside `aria-haspopup` may legitimately name a panel that is not
+// in the document yet, so it answers "unable to determine" and a typo fails no run anywhere.
+// A reference to nothing is a name or a relationship the reader silently never gets.
+const IDREFS = ['aria-controls', 'aria-labelledby', 'aria-describedby', 'aria-activedescendant']
+
+// Wide enough that every `site.links` entry fits in the rail, narrow enough that the bar is a
+// drawer and the sidebar toggle exists. The breakpoints they straddle are 40rem and 60rem.
+const VIEWPORTS = [
+  { name: 'wide', width: 1280, height: 900 },
+  { name: 'narrow', width: 390, height: 844 }
+]
+
+const THEMES = ['light', 'dark']
+
+// Rounds of "open everything that says it is closed", because opening the drawer reveals the
+// toggles inside it. Bounded rather than looped to exhaustion: a control that re-closes itself
+// on click would otherwise spin here forever.
+const EXPAND_ROUNDS = 5
+
+// Long enough for a click to be a bug rather than a slow machine, short enough that a control
+// which cannot be driven does not hold the sweep for a minute.
+const CLICK_TIMEOUT = 2000
+
+// Typed into the search field to get the results panel on screen. Two queries because both
+// outcomes are markup: a list of hits, and the empty state, which is the one nobody looks at.
+const QUERIES = ['e', 'zzzznothing']
+
+/** Every built page of the preview site. */
+function pages() {
+  return readdirSync(SITE, { recursive: true })
+    .filter((f) => f.endsWith('.html'))
+    .map((f) => f.split(sep).join('/'))
+    .sort()
+}
+
+/** The site on an ephemeral port, so a running `script/server` is not in the way. */
+function serve() {
+  return new Promise((resolve) => {
+    const server = createServer(createStaticHandler(SITE))
+    server.listen(0, '127.0.0.1', () => resolve({ server, port: server.address().port }))
+  })
+}
+
+/** Every reference on the page, in the state it is in, that points at no element. */
+function danglingRefs(page) {
+  return page.evaluate((attrs) => attrs.flatMap((attr) =>
+    [...document.querySelectorAll(`[${attr}]`)].flatMap((el) =>
+      el.getAttribute(attr).split(/\s+/).filter(Boolean)
+        .filter((id) => !document.getElementById(id))
+        .map((id) => `<${el.localName} ${attr}="${id}">`))), IDREFS)
+}
+
+/**
+ * Element tags on the page that never registered. The audit is worth little without this: a
+ * page whose bundle failed to load is plain markup with no roles on it, and plain markup
+ * passes - a green run over a theme that is not there.
+ */
+function notUpgraded(page) {
+  return page.evaluate(() => [...new Set(
+    [...document.querySelectorAll('*')].map((el) => el.localName).filter((tag) => tag.includes('-'))
+  )].filter((tag) => !window.customElements.get(tag)))
+}
+
+async function runAxe(page) {
+  // Once per document: a page is audited in several states, and axe is half a megabyte to parse.
+  if (!await page.evaluate(() => 'axe' in window)) await page.addScriptTag({ path: AXE })
+  const result = await page.evaluate(([ctx, opts]) => window.axe.run(ctx, opts), [context, options])
+  // Per state rather than once per page: a reference can be written when a panel opens and
+  // gone when it closes, so the only state worth checking is the one on screen.
+  return { ...result, dangling: await danglingRefs(page) }
+}
+
+/**
+ * Clicks what advertises itself as closed, until nothing new opens.
+ * @returns {boolean} Whether anything opened, so the caller can skip a duplicate audit.
+ */
+async function expandAll(page, skipped) {
+  let opened = false
+  for (let round = 0; round < EXPAND_ROUNDS; round++) {
+    const triggers = await page.locator('[aria-expanded="false"]:visible').all()
+    if (!triggers.length) return opened
+    for (const trigger of triggers) {
+      // An earlier click in this round can move or replace a later trigger - a drawer that
+      // closes its siblings. Gone is not skipped: the next round re-queries.
+      if (!await trigger.count()) continue
+      try {
+        await trigger.click({ timeout: CLICK_TIMEOUT })
+        opened = true
+      } catch {
+        skipped.push(await trigger.evaluate((el) => el.outerHTML.slice(0, 80)).catch(() => '<detached>'))
+      }
+    }
+  }
+  return opened
+}
+
+/** One page, audited as served and again in each state a click or a keystroke can reach. */
+async function auditPage(page, report) {
+  const skipped = []
+  report.dead.push(...await notUpgraded(page))
+  const states = [['as served', await runAxe(page)]]
+
+  if (await expandAll(page, skipped)) states.push(['expanded', await runAxe(page)])
+
+  // The field only exists on pages that have docs beside them, and only fills once
+  // `search-index.json` has arrived - so this waits for the panel rather than for the typing.
+  const search = page.locator('#search-input')
+  if (await search.count()) {
+    for (const query of QUERIES) {
+      await search.fill(query)
+      try {
+        await page.locator('#search-results').waitFor({ state: 'visible', timeout: CLICK_TIMEOUT })
+        states.push([`search "${query}"`, await runAxe(page)])
+      } catch {
+        skipped.push(`#search-results never appeared for "${query}"`)
+      }
+    }
+    await search.fill('')
+  }
+
+  report.states += states.length
+  report.skipped.push(...skipped)
+  return states
+}
+
+/** Every violation, one line of heading and one line per failing node, capped. */
+function print(where, violations) {
+  for (const v of violations) {
+    console.log(`\n  ✗ ${v.id} (${v.impact}) — ${where}`)
+    console.log(`    ${v.help}`)
+    for (const node of v.nodes.slice(0, 5)) {
+      console.log(`    ${node.target.join(' ')}`)
+      console.log(`      ${node.failureSummary.replace(/\n/g, '\n      ')}`)
+    }
+    if (v.nodes.length > 5) console.log(`    …and ${v.nodes.length - 5} more nodes`)
+    console.log(`    ${v.helpUrl}`)
+  }
+}
+
+const paths = pages()
+if (!paths.length) {
+  console.error(`No pages in ${SITE}/. Run script/build first.`)
+  process.exit(1)
+}
+
+const { server, port } = await serve()
+const browser = await chromium.launch()
+// `dangling` is a Set and its entries carry no state, theme or viewport: a reference pointing
+// at nothing is the same bug in every one of them, and listing it forty times buries the one
+// line naming the attribute to fix.
+const report = { violations: 0, pages: 0, states: 0, skipped: [], dead: [], review: new Map(), dangling: new Set() }
+
+for (const theme of THEMES) {
+  for (const viewport of VIEWPORTS) {
+    // A context per pass rather than a page: the theme is seeded into `localStorage` before
+    // anything loads, and `reducedMotion` keeps a colour from being sampled mid-transition,
+    // where contrast comes out different on every run.
+    const context = await browser.newContext({
+      reducedMotion: 'reduce',
+      viewport: { width: viewport.width, height: viewport.height }
+    })
+    await context.addInitScript((t) => {
+      try { window.localStorage.setItem('theme', t) } catch { /* private mode */ }
+    }, theme)
+    const page = await context.newPage()
+
+    for (const path of paths) {
+      await page.goto(`http://127.0.0.1:${port}/${path}`, { waitUntil: 'load' })
+      // On the first pass only: the other three are the same pages again, not more of them.
+      if (theme === THEMES[0] && viewport === VIEWPORTS[0]) report.pages++
+
+      for (const [state, result] of await auditPage(page, report)) {
+        const where = `${path} › ${theme} › ${viewport.name} › ${state}`
+        report.violations += result.violations.length
+        for (const ref of result.dangling) report.dangling.add(`${path}: ${ref}`)
+        // Counted by rule and by reason, never as a bare total: "needing review" is a checked
+        // element axe could not decide about, and which of those it is decides whether anyone
+        // should care - a colour over a pseudo element is unknowable and stays that way, a
+        // reason nobody recognises is the one to go and read.
+        for (const r of result.incomplete) {
+          for (const node of r.nodes) {
+            // Some messages tail off into the attribute that caused them, which would give
+            // every id on the page a bucket of its own.
+            const check = node.any?.[0] ?? node.none?.[0] ?? node.all?.[0]
+            const key = `${r.id} — ${check?.message.replace(/:\s[\s\S]*$/, '') ?? r.help}`
+            report.review.set(key, (report.review.get(key) ?? 0) + 1)
+          }
+        }
+        print(where, result.violations)
+      }
+    }
+
+    await context.close()
+  }
+}
+
+await browser.close()
+server.close()
+
+console.log(
+  `\naxe: ${report.states} audits over ${report.pages} pages,` +
+  ` ${THEMES.join(' and ')}, ${VIEWPORTS.map((v) => v.name).join(' and ')} —` +
+  ` ${report.violations} violations, ${report.dangling.size} references pointing at nothing`
+)
+if (report.review.size) {
+  console.log('needing review, decided by hand rather than here:')
+  for (const [why, n] of [...report.review].sort((a, b) => b[1] - a[1])) console.log(`  ×${n}  ${why}`)
+}
+if (report.dangling.size) {
+  console.log('\n✗ referenced ids that are on no element, so the relationship is not there:')
+  for (const ref of report.dangling) console.log(`  ${ref}`)
+}
+if (report.skipped.length) {
+  console.log(`\n${report.skipped.length} states could not be reached, and were not audited:`)
+  for (const what of [...new Set(report.skipped)]) console.log(`  ${what}`)
+}
+if (report.dead.length) {
+  console.log(`\n✗ never registered, so the page audited was plain markup: ${[...new Set(report.dead)].join(', ')}`)
+}
+process.exit(report.violations || report.dead.length || report.dangling.size ? 1 : 0)
