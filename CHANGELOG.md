@@ -71,8 +71,28 @@ styles and every contrast ratio in the palette.
   `playwright-core` — the same pair the sibling repo uses, `playwright-core` being the one
   that ships no browser, so `npm ci` does not download one.
 
-  It found 161 violations across four rules on the first run. They are the rest of this entry,
-  and CI now runs the sweep, so the count stays at nought.
+  It found 161 violations across four rules on the first run. They are the **Fixed** list
+  below, and CI now runs the sweep, so the count stays at nought.
+
+- **A skip link, first in the body of both layouts.** Reaching the prose from a keyboard meant
+  tabbing the whole topbar first — brand, `docs` pill, search, every `site.links` entry, the
+  GitHub link, the theme switch — and on a docs page the entire nav tree after it: every
+  heading of every section, on every page, before the one you asked for. That is
+  [WCAG 2.4.1 Bypass Blocks](https://www.w3.org/WAI/WCAG22/Understanding/bypass-blocks.html),
+  and the sweep above did not catch it: axe's `bypass` rule is satisfied by a `<main>`
+  landmark, which both layouts have had all along.
+
+  Off-screen until focused rather than `display: none` — a hidden element is out of the tab
+  order, which is the one thing this link cannot be. No script: `:focus` *is* the keyboard
+  intent, and a pointer never reaches the link to see it.
+
+  **DOM change:** both layouts gain `<a class="skip-link" href="#content">` as the first child
+  of `<body>`, and `<main class="content">` gains `id="content"` and `tabindex="-1"`. A site
+  already using `#content` has a duplicate id to resolve. The `tabindex` is what makes the
+  jump land: a fragment pointing at an element that cannot take focus moves the viewport and,
+  in Safari, leaves focus on `<body>` — so the next Tab goes back to the topbar the link just
+  skipped. **CSS change:** `.content:focus` drops the focus ring with it, because the theme's
+  2px outline drawn around the whole column reads as breakage rather than as focus arriving.
 
 ### Fixed
 

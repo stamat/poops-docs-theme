@@ -1,4 +1,4 @@
-// Shell — the page frame both entry points share: topbar, brand, icon buttons
+// Shell — the page frame both entry points share: skip link, topbar, brand, icon buttons
 // (GitHub + theme switcher), the centred content column, and the page footer.
 // Docs-only chrome (search, sidebar, breadcrumb, TOC) lives in _chrome.scss.
 
@@ -32,6 +32,35 @@
 }
 
 html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
+
+// ---- Skip link ----
+// First in the body, so the first Tab on any page offers the way past the topbar — and on a
+// docs page past the whole nav tree, which is every heading of every section standing between
+// the top of the document and the point of the page you asked for.
+// Off-screen rather than `display: none` or `visibility: hidden`: both of those take an
+// element out of the tab order, which is the one thing this link cannot afford.
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50; // the topbar is sticky at 40 and this has to land over it, not under
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  color: var(--link);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+// `:focus` and not `:focus-visible` — nothing but a key reaches this link, and the heuristic
+// withholding the visible match would hide the one element whose entire job is being seen
+// while it holds focus.
+.skip-link:focus { transform: none; }
 
 // ---- Topbar ----
 // The header is the sticky frame and the banner landmark; the row inside it is
@@ -214,6 +243,11 @@ switch-elemental {
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  // Focusable only as the skip link's destination, so the theme's 2px ring would be drawn
+  // around the entire column — which reads as the page having broken rather than as focus
+  // having arrived. Nothing is lost: the next Tab from here rings a real control.
+  &:focus { outline: none; }
 }
 
 // ---- Footer ----

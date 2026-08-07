@@ -21,6 +21,7 @@
   {% if not site.theme %}<script>(function(){try{var t=localStorage.getItem('theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){}})();</script>{% endif %}
 </head>
 <body>
+  <a class="skip-link" href="#content">Skip to content</a>
   {% set repoUrl = site.repo or package.homepage %}
   {{ header.topbar(site, relativePathPrefix, true, repoUrl, page.url) }}
 
@@ -36,7 +37,10 @@
     </aside>
     <div class="sidebar-scrim" data-nav-close></div>
 
-    <main class="content">
+    {# `tabindex` so the skip link lands focus here and not only the scroll: a fragment
+       pointing at an element that cannot take focus moves the viewport, and Safari leaves
+       focus on <body> — the next Tab goes back to the topbar the link just skipped. #}
+    <main class="content" id="content" tabindex="-1">
       {{ page | breadcrumb(site, relativePathPrefix) }}
       <article class="prose">
         {{ pageBody }}

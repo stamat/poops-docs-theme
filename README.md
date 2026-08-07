@@ -16,7 +16,7 @@ Requires Poops **≥ 1.9.0** (package-template resolution).
 | ---------- | ------------------------------------------------------------------ | ------------------------------------------- |
 | For        | a real docs site                                                   | a small project — one page                  |
 | Topbar     | brand + `docs` pill + search + nav links + icon links + theme switcher | brand + nav links + icon links + theme switcher |
-| Body       | sidebar nav, breadcrumb, TOC, prose, edit link                     | one prose article                           |
+| Body       | skip link, sidebar nav, breadcrumb, TOC, prose, edit link          | skip link, one prose article                |
 | Stylesheet | `dist/css/docs.min.css`                                            | `dist/css/prose.min.css`                    |
 | Script     | `dist/js/docs.min.js`                                              | `dist/js/prose.min.js`                      |
 
@@ -33,7 +33,7 @@ contains everything `prose.min.css` has, and `docs.min.js` already contains
 | `topbar.html`          | shared topbar macro (both layouts import it)                                                                 |
 | `navtree.html`         | recursive sidebar-nav macro (`docs.html` imports it)                                                         |
 | `scss/_base.scss`      | tokens + element base                                                                                        |
-| `scss/_shell.scss`     | the frame both layouts share — topbar, brand, icon buttons (GitHub + theme switcher), content column, footer |
+| `scss/_shell.scss`     | the frame both layouts share — skip link, topbar, brand, icon buttons (GitHub + theme switcher), content column, footer |
 | `scss/_chrome.scss`    | docs-only chrome — `docs` pill, search, sidebar, breadcrumb, TOC, edit link                                  |
 | `scss/docs.scss`       | entry: base + shell + chrome + prose                                                                         |
 | `scss/prose-only.scss` | entry: base + shell + prose                                                                                  |
