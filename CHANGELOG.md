@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the theme audits itself
+## [Unreleased]
+
+## [3.1.0] - 2026-08-07 — the theme audits itself
 
 Nothing measured this theme's own accessibility. The unit suite runs in jsdom, which has no
 layout and no colours, and the sweep in
