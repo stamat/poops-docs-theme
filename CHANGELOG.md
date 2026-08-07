@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — a sidebar three levels deep was not a list any more
+## [Unreleased]
+
+## [3.1.1] - 2026-08-07 — a sidebar three levels deep was not a list any more
 
 A nav nested three levels deep put a `<ul>` directly inside a `<ul>`, with no `<li>` between
 them. Invalid HTML, and the counts a screen reader reads out of a list come from that
