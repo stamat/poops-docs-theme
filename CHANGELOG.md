@@ -34,7 +34,28 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — a sidebar three levels deep was not a list any more
+
+A nav nested three levels deep put a `<ul>` directly inside a `<ul>`, with no `<li>` between
+them. Invalid HTML, and the counts a screen reader reads out of a list come from that
+nesting — so the third level and everything under it was announced wrong. Two levels were
+fine, which is why nothing caught it: the mock site stopped at two, so `script/a11y` never
+rendered the markup and reported green over a branch it had never seen.
+
+### Fixed
+
+- **`navtree.html` emits a valid list at any depth.** The per-node `<li>` moved into its own
+  `navnode` macro and the recursion goes through that, so a nested section arrives as an
+  `<li>` rather than as the `<ul>` the old `navtree` call opened with. Only sites with three
+  or more nav levels produced the broken markup; their DOM changes, everything shallower is
+  byte-identical.
+
+### Added
+
+- **A third nav level in the mock site.** `preview/src/docs/guide/deep/` — a section inside
+  `Guide` and one leaf under it. Filler pages, but they are what makes the recursive branch
+  of `navtree.html` render at all, and reverting the fix now fails the sweep with
+  `list (serious)` on every page instead of passing.
 
 ## [3.1.0] - 2026-08-07 — the theme audits itself
 

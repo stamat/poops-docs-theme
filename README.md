@@ -357,6 +357,11 @@ pages: **Introduction**, **Getting started**, and a **Guide** section whose **Ki
 sink** page carries every element `_prose.scss` styles — headings, lists, table,
 blockquote, all five admonition flavours, highlighted code, keyboard keys, image.
 
+Inside `Guide` sits a **Deeper** section, and it is filler with a job: three levels of nav
+render through a branch of `navtree.html` that two levels never reach, so a mock site
+stopping at two leaves that branch unaudited while `script/a11y` reports green. Keep the
+nesting when editing the mock.
+
 ## Local development
 
 To preview against real content instead of the mock, link the theme into a Poops docs site

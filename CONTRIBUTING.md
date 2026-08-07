@@ -36,8 +36,12 @@ Include the theme version, the Poops version, the relevant part of your
 
 ## Pull requests
 
-- **Add a test.** Tests live next to the source as `src/*.test.ts`. A bug fix
-  gets a test that fails without the fix.
+- **Add a check that fails without the fix.** Jest suites live in `test/` as
+  `*.test.ts` and cover `src/`, in jsdom. The Nunjucks layouts have no jest
+  coverage and are not meant to grow one — rendering them is what `preview/`
+  already does — so a layout fix gets a page in `preview/src` that renders the
+  markup it got wrong, and the failing check is `script/a11y`. Either way, run it
+  against the unfixed code first: a check that passes both ways is not one.
 - **Keep the layouts consumable.** Anything a site can override — a class name, a
   custom property, a block name, a `site` key in `poops.json` — is a breaking
   change when it moves. If it has to move, say so in the changelog entry.
