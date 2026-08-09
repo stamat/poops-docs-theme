@@ -269,14 +269,19 @@ disclosure-elemental[data-mode="free"] .nav-toggle { display: inline-flex; }
 // The element animates a region's height, because what a disclosure usually reveals grows
 // into its space. A drawer does not grow — it arrives from off-screen — so the transform
 // does the moving and there is no height transition left for the element to time.
-#sidebar-nav { transition: transform 0.2s ease; }
+// `sidebar-nav-ready` is docs.js saying a toggle has been asked for. Until then there is no
+// transition at all, because the closed state *arrives* at upgrade: on a phone that painted
+// the rail before the script ran, the drawer's opening move would be sliding itself
+// off-screen. `:where` so the reduced-motion rule below, which the class would otherwise
+// outrank, still wins on specificity.
+#sidebar-nav:where(.sidebar-nav-ready) { transition: transform 0.2s ease; }
 
 // `content-visibility` on the closed state only. `hidden="until-found"` computes to
 // `content-visibility: hidden`, and transitioning it as a discrete property defers that flip
 // to the end of the close so the panel is not emptied while it is still leaving. Applied in
 // both directions it deadlocks in Chrome: the panel slides in and paints, and its links stay
 // skipped behind it — not focusable, not scrollable, Tab straight past a drawer you can see.
-#sidebar-nav[hidden] { transition: transform 0.2s ease, content-visibility 0.2s allow-discrete; }
+#sidebar-nav[hidden]:where(.sidebar-nav-ready) { transition: transform 0.2s ease, content-visibility 0.2s allow-discrete; }
 
 @media (prefers-reduced-motion: reduce) {
   #sidebar-nav { transition: none; }

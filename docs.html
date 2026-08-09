@@ -56,7 +56,7 @@
       <footer class="page-footer">
         {% if site.footer %}{{ site.footer | safe }}{% else %}
         <a href="{{ package.homepage }}" target="_blank" rel="noopener">{{ site.brand or site.title }}</a> v{{ package.version }} —
-        {% if package.license %}{{ package.license }} licensed. {% endif %}Built with <a href="https://github.com/stamat/poops" target="_blank" rel="noopener">Poops</a>. 💩
+        {% if package.license %}{{ package.license }} licensed. {% endif %}Built with <span aria-hidden="true">💩</span> <a href="https://github.com/stamat/poops" target="_blank" rel="noopener">Poops</a> and <a href="https://github.com/stamat/poops-docs-theme" target="_blank" rel="noopener">poops-docs-theme</a>.
         {% endif %}
       </footer>
     </main>

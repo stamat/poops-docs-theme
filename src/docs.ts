@@ -47,6 +47,22 @@ function setupMobileNav(): void {
 
   document.querySelector('[data-nav-close]')?.addEventListener('click', close)
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close() })
+
+  // The drawer's closed state arrives at upgrade, and on a phone that painted the rail first —
+  // a cold cache, a slow connection — the transition would carry the panel off-screen as the
+  // page's opening move. So the transition does not exist until a tap asks for one. Counting
+  // frames instead was tried and does not hold: a closed panel painted for two frames still
+  // slid in from nothing the moment the rule arrived.
+  //
+  // On the button, not on `disclosure-toggle`, and with the reflow: this runs before the
+  // element writes the state, and reading a layout property flushes the closed panel *with*
+  // the transition on it. Both land in one recalc otherwise, which is a style change the
+  // transition was not there for — the first tap would open with a jump and every tap after
+  // it would slide.
+  toggle.addEventListener('click', () => {
+    sidebar.classList.add('sidebar-nav-ready')
+    void (sidebar as HTMLElement).offsetWidth
+  }, { once: true })
 }
 
 // Highlight the current page in the sidebar. Done client-side because the

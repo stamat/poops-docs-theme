@@ -34,7 +34,34 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — the footer credits the theme it is rendered by
+
+The default footer credited Poops and stopped there, so the layout, styles and script a
+visitor is actually looking at had no name anywhere on the page. The 💩 also trailed after
+the sentence as a full stop of its own, and a screen reader read it out as "pile of poo".
+
+### Changed
+
+- **The default footer names poops-docs-theme beside Poops**, and the 💩 moved in front of
+  the Poops link with `aria-hidden="true"` on it, so it reads as decoration rather than as a
+  word. Both layouts change; a site setting `site.footer` renders its own html and is
+  untouched.
+
+### Fixed
+
+- **The mobile drawer no longer slides itself shut on page load.** Closed is the state the
+  drawer _arrives_ in — `<disclosure-elemental>` writes it at upgrade — but the transform
+  transition was live from the first frame, so on a load where the script landed after the
+  first paint (a cold cache, a slow phone) the browser animated the difference between the
+  rail the stylesheet had already drawn and the closed drawer the script asked for. The
+  transition rules now key off a `sidebar-nav-ready` class that `docs.js` puts on
+  `#sidebar-nav` when the toggle is first tapped, so a drawer nobody has touched cannot
+  travel. That first tap still slides — the class goes on before the element writes the state,
+  with a reflow between them. Counting animation frames instead was tried and measured: a
+  closed panel painted for two frames still slid in from nothing when the rule arrived.
+  Crossing the breakpoint before any tap now snaps instead of sliding, which is what the
+  element already does with the state itself. A site overriding
+  `#sidebar-nav { transition: … }` needs the class in its selector now.
 
 ## [3.1.1] - 2026-08-07 — a sidebar three levels deep was not a list any more
 
@@ -108,7 +135,7 @@ styles and every contrast ratio in the palette.
   landmark, which both layouts have had all along.
 
   Off-screen until focused rather than `display: none` — a hidden element is out of the tab
-  order, which is the one thing this link cannot be. No script: `:focus` *is* the keyboard
+  order, which is the one thing this link cannot be. No script: `:focus` _is_ the keyboard
   intent, and a pointer never reaches the link to see it.
 
   **DOM change:** both layouts gain `<a class="skip-link" href="#content">` as the first child
@@ -129,7 +156,7 @@ styles and every contrast ratio in the palette.
 
   Admonitions were worse and failed at both ends, because `--adm` is one value doing three
   jobs: the border, the 7% tint behind the title, and the title's own text. One mid-range hue
-  cannot be text on a white tint *and* text on a dark one — `important` read at **1.8:1** in
+  cannot be text on a white tint _and_ text on a dark one — `important` read at **1.8:1** in
   light, `caution` at 3.7:1 in dark. Light now takes a darkened set and dark keeps the
   original where it already cleared. Yellow is the one that could not keep its face: nothing
   about a 7%-tinted white leaves room for `#fab005`, so `important` is a dark gold in light
@@ -137,7 +164,7 @@ styles and every contrast ratio in the palette.
 
 - **The dark code scheme reaches a reader whose dark mode came from the OS.** The token
   colours were under `:root[data-theme="dark"]` alone, while `_base.scss` sets its own tokens
-  under that *and* `prefers-color-scheme`. With the script blocked the attribute never lands,
+  under that _and_ `prefers-color-scheme`. With the script blocked the attribute never lands,
   so the surface went dark and the syntax colours stayed light — the one pairing neither set
   had been measured against. Both now come from one mixin applied in both places.
 
@@ -363,9 +390,9 @@ the icon button it replaced, and the bar it sits in had no room spare.
   on" says it twice.
 
   **DOM:** the topbar now emits `<switch-elemental class="switch-elemental-small
-  switch-elemental-thin"><button data-theme-toggle>` with a `.switch-elemental-off`
+switch-elemental-thin"><button data-theme-toggle>` with a `.switch-elemental-off`
   and a `.switch-elemental-on` span inside it, in place of `<button class="icon-btn"
-  data-theme-toggle>` with `.theme-sun` and `.theme-moon` svgs. Both old classes are
+data-theme-toggle>` with `.theme-sun` and `.theme-moon` svgs. Both old classes are
   gone, and so are the four rules that swapped them. The two icons are 14px, sized
   to the knob the `small` preset leaves rather than to the bar.
 
@@ -413,7 +440,7 @@ the icon button it replaced, and the bar it sits in had no room spare.
 - **`.prose code-preview > :is(pre, .code-wrap) { margin: 0 }`**, so a page using
   [`<code-preview>`](https://github.com/stamat/code-preview-element) no longer has to
   write it. The element resets that margin itself, but its `code-preview > :is(pre,
-  .code-wrap)` is one class and one type against this theme's two-class
+.code-wrap)` is one class and one type against this theme's two-class
   `.prose :is(figure, .code-wrap)` — so the theme's 1.75rem came back as a gap between
   the frame and the code under it, doubled once `docs.js` had wrapped the `pre` for its
   copy button. Every site using the element was copying the same rule out of the

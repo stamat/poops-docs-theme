@@ -62,6 +62,20 @@ test('theme toggle flips the root theme and persists it', () => {
   expect(document.documentElement.dataset.theme).toBe('light')
 })
 
+// Before any test clicks anything, deliberately: the transition lives on that class, and the
+// class is the guarantee that closed is where the drawer *loads* rather than somewhere it
+// travelled to while the reader watched. The first toggle brings it, and that toggle still
+// animates — the class lands in the same style recalc as the state it animates.
+test('a drawer nobody has touched cannot slide: the class carrying the transition arrives with the first toggle', () => {
+  const sidebar = document.getElementById('sidebar-nav')!
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+  expect(sidebar.classList.contains('sidebar-nav-ready')).toBe(false)
+
+  toggle.click()
+  expect(sidebar.classList.contains('sidebar-nav-ready')).toBe(true)
+  toggle.click()
+})
+
 test('the element owns the state: the toggle writes aria-expanded and unhides the panel', () => {
   const sidebar = document.querySelector('[data-sidebar]')!
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!

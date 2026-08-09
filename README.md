@@ -106,9 +106,9 @@ no index. The consumer produces those files.
 Both layouts read `site` for the header: `brand` (falls back to `title`), `brandMark`
 (the emoji, defaults to 💩), and `repo` (falls back to `package.homepage`) for the GitHub
 button — omit both and the button disappears. Both render `site.footer` (html, unescaped)
-if set; without it both fall back to the same brand/version/license/Poops line, read from
-the consuming site's `package.json` (`homepage`, `version`, `license` — a missing `license`
-just drops that clause).
+if set; without it both fall back to the same line — brand, version, license, then credit to
+Poops and this theme — read from the consuming site's `package.json` (`homepage`, `version`,
+`license` — a missing `license` just drops that clause).
 
 `brandMark` is also the tab icon, drawn as an inline svg — no favicon file needed.
 
