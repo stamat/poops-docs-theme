@@ -140,7 +140,12 @@ declared once, as the `media` attribute in `topbar.html`, and no stylesheet here
 
 Search, the icon links and the theme switch stay on the bar at every width — only the links
 fold away. Below 40rem the search field shrinks to its icon and expands across the bar when
-you tap it.
+you tap it. `/` puts the cursor in it, and so does ⌘K / Ctrl+K — the second pair works from
+inside another field, the slash does not, because it is a character somebody may be
+mid-word in. Both are taken off the browser when they land, so Firefox's quick-find and
+Chrome's omnibox shortcut do not fire on a docs page. There is no visible hint next to the
+field: the shortcut is a shortcut, and at the small end that field is the width of the
+screen.
 
 The docs sidebar is the same idea with a different element: a rail above 60rem and a drawer
 below it, [`<disclosure-elemental>`](https://github.com/stamat/book-of-elementals) with the

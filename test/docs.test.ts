@@ -52,7 +52,7 @@ beforeAll(async () => {
     </aside>
     <disclosure-elemental for="sidebar-nav" media="(min-width: 60rem)"><button data-nav-toggle></button></disclosure-elemental>
     <button data-nav-close></button>
-    <main><a href="/somewhere/">In the article</a></main>
+    <main><a href="/somewhere/">In the article</a><textarea id="scratch"></textarea></main>
   `
   window.history.replaceState({}, '', '/docs/intro/index.html')
   Element.prototype.scrollIntoView = jest.fn()
@@ -225,6 +225,51 @@ test('a url with a scheme that is not http never becomes a link', () => {
   const box = search('bad link')
   expect(box.querySelector('a')).toBeNull()
   expect(box.querySelector('.sr-empty')!.textContent).toBe('No results')
+})
+
+function press(key: string, init: KeyboardEventInit = {}): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init })
+  document.dispatchEvent(event)
+  return event
+}
+
+test('slash puts the cursor in the search field, and is not typed into it', () => {
+  const input = document.getElementById('search-input') as HTMLInputElement
+  document.querySelector<HTMLAnchorElement>('main a')!.focus()
+  expect(press('/').defaultPrevented).toBe(true)
+  expect(document.activeElement).toBe(input)
+})
+
+// The one keystroke a reader may be in the middle of. Firefox's own quick-find makes the
+// same exception, and a shortcut that eats a slash out of a sentence is worse than no
+// shortcut.
+test('slash typed while a field has focus is a slash, not a shortcut', () => {
+  const scratch = document.getElementById('scratch') as HTMLTextAreaElement
+  scratch.focus()
+  expect(press('/').defaultPrevented).toBe(false)
+  expect(document.activeElement).toBe(scratch)
+})
+
+test('cmd-k and ctrl-k reach the field from anywhere, a text field included', () => {
+  const input = document.getElementById('search-input') as HTMLInputElement
+  const scratch = document.getElementById('scratch') as HTMLTextAreaElement
+
+  scratch.focus()
+  expect(press('k', { metaKey: true }).defaultPrevented).toBe(true)
+  expect(document.activeElement).toBe(input)
+
+  scratch.focus()
+  expect(press('K', { ctrlKey: true }).defaultPrevented).toBe(true)
+  expect(document.activeElement).toBe(input)
+})
+
+// A plain `k` is a letter, and Alt+K is a character on layouts that are not this one.
+test('k without a modifier, and with the wrong one, is left alone', () => {
+  const scratch = document.getElementById('scratch') as HTMLTextAreaElement
+  scratch.focus()
+  expect(press('k').defaultPrevented).toBe(false)
+  expect(press('k', { altKey: true }).defaultPrevented).toBe(false)
+  expect(document.activeElement).toBe(scratch)
 })
 
 // The rail is not a drawer to dismiss. `media` writes `open` when the query *changes*, so

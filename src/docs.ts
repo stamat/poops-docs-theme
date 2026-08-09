@@ -143,6 +143,32 @@ function setupSearch(base: string): void {
     box.replaceChildren(...rows)
   }
   input.addEventListener('input', () => render(input.value))
+
+  // `/` and ⌘K/Ctrl+K, because both are already in a docs reader's hands — MDN, GitHub,
+  // DocSearch and Starlight answer to one or the other and mostly to both. `/` only while
+  // nothing editable holds focus, since it is a character somebody may be mid-word in; the
+  // modifier pair carries no such risk and so works from inside the field too, where it
+  // selects what is there to be typed over.
+  //
+  // Both are taken off the browser: `/` is Firefox's quick-find and Ctrl+K opens the search
+  // bar in Firefox and the omnibox in Chrome. That is the trade every docs site with a
+  // shortcut makes, and it is only made once the keystroke is one this page answers.
+  //
+  // No visible `⌘K` hint in the field — the shortcut is a shortcut, and the field is already
+  // the width of a phone's screen at the small end.
+  document.addEventListener('keydown', (e) => {
+    const active = document.activeElement as HTMLElement | null
+    const editable = !!active && (/^(?:INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable)
+    const key = typeof e.key === 'string' ? e.key.toLowerCase() : ''
+    const hit = (e.metaKey || e.ctrlKey)
+      ? key === 'k' && !e.altKey
+      : key === '/' && !e.altKey && !editable
+    if (!hit) return
+    e.preventDefault()
+    input.focus()
+    input.select()
+  })
+
   document.addEventListener('click', (e) => {
     if (!(e.target as HTMLElement).closest('.search')) box.hidden = true
   })
