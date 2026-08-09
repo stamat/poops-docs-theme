@@ -25,6 +25,12 @@ function setupMobileNav(): void {
 
   const close = (): void => {
     if (!(drawer as HTMLElement & { open?: boolean }).open) return
+    // Light dismiss is for the drawer, and `pinned` is the rail. The element writes `open`
+    // from its query when the query *changes*, and a query that still matches changes
+    // nothing — so a rail closed by Escape stays closed, with the toggle that would bring it
+    // back `display: none` at this width. `pinned` rather than not-`free`: a disclosure with
+    // no `media` has no mode and is a drawer at every width.
+    if ((drawer as HTMLElement).dataset.mode === 'pinned') return
     // Focus first, while the drawer is still rendered. Closing sets `hidden`, which takes
     // the panel out of the a11y tree with the focused link inside it — focus would land on
     // <body> and the next Tab would restart from the top of the document.

@@ -63,6 +63,15 @@ the sentence as a full stop of its own, and a screen reader read it out as "pile
   element already does with the state itself. A site overriding
   `#sidebar-nav { transition: … }` needs the class in its selector now.
 
+- **Escape no longer closes the sidebar rail on a wide screen.** Escape and the scrim are the
+  light dismiss a drawer over a scrim wants and the disclosure pattern does not owe it — but
+  the keyboard is on the page at every width, and `<disclosure-elemental>` writes `open` from
+  its `media` query only when the query _changes_. A query that still matches changes nothing,
+  so Escape above 60rem closed the rail and nothing put it back: the navigation was gone for
+  the rest of the visit, with the toggle that would reopen it `display: none` at that width.
+  The close now returns early while the element reports `data-mode="pinned"`, which covers the
+  scrim as well as the key.
+
 ## [3.1.1] - 2026-08-07 — a sidebar three levels deep was not a list any more
 
 A nav nested three levels deep put a `<ul>` directly inside a `<ul>`, with no `<li>` between

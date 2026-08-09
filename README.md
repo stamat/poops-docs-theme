@@ -150,8 +150,9 @@ layout that has no drawer. It is **not** modal — focus is not trapped, the art
 theme adds is the two ends that pattern does not owe you: opening the drawer hands focus to
 the link for the page you are on (only as a drawer — a rail stealing focus because the window
 got wider would be worse), and Escape or a click on the scrim closes it and gives focus back
-to the toggle. Closed, it is `hidden="until-found"`, so find-in-page still reaches a link
-inside it and opens it.
+to the toggle. Both are the drawer's only: above the breakpoint Escape leaves the rail
+standing, because a rail it closed is one the reader has no toggle left to reopen. Closed, it
+is `hidden="until-found"`, so find-in-page still reaches a link inside it and opens it.
 
 ```json
 {

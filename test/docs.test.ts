@@ -170,3 +170,23 @@ test('crossing the breakpoint holds the rail open, and closes it again on the wa
   expect(sidebar.hasAttribute('hidden')).toBe(true)
   expect(sidebar.getAttribute('data-mode')).toBe('free')
 })
+
+// The rail is not a drawer to dismiss. `media` writes `open` when the query *changes*, so
+// nothing puts back a rail Escape closed, and the toggle that would is `display: none` up
+// here — the panel would be gone for the rest of the visit.
+test('escape leaves the rail standing above the breakpoint', () => {
+  const sidebar = document.querySelector('[data-sidebar]')!
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
+
+  mql.matches = true
+  crossBreakpoint({ matches: true })
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  expect(toggle.getAttribute('aria-expanded')).toBe('true')
+  expect(sidebar.hasAttribute('hidden')).toBe(false)
+
+  document.querySelector<HTMLButtonElement>('[data-nav-close]')!.click()
+  expect(sidebar.hasAttribute('hidden')).toBe(false)
+
+  mql.matches = false
+  crossBreakpoint({ matches: false })
+})
