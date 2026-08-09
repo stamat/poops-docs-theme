@@ -14,15 +14,38 @@ const mql = {
 }
 let crossBreakpoint: (e: { matches: boolean }) => void
 
+// The index poops writes is every page's front matter verbatim, so these three entries are
+// what a docs author can put in one: markup in a title, markup in a description, and a url
+// that is not a url. Nothing here is exotic — it is the same file the theme fetches.
+const INDEX = [
+  { title: 'Getting started', description: 'How to <b>begin</b>', url: 'docs/getting-started/' },
+  { title: '<img src=x onerror="alert(1)">', description: 'about xss', url: 'docs/evil/' },
+  { title: 'Bad link', description: 'a scheme that is not a scheme', url: 'javascript:alert(1)' }
+]
+
+function search(query: string): HTMLElement {
+  const input = document.getElementById('search-input') as HTMLInputElement
+  input.value = query
+  input.dispatchEvent(new Event('input'))
+  return document.getElementById('search-results')!
+}
+
 // docs.ts has no exports — it boots on import. Build the DOM first, then import.
 beforeAll(async () => {
   window.matchMedia = ((media: string) => {
     mql.media = media
     return mql
   }) as unknown as typeof window.matchMedia
+  // jsdom ships no fetch, and an undefined one throws a ReferenceError the `.catch` on the
+  // promise never sees — the whole boot would go down with it.
+  window.fetch = jest.fn(() => Promise.resolve({ json: () => Promise.resolve(INDEX) })) as unknown as typeof window.fetch
   document.body.innerHTML = `
     <div class="prose"><pre>npm install poops</pre></div>
     <switch-elemental><button data-theme-toggle aria-label="Dark mode"></button></switch-elemental>
+    <div class="search">
+      <input type="search" id="search-input">
+      <div class="search-results" id="search-results" hidden></div>
+    </div>
     <aside class="sidebar" id="sidebar-nav" data-sidebar>
       <a class="nav-link" href="http://localhost/docs/intro/">Intro</a>
       <a class="nav-link" href="http://localhost/docs/other/">Other</a>
@@ -34,6 +57,8 @@ beforeAll(async () => {
   window.history.replaceState({}, '', '/docs/intro/index.html')
   Element.prototype.scrollIntoView = jest.fn()
   await import('../src/docs')
+  // the index arrives on a promise; let it land before anything types
+  await new Promise((resolve) => setTimeout(resolve, 0))
 })
 
 // What the copy button does is `<copy-elemental>`'s and is covered in prose.test.ts, with the
@@ -169,6 +194,37 @@ test('crossing the breakpoint holds the rail open, and closes it again on the wa
   crossBreakpoint({ matches: false })
   expect(sidebar.hasAttribute('hidden')).toBe(true)
   expect(sidebar.getAttribute('data-mode')).toBe('free')
+})
+
+test('search finds a page by its description and links to it', () => {
+  const box = search('begin')
+  const a = box.querySelector('a')!
+  expect(a.getAttribute('href')).toBe('http://localhost/docs/intro/docs/getting-started/')
+  expect(a.querySelector('.sr-title')!.textContent).toBe('Getting started')
+})
+
+// The index is front matter, verbatim — nothing between the author and this list escapes a
+// thing. A title interpolated into `innerHTML` runs on every page the topbar sits on, which
+// is every page.
+test('a title carrying markup arrives as text: the tags are the title, not tags', () => {
+  const box = search('xss')
+  expect(box.querySelector('img')).toBeNull()
+  expect(box.querySelector('.sr-title')!.textContent).toBe('<img src=x onerror="alert(1)">')
+})
+
+test('a description carrying markup arrives as text too', () => {
+  const box = search('begin')
+  expect(box.querySelector('b')).toBeNull()
+  expect(box.querySelector('.sr-desc')!.textContent).toBe('How to <b>begin</b>')
+})
+
+// `href` takes a `javascript:` url as readily as a path, and a row whose link cannot be
+// followed safely is worth less than no row — so the entry is dropped rather than rendered
+// dead, and a list left with nothing says so.
+test('a url with a scheme that is not http never becomes a link', () => {
+  const box = search('bad link')
+  expect(box.querySelector('a')).toBeNull()
+  expect(box.querySelector('.sr-empty')!.textContent).toBe('No results')
 })
 
 // The rail is not a drawer to dismiss. `media` writes `open` when the query *changes*, so

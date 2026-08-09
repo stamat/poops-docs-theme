@@ -34,11 +34,16 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the footer credits the theme it is rendered by
+## [Unreleased] — a page title could run script from the search box
 
-The default footer credited Poops and stopped there, so the layout, styles and script a
-visitor is actually looking at had no name anywhere on the page. The 💩 also trailed after
-the sentence as a full stop of its own, and a screen reader read it out as "pile of poo".
+The search index poops writes is every page's front matter copied out verbatim, and the
+theme dropped a result's title, description and url straight into `innerHTML`. A `<img
+src=x onerror=…>` in one page's `title:` therefore ran on every page of the site, since the
+search box is in the topbar.
+
+The default footer also credited Poops and stopped there, so the layout, styles and script a
+visitor is actually looking at had no name anywhere on the page. The 💩 trailed after the
+sentence as a full stop of its own, and a screen reader read it out as "pile of poo".
 
 ### Changed
 
@@ -71,6 +76,17 @@ the sentence as a full stop of its own, and a screen reader read it out as "pile
   the rest of the visit, with the toggle that would reopen it `display: none` at that width.
   The close now returns early while the element reports `data-mode="pinned"`, which covers the
   scrim as well as the key.
+
+### Security
+
+- **Search results are built as nodes, so front matter cannot become markup.** The row is now
+  the one place the index is crossed from data into DOM: `title` and `description` go in as
+  `textContent`, and the url is resolved against the page and dropped unless its scheme is
+  `http:` or `https:` — `href` takes a `javascript:` url as readily as a path. An entry that
+  fails that check is left out of the list rather than rendered as a dead link. The markup a
+  result produces is unchanged, so a site styling `.sr-title` / `.sr-desc` / `.sr-empty` needs
+  no change. Authoring markup in a `title:` and expecting it to render never worked in the
+  sidebar or the `<title>` either; it now does not work here.
 
 ## [3.1.1] - 2026-08-07 — a sidebar three levels deep was not a list any more
 

@@ -87,6 +87,36 @@ function markActiveNav(): void {
 
 interface Entry { title: string; description?: string; url: string; keywords?: string[] }
 
+// One result row, built as nodes.
+//
+// Every field in the index is a doc author's front matter verbatim — poops copies a page's
+// keys into search-index.json without touching them — so this is a boundary, and the row is
+// the one place it gets crossed. Through `innerHTML` a title reading `<img src=x onerror=…>`
+// would run on every page of the site, and `href` takes a `javascript:` url as readily as a
+// path. Text goes in as `textContent`, the url is resolved and its scheme checked.
+//
+// `null` rather than a row with a dead link: a scheme that is not http(s) is either an
+// attack or a broken entry, and neither is worth a line in the list.
+function resultRow(base: string, entry: Entry): HTMLAnchorElement | null {
+  let url: URL
+  try { url = new URL(base + entry.url, location.href) } catch { return null }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+
+  const a = document.createElement('a')
+  a.href = url.href
+  const title = document.createElement('span')
+  title.className = 'sr-title'
+  title.textContent = entry.title
+  a.append(title)
+  if (entry.description) {
+    const desc = document.createElement('span')
+    desc.className = 'sr-desc'
+    desc.textContent = entry.description
+    a.append(desc)
+  }
+  return a
+}
+
 function setupSearch(base: string): void {
   const input = document.getElementById('search-input') as HTMLInputElement | null
   const box = document.getElementById('search-results')
@@ -96,17 +126,21 @@ function setupSearch(base: string): void {
 
   const render = (q: string): void => {
     const query = q.trim().toLowerCase()
-    if (!query) { box.hidden = true; box.innerHTML = ''; return }
+    if (!query) { box.hidden = true; box.replaceChildren(); return }
     const hits = index.filter((e) => {
       const hay = (e.title + ' ' + (e.description || '') + ' ' + (e.keywords || []).join(' ')).toLowerCase()
       return hay.includes(query)
     }).slice(0, 8)
     box.hidden = false
-    if (!hits.length) { box.innerHTML = '<div class="sr-empty">No results</div>'; return }
-    box.innerHTML = hits.map((e) =>
-      `<a href="${base}${e.url}"><span class="sr-title">${e.title}</span>` +
-      (e.description ? `<span class="sr-desc">${e.description}</span>` : '') + '</a>'
-    ).join('')
+    const rows = hits.map((e) => resultRow(base, e)).filter((a) => a !== null)
+    if (!rows.length) {
+      const empty = document.createElement('div')
+      empty.className = 'sr-empty'
+      empty.textContent = 'No results'
+      box.replaceChildren(empty)
+      return
+    }
+    box.replaceChildren(...rows)
   }
   input.addEventListener('input', () => render(input.value))
   document.addEventListener('click', (e) => {
