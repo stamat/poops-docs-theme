@@ -3,7 +3,7 @@ layout: docs
 title: Deeper
 navTitle: Deeper
 description: A section inside a section — exists so the sidebar renders three levels.
-order: 3
+order: 4
 ---
 
 # Deeper

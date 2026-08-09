@@ -293,11 +293,14 @@ A docs page that shows a sample usually wants to *run* it too.
 [`<code-preview>`](https://github.com/stamat/code-preview-element) is one way: it wraps a
 code fence and renders it in an isolated iframe above the code that produced it.
 
-**Loading it is your site's job, not the theme's** — it is not a dependency here and
-nothing in either bundle. A docs site with no live samples should not pay for an editor
-and an iframe runtime, and the sites that do want it load the bundle only on the pages
-that have a preview. Add `code-preview-element` yourself, build or copy its script and
-stylesheet in your own `poops.json`, and wrap the fences however suits your pages.
+**Loading it is your site's job, not the theme's** — it is in neither bundle and not a
+dependency of the published package. A docs site with no live samples should not pay for
+an editor and an iframe runtime, and the sites that do want it load the bundle only on the
+pages that have a preview. Add `code-preview-element` yourself, build or copy its script
+and stylesheet in your own `poops.json`, and wrap the fences however suits your pages.
+The mock site does exactly that, on one page, and
+[`live-samples.md`](preview/src/docs/guide/live-samples.md) is the whole of it — two tags
+in the page body and a fence wrapped in the element.
 
 What the theme does do is get out of the element's way. Three collisions, each one only
 this stylesheet can settle — the first two because the theme caused them, the third
@@ -363,6 +366,12 @@ produces both too, at `preview/dist` (gitignored, and not in the published `file
 pages: **Introduction**, **Getting started**, and a **Guide** section whose **Kitchen
 sink** page carries every element `_prose.scss` styles — headings, lists, table,
 blockquote, all five admonition flavours, highlighted code, keyboard keys, image.
+
+The **Live samples** page beside it is the one page with a runtime dependency:
+`code-preview-element` is a devDependency, copied into `preview/dist/vendor` by the
+`copy` entry in `poops.json` and loaded by that page alone. It is filler with a job too —
+the three collisions in [Live samples](#live-samples) are rules nothing else in the mock
+exercises, so without it they are only claimed.
 
 Inside `Guide` sits a **Deeper** section, and it is filler with a job: three levels of nav
 render through a branch of `navtree.html` that two levels never reach, so a mock site

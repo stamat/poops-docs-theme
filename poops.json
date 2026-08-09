@@ -61,6 +61,12 @@
   "copy": [{
     "in": ["dist/css", "dist/js"],
     "out": "preview/dist"
+  }, {
+    "in": [
+      "node_modules/code-preview-element/dist/code-preview.min.css",
+      "node_modules/code-preview-element/dist/code-preview-hljs.min.js"
+    ],
+    "out": "preview/dist/vendor"
   }],
   "serve": {
     "port": 4040
