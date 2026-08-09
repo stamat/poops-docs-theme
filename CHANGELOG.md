@@ -51,10 +51,11 @@ sentence as a full stop of its own, and a screen reader read it out as "pile of 
   pointer or by tabbing the length of the topbar, and every docs site a reader arrives from
   answers to one of these. The slash is ignored while an `<input>`, `<textarea>`, `<select>`
   or a `contenteditable` holds focus — it is a character somebody may be mid-word in — and the
-  modifier pair works from inside a field, where it selects what is already typed. Both are
-  taken off the browser when they land, which costs Firefox's quick-find and its Ctrl+K search
-  bar, and Chrome's Ctrl+K address-bar search, on a docs page. Nothing was added to the
-  markup: no hint sits beside the field.
+  modifier pair works from inside a field, where it selects what is already typed. Shift is
+  where it stops — `Ctrl+Shift+K` opens the web console and stays the browser's. What the two
+  do cost is Firefox's quick-find and its `Ctrl+K` search bar, and Chrome's `Ctrl+K`
+  address-bar search, on a docs page. Nothing was added to the markup: no hint sits beside the
+  field.
 
 ### Changed
 

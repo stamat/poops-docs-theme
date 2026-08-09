@@ -143,7 +143,8 @@ fold away. Below 40rem the search field shrinks to its icon and expands across t
 you tap it. `/` puts the cursor in it, and so does ⌘K / Ctrl+K — the second pair works from
 inside another field, the slash does not, because it is a character somebody may be
 mid-word in. Both are taken off the browser when they land, so Firefox's quick-find and
-Chrome's omnibox shortcut do not fire on a docs page. There is no visible hint next to the
+Chrome's address-bar shortcut do not fire on a docs page; `Ctrl+Shift+K` is left alone,
+because the web console is not a docs site's to take. There is no visible hint next to the
 field: the shortcut is a shortcut, and at the small end that field is the width of the
 screen.
 

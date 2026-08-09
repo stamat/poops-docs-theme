@@ -151,17 +151,28 @@ function setupSearch(base: string): void {
   // selects what is there to be typed over.
   //
   // Both are taken off the browser: `/` is Firefox's quick-find and Ctrl+K opens the search
-  // bar in Firefox and the omnibox in Chrome. That is the trade every docs site with a
-  // shortcut makes, and it is only made once the keystroke is one this page answers.
+  // bar in Firefox and the address bar in Chrome. That is the trade every docs site with a
+  // shortcut makes, and it is only made once the keystroke is one this page answers. Shift is
+  // where the trade stops — Ctrl+Shift+K opens the web console in Firefox and Chrome both, and
+  // a docs page that swallows a devtools shortcut has taken something it cannot give back.
+  //
+  // `composedPath()[0]` rather than `document.activeElement`: for an input inside a custom
+  // element's shadow root the latter reports the *host*, whose tagName is the element's and
+  // whose `isContentEditable` is false — so a slash typed into one would read as "nothing
+  // editable has focus" and be eaten.
   //
   // No visible `⌘K` hint in the field — the shortcut is a shortcut, and the field is already
   // the width of a phone's screen at the small end.
   document.addEventListener('keydown', (e) => {
-    const active = document.activeElement as HTMLElement | null
-    const editable = !!active && (/^(?:INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable)
+    const target = (e.composedPath?.()[0] ?? e.target) as HTMLElement | null
+    const editable = target instanceof HTMLElement &&
+      (/^(?:INPUT|TEXTAREA|SELECT)$/.test(target.tagName) || target.isContentEditable)
     const key = typeof e.key === 'string' ? e.key.toLowerCase() : ''
+    // The modifier pair fires from inside a field, where the slash cannot: it is unambiguous,
+    // and a reader who has drifted into a comment box wanting the docs should not have to
+    // leave it first. Selecting rather than only focusing is what makes a second ⌘K a retype.
     const hit = (e.metaKey || e.ctrlKey)
-      ? key === 'k' && !e.altKey
+      ? key === 'k' && !e.shiftKey && !e.altKey
       : key === '/' && !e.altKey && !editable
     if (!hit) return
     e.preventDefault()

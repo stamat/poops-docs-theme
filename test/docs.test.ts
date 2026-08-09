@@ -227,9 +227,12 @@ test('a url with a scheme that is not http never becomes a link', () => {
   expect(box.querySelector('.sr-empty')!.textContent).toBe('No results')
 })
 
+// Dispatched at whatever holds focus and left to bubble, which is where a real keydown
+// starts — the handler reads its target to decide whether somebody is mid-word, so an event
+// fired at `document` would be a test that cannot tell the two cases apart.
 function press(key: string, init: KeyboardEventInit = {}): KeyboardEvent {
   const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init })
-  document.dispatchEvent(event)
+  ;(document.activeElement ?? document).dispatchEvent(event)
   return event
 }
 
@@ -263,12 +266,16 @@ test('cmd-k and ctrl-k reach the field from anywhere, a text field included', ()
   expect(document.activeElement).toBe(input)
 })
 
-// A plain `k` is a letter, and Alt+K is a character on layouts that are not this one.
-test('k without a modifier, and with the wrong one, is left alone', () => {
+// A plain `k` is a letter, Alt+K is a character on layouts that are not this one, and
+// Ctrl+Shift+K opens the web console — a docs page that swallows a devtools shortcut has
+// taken something it cannot give back.
+test('k without a modifier, with the wrong one, or with shift held, is left alone', () => {
   const scratch = document.getElementById('scratch') as HTMLTextAreaElement
   scratch.focus()
   expect(press('k').defaultPrevented).toBe(false)
   expect(press('k', { altKey: true }).defaultPrevented).toBe(false)
+  expect(press('K', { ctrlKey: true, shiftKey: true }).defaultPrevented).toBe(false)
+  expect(press('k', { metaKey: true, shiftKey: true }).defaultPrevented).toBe(false)
   expect(document.activeElement).toBe(scratch)
 })
 
