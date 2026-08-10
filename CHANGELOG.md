@@ -80,9 +80,23 @@ sentence as a full stop of its own, and a screen reader read it out as "pile of 
   `--suggest-elemental-inset` and `--suggest-elemental-max-height` pointed at this theme's
   tokens; anything that styled `.search-results` directly wants those instead.
 
-  Measured against the same build before the change, `docs.min.js` grows by 8.3KB and
-  `docs.min.css` by 2.9KB — minified, before compression, and everything in this entry
+  Measured against the same build before the change, `docs.min.js` grows by 8.4KB and
+  `docs.min.css` by 3.5KB — minified, before compression, and everything in this entry
   included.
+
+- **The search field has a clear button a keyboard can reach.** `<input type="search">` gets a
+  cross of its own in Chromium and Safari, none in Firefox, and the one it gets is drawn by
+  the non-standard `::-webkit-search-cancel-button` — mouse-only, no tab stop, and absent from
+  the accessibility tree. It is switched off with `appearance: none` and replaced by
+  `button.search-clear`: the octicon x at the magnifier's weight and distance from its end of
+  the field, a 24px target around a 16px glyph, `aria-label="Clear the search"`, and a focus
+  ring, because a control you can tab to and cannot see you have reached is
+  [2.4.7 Focus Visible](https://www.w3.org/WAI/WCAG22/Understanding/focus-visible.html) unmet.
+  It is `visibility: hidden` while the field is empty, which takes it out of the tab order with
+  the look. Pressing it empties the field and hands the caret back.
+
+  The field is 2rem of padding at both ends now, and the pending spinner moved one control
+  inward to `--search-elemental-spinner-inset-inline: 2rem` so the two never share a corner.
 
 - **The empty and failed searches are drawn as well as spoken.** `p.sr-note.sr-empty` says
   **No results** and `p.sr-note.sr-error` says **Search failed**, in a box under the field,

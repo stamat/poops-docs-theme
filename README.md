@@ -291,6 +291,13 @@ theme fetches, builds the rows and owns the rest:
 - **Focus leaving empties it too.** This field is in the topbar rather than in the middle of a
   page, so what is typed in it outlives the results it fetched — and on a phone a field with
   something in it will not fold back into its icon.
+- **The cross at the end of the field is a real button.** `<input type="search">` gets one of
+  its own in Chromium and Safari and none at all in Firefox, and the one it gets is drawn by
+  the non-standard `::-webkit-search-cancel-button`: mouse-only, no tab stop, nothing in the
+  accessibility tree. That one is taken off so there are not two, and `button.search-clear`
+  replaces it — the octicon x at the magnifier's weight, a 24px target, an `aria-label`, and a
+  focus ring. It is `visibility: hidden` while the field is empty, which drops it out of the
+  tab order too: a stop that clears an empty field is a keystroke that does nothing.
 
 **A result row is built as nodes, never as markup.** The index is front matter verbatim, so a
 `title:` reading `<img src=x onerror=…>` would otherwise run on every page of the site. Text
@@ -304,8 +311,9 @@ found nothing.
 
 The DOM this produces, for a stylesheet that has to reach into it: the wrapper is
 `search-elemental.search` carrying `data-state` (`idle`, `pending`, `results`, `empty`,
-`error`), the panel is `suggest-elemental` with `[open]` and `[role="option"]` on each row,
-and a row is `li > a` holding `.sr-title` and `.sr-desc`. The two messages are
+`error`), the field is `#search-input` with `.search-icon` and `button.search-clear` at its two
+ends, the panel is `suggest-elemental` with `[open]` and `[role="option"]` on each row, and a
+row is `li > a` holding `.sr-title` and `.sr-desc`. The two messages are
 `p.sr-note.sr-empty` and `p.sr-note.sr-error`, shown by `data-state` alone. The panel's look
 is the element's optional theme with `--suggest-elemental-surface`, `--suggest-elemental-active`,
 `--suggest-elemental-radius`, `--suggest-elemental-inset` and `--suggest-elemental-max-height`
