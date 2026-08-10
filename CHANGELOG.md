@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the search box was a text field with a div under it
+## [Unreleased]
+
+## [4.0.0] - 2026-08-10 — the search box was a text field with a div under it
 
 Arrow keys did nothing. Enter did nothing. The panel had no role, the field never said it had
 a popup, and results appearing in it announced nothing at all — a change a sighted reader
