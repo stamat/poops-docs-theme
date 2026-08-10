@@ -36,6 +36,8 @@ GitHub release verbatim.
 
 ## [Unreleased]
 
+## [4.0.2] - 2026-08-10
+
 ### Fixed
 
 - Bumps `book-of-elementals` to `^0.7.2` to pick up a fix for listboxes pointer events not
