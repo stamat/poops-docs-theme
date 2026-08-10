@@ -36,6 +36,13 @@ GitHub release verbatim.
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-08-10
+
+### Fixed
+
+Issue where the search results would stack on a row and not wrap properly that was fixed in
+book-of-elementals 0.7.1. This theme now depends on the version carrying the fix.
+
 ## [4.0.0] - 2026-08-10 — the search box was a text field with a div under it
 
 Arrow keys did nothing. Enter did nothing. The panel had no role, the field never said it had
