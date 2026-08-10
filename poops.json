@@ -52,6 +52,7 @@
         ]
       },
       "searchIndex": "search-index.json",
+      "lastUpdated": "meta/updates.json",
       "nav": {
         "out": "nav.json",
         "root": "docs"

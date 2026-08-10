@@ -3,12 +3,15 @@ layout: docs
 title: Getting started
 description: A short page with a couple of headings, a list and a shell block.
 order: 1
+updated: 2026-02-14
 ---
 
 # Getting started
 
 A deliberately short page — it checks that a page with little content still fills the
-column properly and that the footer sits where it should.
+column properly and that the footer sits where it should. Its `updated` is written in front
+matter, which is what keeps the date on this one page fixed — every other page here takes
+its own from `markup.options.lastUpdated`, so the row renders both ways in the preview.
 
 ## Install
 

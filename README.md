@@ -18,7 +18,7 @@ global it read is gone.
 | ---------- | ------------------------------------------------------------------ | ------------------------------------------- |
 | For        | a real docs site                                                   | a small project — one page                  |
 | Topbar     | brand + `docs` pill + search + nav links + icon links + theme switcher | brand + nav links + icon links + theme switcher |
-| Body       | skip link, sidebar nav, breadcrumb, TOC, prose, edit link          | skip link, one prose article                |
+| Body       | skip link, sidebar nav, breadcrumb, TOC, prose, last updated + edit link | skip link, one prose article           |
 | Stylesheet | `dist/css/docs.min.css`                                            | `dist/css/prose.min.css`                    |
 | Script     | `dist/js/docs.min.js`                                              | `dist/js/prose.min.js`                      |
 
@@ -36,7 +36,7 @@ contains everything `prose.min.css` has, and `docs.min.js` already contains
 | `navtree.html`         | recursive sidebar-nav macro (`docs.html` imports it)                                                         |
 | `scss/_base.scss`      | tokens + element base                                                                                        |
 | `scss/_shell.scss`     | the frame both layouts share — skip link, topbar, brand, icon buttons (GitHub + theme switcher), content column, footer |
-| `scss/_chrome.scss`    | docs-only chrome — `docs` pill, search, sidebar, breadcrumb, TOC, edit link                                  |
+| `scss/_chrome.scss`    | docs-only chrome — `docs` pill, search, sidebar, breadcrumb, TOC, last-updated + edit link                    |
 | `scss/docs.scss`       | entry: base + shell + chrome + prose                                                                         |
 | `scss/prose-only.scss` | entry: base + shell + prose                                                                                  |
 | `src/prose.ts`         | copy buttons, theme toggle, the topbar's nav element — everything a bare page needs                          |
@@ -400,6 +400,17 @@ All Poops built-ins, present in any Poops build:
 Both read `site` config: `title`, `description`, `lang`, `repo`, `branch` (edit link, docs
 only), plus the optional `brand`, `brandMark`, `brandUrl`, `links` and `footer` covered under
 [Topbar config](#topbar-config).
+
+### Last updated
+
+`docs` prints a `Last updated: <date>` line at the left of the edit-link row whenever a page
+has `updated` — written in front matter, or filled in for every page by Poops' own
+[`markup.options.lastUpdated`](https://github.com/stamat/poops#last-updated-dates) (Poops
+≥ 2.4.0), which dates a page from a committed index of content hashes. A page without one
+renders no line, and the edit link stays where it was. Below `40rem` the row stacks into a
+centred column, date above button. The date is formatted `MMM D, YYYY`
+and carries a machine-readable `<time datetime>` beside it; the format is the theme's, not a
+config key.
 
 ### Structured data
 

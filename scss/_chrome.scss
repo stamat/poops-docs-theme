@@ -339,7 +339,19 @@ search-elemental[data-state="error"] .sr-error { display: block; }
   max-width: var(--content-max);
   margin-top: 3rem;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+// Pushed apart by the date's own auto margin rather than by space-between on the
+// row: with the edit link alone — no `updated`, or no repo to link to — the row
+// still has to end up on the right.
+.last-updated {
+  margin: 0 auto 0 0;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
 }
 
 .edit-link {
@@ -358,6 +370,15 @@ search-elemental[data-state="error"] .sr-error { display: block; }
 }
 
 .edit-link-row + .page-footer { margin-top: 1.5rem; }
+
+// Phone: the date and the button share the width badly — wrapped, the date sits left and
+// the button right on the line below, reading as two unrelated things. Stacked and centred
+// they read as one block. The date's `margin-right: auto` has to go with it: on a column
+// main axis an auto margin overrides `align-items`, and the date would stay pinned left.
+@media (max-width: 40rem) {
+  .edit-link-row { flex-direction: column; align-items: center; }
+  .last-updated { margin: 0; }
+}
 
 // ---- The drawer ----
 // Not a width question, and so not a media query: the element reflects which side of its

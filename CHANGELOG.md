@@ -34,7 +34,31 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — a docs page says when it was last touched
+
+The edit-link row asked readers to fix the page and told them nothing about how
+stale it was. A page nobody has revised since a rewrite two versions ago reads
+exactly like one corrected this morning.
+
+### Added
+
+- **`docs` renders a `Last updated:` line at the left of the edit-link row**
+  whenever a page has `updated` in its data — hand-written in front matter, or
+  filled in for every page by Poops ≥ 2.4.0's `markup.options.lastUpdated`, which
+  dates pages from a committed index of content hashes rather than from git or an
+  mtime a clone destroys. A page without `updated` renders no line, and the edit
+  link stays exactly where it was. The date prints as `MMM D, YYYY` beside a
+  machine-readable `<time datetime>`; the format is the theme's, not a new config
+  key.
+
+  **New DOM and a new class.** The row is now `.edit-link-row > p.last-updated +
+  a.edit-link`, and it renders for a page carrying `updated` but no
+  `repo`/`filePath` to link to — a case that previously rendered nothing at all.
+  `.edit-link-row` gained `align-items`, `flex-wrap` and `gap`; it still ends
+  flush right, with `.last-updated` pushed away from it by its own auto margin.
+  Below `40rem` the row turns into a centred column instead — wrapped, the date
+  hugging the left edge and the button the right read as two unrelated things. A
+  site overriding either class should look at it once.
 
 ## [4.0.2] - 2026-08-10
 
