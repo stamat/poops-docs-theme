@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — a docs page says when it was last touched
+## [Unreleased]
+
+## [4.1.0] - 2026-08-10 — a docs page says when it was last touched
 
 The edit-link row asked readers to fix the page and told them nothing about how
 stale it was. A page nobody has revised since a rewrite two versions ago reads
