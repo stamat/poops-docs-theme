@@ -49,8 +49,9 @@ Include the theme version, the Poops version, the relevant part of your
   them on Node 22 and 24.
 - **Run `script/a11y`.** It builds nothing itself — `script/build` first — then
   drives the preview site in Chromium and runs axe over it: as served, then with
-  everything that says it is closed opened, then with the search panel showing
-  both a list of hits and the empty state. Four passes over each page, light and
+  everything that says it is closed opened, then with the search settled in each
+  of the two states a query can reach: the panel full of hits, and the message
+  that stands in for it when nothing matched. Four passes over each page, light and
   dark by two viewports, because the bar folds into a drawer below `40rem` and
   the sidebar toggle only exists below `60rem` — a sweep at one width audits half
   the theme and reports as though it did all of it. The document-level rules stay

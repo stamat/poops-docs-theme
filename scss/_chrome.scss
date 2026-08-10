@@ -1,6 +1,24 @@
 // Chrome — the docs-only frame: docs pill, search, sidebar nav, breadcrumb, TOC,
 // edit link, responsive. Topbar/brand/icon-btn/content/footer live in _shell.scss.
 
+// The search field is two elements, so it is four stylesheets: structure then look, for the
+// query half and for the panel. `<search-elemental>`'s structure is the containing block the
+// panel hangs off and the clip that keeps the live region off screen; its theme is the
+// spinner, which is worth taking because the first query of a visit really does wait for the
+// index. `<suggest-elemental>`'s theme is the whole panel — surface, border, shadow, the row
+// under the cursor — re-pointed at this theme's tokens below rather than drawn again here.
+// The `.scss` is load-bearing rather than sloppy: these resolve through the package's
+// `exports` map, whose keys are literally `./search/style.scss` and the rest. Named, because
+// four modules called `style` or `theme` is four claims on two namespaces and sass refuses.
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/search/style.scss" as search-style;
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/search/theme.scss" as search-theme;
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/suggest/style.scss" as suggest-style;
+// stylelint-disable-next-line scss/load-partial-extension
+@use "book-of-elementals/suggest/theme.scss" as suggest-theme;
+
 :root {
   --sidebar-w: 16rem;
 }
@@ -30,23 +48,74 @@
 }
 
 // ---- Search ----
-.search { position: relative; width: min(16rem, 40vw); }
+// No `position: relative` here: `<search-elemental>` claims that about its own box, which is
+// the one thing it claims — the panel inside needs a containing block and every page pairing
+// the two was writing this line on a wrapper by hand.
+.search {
+  width: min(16rem, 40vw);
+
+  // The spinner is the theme's, and its default corner is the end of the field — where the
+  // clear button now is. Moved one control inward, and centred on a 2.2rem field rather than
+  // left near its bottom edge: the button is the thing a reader reaches for and the thing that
+  // has to hold still, so the state that comes and goes takes the inside lane.
+  --search-elemental-spinner-inset-inline: 2rem;
+  --search-elemental-spinner-inset-block: 0.6rem;
+}
 .search-icon {
   position: absolute;
 
-  // Same reason as `.search-results` below: the offset resolves against the padding box, and
-  // `.search` carries the row's inset — so a bare 0.6rem is 0.6rem from the wrapper's edge and
-  // barely a tenth of that into the field, sitting on its rounded corner. The inset is what
-  // puts the icon inside the field rather than against it.
+  // Same reason as the panel below: the offset resolves against the padding box, and `.search`
+  // carries the row's inset — so a bare 0.6rem is 0.6rem from the wrapper's edge and barely a
+  // tenth of that into the field, sitting on its rounded corner. The inset is what puts the
+  // icon inside the field rather than against it.
   left: calc(var(--actions-inset, 0rem) + 0.6rem);
   top: 50%;
   transform: translateY(-50%);
   color: var(--fg-muted);
   pointer-events: none;
 }
+
+// Off, so there are not two — and the one taken off is the one no keyboard could reach.
+// Non-standard and advised against by MDN, drawn by Chromium and Safari, absent in Firefox.
+#search-input::-webkit-search-cancel-button { appearance: none; }
+
+.search-clear {
+  position: absolute;
+
+  // The magnifier's 0.6rem, less the 0.25rem of padding that makes this a 24px target around a
+  // 16px glyph — so the two icons sit the same distance inside the two ends of the field.
+  right: calc(var(--actions-inset, 0rem) + 0.35rem);
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+.search-clear:hover { color: var(--fg); }
+
+// It is a tab stop, and a tab stop you cannot see you have landed on is a control only a mouse
+// can find — which was the whole complaint about the cross this replaces.
+.search-clear:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+// Nothing to clear, so nothing to press. `visibility` rather than `display`: it takes the
+// button out of the tab order along with the look, where `display: none` would also let the
+// field's text run under where the button was about to be.
+#search-input:placeholder-shown ~ .search-clear { visibility: hidden; }
 #search-input {
   width: 100%;
-  padding: 0.4rem 0.75rem 0.4rem 2rem;
+
+  // Set rather than left to the padding and the 16px floor below, which came out at 2.6rem —
+  // taller than the 2.25rem icon buttons it stands next to, and the tallest thing in a bar
+  // whose height is a token. Above the 24px a tap target owes at every width this field is
+  // drawn at.
+  height: 2.2rem;
+
+  // Both ends carry an icon, so both ends keep the room for one.
+  padding: 0.4rem 2rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-alt);
@@ -62,32 +131,86 @@
   font-size: max(16px, 1em);
 }
 #search-input:focus { border-color: var(--focus); }
-.search-results {
-  position: absolute;
-  top: calc(100% + 0.4rem);
 
-  // Absolute offsets resolve against the padding box, so a bare 0 would hang the panel off the
-  // edges of the inset `.search` carries in the topbar row rather than off the field itself.
-  left: var(--actions-inset, 0);
-  right: var(--actions-inset, 0);
-  max-height: 60vh;
-  overflow-y: auto;
+// The panel. `search-elemental` in the selector is not decoration: the element's own rules
+// carry a `[data-align]` attribute each, which weighs the same as one class and one type, so
+// a plain `.search suggest-elemental` would be settled by source order.
+search-elemental.search suggest-elemental {
+  --suggest-elemental-surface: var(--bg);
+  --suggest-elemental-active: var(--bg-alt);
+  --suggest-elemental-radius: var(--radius);
+  --suggest-elemental-inset: 0.6rem;
+  --suggest-elemental-max-height: 60vh;
+
+  // Both insets rather than the one the element writes, because the offsets resolve against
+  // the padding box and `.search` carries the topbar row's inset: aligned to the field, the
+  // panel is 0.5rem in from each edge of this box. Which makes the element's own
+  // `inline-size: 100%` a panel that overhangs by exactly that inset, so it goes back to
+  // being the distance between the two offsets.
+  inset-inline: var(--actions-inset, 0);
+  inline-size: auto;
+  margin-block-start: 0.4rem;
+  padding: 0.35rem;
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+
+  // The panel scrolls down and never sideways. A title with a long unbroken token in it — a
+  // path, a package name, a hash — is wider than a 16rem field, and the element only asks for
+  // `overflow-y`, so the leftover axis would be a scrollbar under rows nobody can read the
+  // ends of. Wrapped rather than clipped: the row breaks mid-token, and `hidden` is the
+  // guarantee behind it rather than the thing doing the work.
+  overflow-x: hidden;
+
+  // A `<ul>` with nothing in it and the panel's own frame around it, which is what an
+  // undefined element leaves on screen: a small empty box under the field from parse until
+  // the bundle lands. The rows are the script's and there are none without it, so there is
+  // nothing here that a reader loses.
+  &:not(:defined) { display: none; }
+}
+search-elemental.search [role="option"] {
+  border-radius: var(--radius);
+
+  // The bar is `<navbar-elemental>` and the whole topbar is inside it, results panel included
+  // — and its theme says `li > a { white-space: nowrap }` while the row of links is a row,
+  // which every result row now matches. Right for a nav label that must not fold in half,
+  // wrong for a sentence: unwound, the rows are one line each and the panel scrolls sideways
+  // under text nobody can reach the end of.
+  white-space: normal;
+
+  // A url, a package name, a hash: one unbroken token is wider than a 16rem field, and a row
+  // that will not break is the other half of that scrollbar.
+  overflow-wrap: anywhere;
+}
+.search .sr-title { font-weight: 600; font-size: 0.9rem; display: block; }
+
+// A block, so a description that runs past the panel wraps onto its own lines under the title
+// rather than trailing off the end of it. Front matter is a sentence as often as it is a
+// phrase, and this is the one field in a row with no length anybody is holding to.
+.search .sr-desc { display: block; font-size: 0.8rem; line-height: 1.35; color: var(--fg-muted); }
+
+// The answers that are not a list: nothing matched, and the search itself failed. Boxes of
+// their own rather than rows in the panel — the panel is a `listbox` and a listbox owns
+// options, so a single row that is not one fails `aria-required-children`. Drawn like the
+// panel because each stands where the panel would: same offsets, same frame, same distance
+// below the field.
+.search .sr-note {
+  display: none;
+  position: absolute;
+  inset-inline: var(--actions-inset, 0);
+  inset-block-start: 100%;
+  z-index: 1;
+  margin: 0.4rem 0 0;
+  padding: 0.85rem 0.95rem;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 0.35rem;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
 }
-.search-results a {
-  display: block;
-  padding: 0.5rem 0.6rem;
-  border-radius: var(--radius);
-  color: var(--fg);
-}
-.search-results a:hover, .search-results a.active { background: var(--bg-alt); text-decoration: none; }
-.search-results .sr-title { font-weight: 600; font-size: 0.9rem; display: block; }
-.search-results .sr-desc { font-size: 0.8rem; color: var(--fg-muted); }
-.search-results .sr-empty { padding: 0.6rem; color: var(--fg-muted); font-size: 0.9rem; }
+search-elemental[data-state="empty"] .sr-empty,
+search-elemental[data-state="error"] .sr-error { display: block; }
+.search .sr-error { color: var(--danger); }
 
 // ---- Layout ----
 .layout { display: flex; align-items: flex-start; }
@@ -290,15 +413,14 @@ disclosure-elemental[data-mode="free"] .nav-toggle { display: inline-flex; }
 // Phone: no room for a search field next to the brand, so it shrinks to an icon
 // button like the GitHub link. The input itself is the button — the icon sits on
 // top with pointer-events: none — so tapping it expands the field across the
-// topbar. `:has` holds it open while results are up: without it, blurring the
-// input to tap a hit would collapse the panel out from under the tap.
+// topbar. Focus is the whole of the open state: `<suggest-elemental>` cancels the
+// pointerdown on a row, so the caret stays in the field for the tap that follows and
+// the field cannot collapse out from under it.
 @media (max-width: 40rem) {
-  $open: ":is(:focus-within, :has(.search-results:not([hidden])))";
+  $open: ":focus-within";
 
-  // The same open state read from the bar instead of the field, and flattened to one `:has`
-  // because `:has` inside `:has` is not a thing the selector spec allows — `.search-results`
-  // is inside `.search` either way, so asking the bar is asking the same question.
-  $bar-open: ":has(.search:focus-within, .search-results:not([hidden]))";
+  // The same open state, read from the bar instead of the field.
+  $bar-open: ":has(.search:focus-within)";
 
   // Open, the field *is* the bar: `position: absolute` across the whole row, with everything
   // the row held sitting behind it. Behind it is not "still available" — tabbing out of the
@@ -313,7 +435,10 @@ disclosure-elemental[data-mode="free"] .nav-toggle { display: inline-flex; }
 
   // No inset here: the field is an icon button at this width, and the input inside it is the
   // tap target — padding on the wrapper would take the target down to the icon's own width.
-  .search { flex: 0 0 auto; width: 2.25rem; padding-inline: 0; margin-left: auto; }
+  // Zeroed as the variable rather than as the padding, because the panel's offsets are read
+  // off the same one: killed as `padding-inline: 0`, the panel would hang 0.5rem inside a
+  // field that no longer has an inset for it to clear.
+  .search { flex: 0 0 auto; width: 2.25rem; --actions-inset: 0rem; margin-left: auto; }
   .search-icon { left: 50%; transform: translate(-50%, -50%); }
 
   #search-input {
@@ -341,7 +466,7 @@ disclosure-elemental[data-mode="free"] .nav-toggle { display: inline-flex; }
 
     #search-input {
       height: 100%;
-      padding: 0.4rem 0.75rem 0.4rem 2rem;
+      padding: 0.4rem 2rem;
       background: var(--bg-alt);
       cursor: auto;
 

@@ -6,6 +6,12 @@ import { onReady } from './prose'
 // Registers `<disclosure-elemental>` on include - nothing on window, nothing to
 // instantiate. The drawer's state, its ARIA and its breakpoint are all the element's.
 import 'book-of-elementals/disclosure'
+// The search field, in two halves that meet at the row: `<search-elemental>` debounces the
+// query, aborts the one it replaces and announces the count, `<suggest-elemental>` is the
+// panel with the listbox roles and the arrow keys. Neither fetches, which is the whole of
+// what is left below.
+import 'book-of-elementals/search'
+import 'book-of-elementals/suggest'
 
 // The drawer is `<disclosure-elemental>`: it owns `open`, writes `aria-expanded` on the
 // toggle and `hidden="until-found"` on the panel, and its `media` attribute holds the rail
@@ -87,6 +93,11 @@ function markActiveNav(): void {
 
 interface Entry { title: string; description?: string; url: string; keywords?: string[] }
 
+// What `search-query` carries. `wait` is how the page hands the element the work, which is
+// what buys the pending state; `signal` aborts the request this query replaces, and is
+// deliberately unused below.
+interface SearchQuery { query: string; signal: AbortSignal | null; wait: (work: Promise<unknown>) => void }
+
 // One result row, built as nodes.
 //
 // Every field in the index is a doc author's front matter verbatim — poops copies a page's
@@ -97,7 +108,7 @@ interface Entry { title: string; description?: string; url: string; keywords?: s
 //
 // `null` rather than a row with a dead link: a scheme that is not http(s) is either an
 // attack or a broken entry, and neither is worth a line in the list.
-function resultRow(base: string, entry: Entry): HTMLAnchorElement | null {
+function resultRow(base: string, entry: Entry): HTMLLIElement | null {
   let url: URL
   try { url = new URL(base + entry.url, location.href) } catch { return null }
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
@@ -114,35 +125,98 @@ function resultRow(base: string, entry: Entry): HTMLAnchorElement | null {
     desc.textContent = entry.description
     a.append(desc)
   }
-  return a
+  // `<li>` because the panel is a `<ul>`, and `<a href>` because that is the one thing
+  // `<suggest-elemental>` counts as an option — the arrow keys walk links and nothing else.
+  const li = document.createElement('li')
+  li.append(a)
+  return li
+}
+
+// The rows for one query, and nothing at all when there are none.
+//
+// A panel with nothing in it closes itself, which is the whole of the empty state here: the
+// message a reader sees is a box beside the panel in `topbar.html`, shown by CSS off
+// `data-state="empty"`. Written into the list instead — which is what the element's own docs
+// suggest — it would hold a `listbox` open over a single row that is not an `option`, and
+// that is `aria-required-children`, which `script/a11y` fails on.
+function resultRows(base: string, query: string, index: Entry[]): HTMLLIElement[] {
+  const needle = query.toLowerCase()
+  return index.filter((e) => {
+    const hay = (e.title + ' ' + (e.description || '') + ' ' + (e.keywords || []).join(' ')).toLowerCase()
+    return hay.includes(needle)
+  }).slice(0, 8).map((e) => resultRow(base, e)).filter((row) => row !== null)
 }
 
 function setupSearch(base: string): void {
+  const search = document.querySelector('search-elemental')
+  const list = document.querySelector('suggest-elemental > ul')
   const input = document.getElementById('search-input') as HTMLInputElement | null
-  const box = document.getElementById('search-results')
-  if (!input || !box) return
-  let index: Entry[] = []
-  fetch(base + 'search-index.json').then((r) => r.json()).then((d) => { index = d }).catch(() => {})
+  if (!search || !list || !input) return
 
-  const render = (q: string): void => {
-    const query = q.trim().toLowerCase()
-    if (!query) { box.hidden = true; box.replaceChildren(); return }
-    const hits = index.filter((e) => {
-      const hay = (e.title + ' ' + (e.description || '') + ' ' + (e.keywords || []).join(' ')).toLowerCase()
-      return hay.includes(query)
-    }).slice(0, 8)
-    box.hidden = false
-    const rows = hits.map((e) => resultRow(base, e)).filter((a) => a !== null)
-    if (!rows.length) {
-      const empty = document.createElement('div')
-      empty.className = 'sr-empty'
-      empty.textContent = 'No results'
-      box.replaceChildren(empty)
-      return
-    }
-    box.replaceChildren(...rows)
+  // Fetched on the first query rather than at boot: the field is in the topbar of every docs
+  // page and most visits never type in it. `??=` is the whole cache, and the `catch` drops it
+  // so a blip is one failed search rather than a dead box for the rest of the visit.
+  //
+  // The query's `signal` is not passed here on purpose. It aborts whatever the *previous*
+  // query started, and this request is not the query's — it is the index every query shares.
+  // Hooked up, a second keystroke would cancel the download the first one started and begin
+  // it again from nothing, for as long as somebody kept typing.
+  let index: Promise<Entry[]> | null = null
+  const load = (): Promise<Entry[]> => (index ??= fetch(base + 'search-index.json')
+    .then((response) => {
+      // `fetch` resolves on a 404, so this is the check that turns a missing index into a
+      // failed search rather than a successful one that found nothing.
+      if (!response.ok) throw new Error('search-index.json: ' + response.status)
+      return response.json() as Promise<Entry[]>
+    })
+    .catch((error: unknown) => { index = null; throw error }))
+
+  // Two ways in, one function, because the part that is easy to get wrong is shared: setting
+  // `.value` from script fires no `input` event, and `<search-elemental>` listens for nothing
+  // else — so a field cleared without one leaves the panel standing over a query that no
+  // longer exists. `form.reset()` and a `<button type="reset">` fire none either, for whoever
+  // wraps this in a form.
+  const clear = (): void => {
+    if (!input.value) return
+    input.value = ''
+    input.dispatchEvent(new Event('input', { bubbles: true }))
   }
-  input.addEventListener('input', () => render(input.value))
+
+  // The clear button is markup rather than the browser's cross, so pressing it is the page's
+  // to handle. Focus goes back to the field: the reader pressed clear to type again, and a
+  // button that empties the field and keeps the caret has asked for one more click.
+  search.querySelector('[data-search-clear]')?.addEventListener('click', () => {
+    clear()
+    input.focus()
+  })
+
+  // Escape empties the field, and the panel goes with it because the empty query closes it.
+  // The element's own staging is Escape-closes-then-Escape-clears — `<suggest-elemental>`
+  // takes the key only while the panel is open and hands it back saying clearing is the
+  // page's usual answer — but a reader pressing Escape at a search box means the search, not
+  // the popup, and two presses to undo one search is a keystroke spent on the difference.
+  // Both listeners are on the field, so both run: nothing here is swallowed.
+  input.addEventListener('keydown', (e) => { if (e.key === 'Escape') clear() })
+
+  // Focus leaving empties it too. This field is in the topbar of every page rather than in
+  // the middle of one, so what is typed in it outlives the reading of the results it fetched
+  // — a query still sitting there after a trip through three pages is a box that has to be
+  // cleared before it can be used, and on a phone it is a field that will not fold back into
+  // its icon. Focus moving *into* the panel is not focus leaving, though the element cancels
+  // the pointerdown that would cause it, so it rarely happens.
+  search.addEventListener('focusout', (e) => {
+    const next = (e as FocusEvent).relatedTarget
+    if (next instanceof Node && search.contains(next)) return
+    clear()
+  })
+
+  // Handing the promise back is what buys the loading state, and it is honest here in both
+  // directions: the first query really does wait for the network, and every one after it
+  // settles on an index in memory, inside a microtask nothing gets painted in.
+  search.addEventListener('search-query', (event) => {
+    const { query, wait } = (event as CustomEvent<SearchQuery>).detail
+    wait(load().then((entries) => { list.replaceChildren(...resultRows(base, query, entries)) }))
+  })
 
   // `/` and ⌘K/Ctrl+K, because both are already in a docs reader's hands — MDN, GitHub,
   // DocSearch and Starlight answer to one or the other and mostly to both. `/` only while
@@ -179,11 +253,6 @@ function setupSearch(base: string): void {
     input.focus()
     input.select()
   })
-
-  document.addEventListener('click', (e) => {
-    if (!(e.target as HTMLElement).closest('.search')) box.hidden = true
-  })
-  input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { input.value = ''; box.hidden = true } })
 }
 
 const BASE = (document.currentScript as HTMLScriptElement | null)?.dataset.base ?? ''

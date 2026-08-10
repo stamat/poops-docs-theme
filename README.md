@@ -8,7 +8,9 @@ Documentation theme for sites built with [Poops](https://github.com/stamat/poops
 layouts, their self-contained styles, and the client scripts. Ships as a dependency so a
 site consumes it instead of copying files.
 
-Requires Poops **≥ 1.9.0** (package-template resolution).
+Requires Poops **≥ 2.0.0** — that is where the dev server started appending its own
+livereload client, so the layouts stopped carrying the snippet and the `livereload_port`
+global it read is gone.
 
 ## Two layouts
 
@@ -140,13 +142,7 @@ declared once, as the `media` attribute in `topbar.html`, and no stylesheet here
 
 Search, the icon links and the theme switch stay on the bar at every width — only the links
 fold away. Below 40rem the search field shrinks to its icon and expands across the bar when
-you tap it. `/` puts the cursor in it, and so does ⌘K / Ctrl+K — the second pair works from
-inside another field, the slash does not, because it is a character somebody may be
-mid-word in. Both are taken off the browser when they land, so Firefox's quick-find and
-Chrome's address-bar shortcut do not fire on a docs page; `Ctrl+Shift+K` is left alone,
-because the web console is not a docs site's to take. There is no visible hint next to the
-field: the shortcut is a shortcut, and at the small end that field is the width of the
-screen.
+you tap it. What it does once you type is [Search](#search).
 
 The docs sidebar is the same idea with a different element: a rail above 60rem and a drawer
 below it, [`<disclosure-elemental>`](https://github.com/stamat/book-of-elementals) with the
@@ -257,6 +253,68 @@ it. The full token set: `--bg`, `--bg-alt`, `--bg-code`, `--fg`, `--fg-muted`,
 
 Nothing in the theme paints an error, so `--danger` is there for elements you embed in a
 page — [Live samples](#live-samples) is the case it was added for.
+
+### Search
+
+The field in the topbar of every `docs` page. It filters `search-index.json` — the file poops
+writes from every page's front matter — on `title`, `description` and `keywords`, and shows
+the first eight hits.
+
+The index is fetched on the **first query**, not on page load: the field is on every page and
+most visits never type in it. So the first search of a visit waits for the network and gets a
+spinner; every one after it answers from memory. A load that fails is dropped rather than
+remembered, so the next keystroke tries again.
+
+Two elements from [book-of-elementals](https://github.com/stamat/book-of-elementals) do the
+work, and between them they are the whole keyboard.
+[`<search-elemental>`](https://stamat.github.io/book-of-elementals/elementals/search.html)
+owns the query — a 100 ms debounce, one `AbortController` per query, the sequence number that
+drops the slow answer arriving after the fast one, and a `role="status"` region that says
+`5 results`, `No results` or `Search failed` out loud, which a panel silently filling itself
+does not.
+[`<suggest-elemental>`](https://stamat.github.io/book-of-elementals/elementals/suggest.html)
+owns the panel: the listbox roles, the cursor that is `aria-activedescendant` rather than
+focus so typing carries on while you walk the list, <kbd>↓</kbd> / <kbd>↑</kbd> wrapping,
+<kbd>Home</kbd> / <kbd>End</kbd>, and <kbd>Enter</kbd> to follow the row under the cursor. The
+theme fetches, builds the rows and owns the rest:
+
+- **`/` and ⌘K / Ctrl+K put the cursor in the field.** The modifier pair works from inside
+  another field and selects what is already typed; the slash does not, because it is a
+  character somebody may be mid-word in. Both are taken off the browser when they land, so
+  Firefox's quick-find and Chrome's address-bar shortcut do not fire on a docs page.
+  `Ctrl+Shift+K` is left alone — the web console is not a docs site's to take. There is no
+  visible hint beside the field: the shortcut is a shortcut, and at the small end that field
+  is the width of the screen.
+- **<kbd>Escape</kbd> empties the field**, and the panel goes with it. The element's own
+  staging is one press to close and a second to clear; a reader pressing Escape at a search
+  box means the search.
+- **Focus leaving empties it too.** This field is in the topbar rather than in the middle of a
+  page, so what is typed in it outlives the results it fetched — and on a phone a field with
+  something in it will not fold back into its icon.
+
+**A result row is built as nodes, never as markup.** The index is front matter verbatim, so a
+`title:` reading `<img src=x onerror=…>` would otherwise run on every page of the site. Text
+goes in as `textContent`, and a url is resolved and dropped unless its scheme is `http:` or
+`https:` — `href` takes a `javascript:` url as readily as a path.
+
+**Nothing found and nothing fetched are different answers**, and both are said twice: once in
+the live region, once in a box under the field. A site that never generated the index gets
+**Search failed**, not **No results** — a search that never happened is not a search that
+found nothing.
+
+The DOM this produces, for a stylesheet that has to reach into it: the wrapper is
+`search-elemental.search` carrying `data-state` (`idle`, `pending`, `results`, `empty`,
+`error`), the panel is `suggest-elemental` with `[open]` and `[role="option"]` on each row,
+and a row is `li > a` holding `.sr-title` and `.sr-desc`. The two messages are
+`p.sr-note.sr-empty` and `p.sr-note.sr-error`, shown by `data-state` alone. The panel's look
+is the element's optional theme with `--suggest-elemental-surface`, `--suggest-elemental-active`,
+`--suggest-elemental-radius`, `--suggest-elemental-inset` and `--suggest-elemental-max-height`
+re-pointed at this theme's tokens and spacing; the spinner the pending state draws is
+`--search-elemental-spinner-*`.
+
+The message boxes sit outside the panel deliberately. A `listbox` may only own `option`s, so a
+"No results" row inside it is `aria-required-children` — critical, and `script/a11y` fails the
+build on it — however reasonable it looks on screen.
 
 ### Code blocks
 
@@ -377,6 +435,17 @@ Inside `Guide` sits a **Deeper** section, and it is filler with a job: three lev
 render through a branch of `navtree.html` that two levels never reach, so a mock site
 stopping at two leaves that branch unaudited while `script/a11y` reports green. Keep the
 nesting when editing the mock.
+
+**Kitchen sink** and **Live samples** sit under a **Samples** heading, and neither file
+moved to get there: both carry `navGroup: Samples` in front matter, poops 2.3's way of
+filing a page under a section the urls do not produce. The urls stay
+`docs/guide/kitchen-sink` and `docs/guide/live-samples`, and so do the breadcrumbs — the
+grouping is the sidebar's alone. It is filler with a job as well: a group is a section
+node with **no page of its own**, so it renders with no **Overview** link, and every other
+section in the mock has an index page that gives it one. Building the mock on a poops
+older than 2.3 leaves the field unread and both pages sitting directly under `Guide` — the
+theme itself asks for nothing newer than the `>=2.0.0` peer range, since the tree it
+renders arrives as data either way.
 
 ## Local development
 

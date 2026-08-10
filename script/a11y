@@ -90,9 +90,11 @@ const EXPAND_ROUNDS = 5
 // which cannot be driven does not hold the sweep for a minute.
 const CLICK_TIMEOUT = 2000
 
-// Typed into the search field to get the results panel on screen. Two queries because both
-// outcomes are markup: a list of hits, and the empty state, which is the one nobody looks at.
-const QUERIES = ['e', 'zzzznothing']
+// Typed into the search field, with the state each one settles in. Two queries because both
+// outcomes are markup: a list of hits, and the empty state, which is the one nobody looks at
+// - and they are different markup, in different boxes. A hit fills the panel and opens it; a
+// miss leaves the panel empty, which closes it, and shows the message beside it instead.
+const QUERIES = [['e', 'results'], ['zzzznothing', 'empty']]
 
 /** Every built page of the preview site. */
 function pages() {
@@ -146,7 +148,10 @@ async function runAxe(page) {
 async function expandAll(page, skipped) {
   let opened = false
   for (let round = 0; round < EXPAND_ROUNDS; round++) {
-    const triggers = await page.locator('[aria-expanded="false"]:visible').all()
+    // The search field carries `aria-expanded` too, and clicking one does not open anything:
+    // a combobox opens on a query, which is the sweep below. Left in, it reports closed on
+    // every round, so the loop never settles and runs all five on every page.
+    const triggers = await page.locator('[aria-expanded="false"]:visible:not([role="combobox"])').all()
     if (!triggers.length) return opened
     for (const trigger of triggers) {
       // An earlier click in this round can move or replace a later trigger - a drawer that
@@ -171,17 +176,20 @@ async function auditPage(page, report) {
 
   if (await expandAll(page, skipped)) states.push(['expanded', await runAxe(page)])
 
-  // The field only exists on pages that have docs beside them, and only fills once
-  // `search-index.json` has arrived - so this waits for the panel rather than for the typing.
+  // The field only exists on pages that have docs beside them, and the answer lands a debounce
+  // and a fetch after the typing - `search-index.json` is pulled on the first query rather
+  // than at boot. So this waits for the state rather than for the keystroke, and for the state
+  // this query settles in rather than for any: waiting on the panel being visible would be
+  // answered by the rows the query before it left on screen.
   const search = page.locator('#search-input')
   if (await search.count()) {
-    for (const query of QUERIES) {
+    for (const [query, state] of QUERIES) {
       await search.fill(query)
       try {
-        await page.locator('#search-results').waitFor({ state: 'visible', timeout: CLICK_TIMEOUT })
+        await page.locator(`search-elemental[data-state="${state}"]`).waitFor({ timeout: CLICK_TIMEOUT })
         states.push([`search "${query}"`, await runAxe(page)])
       } catch {
-        skipped.push(`#search-results never appeared for "${query}"`)
+        skipped.push(`the search never settled in "${state}" for "${query}"`)
       }
     }
     await search.fill('')

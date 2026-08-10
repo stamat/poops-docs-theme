@@ -23,11 +23,15 @@ const INDEX = [
   { title: 'Bad link', description: 'a scheme that is not a scheme', url: 'javascript:alert(1)' }
 ]
 
-function search(query: string): HTMLElement {
+// The query goes out a debounce after the keystroke and the answer a promise after that — the
+// index is fetched on the first search, not at boot. So typing is asynchronous now, and every
+// caller waits out `delay="10"` on the element below plus the microtasks the fetch stub takes.
+async function search(query: string): Promise<HTMLElement> {
   const input = document.getElementById('search-input') as HTMLInputElement
   input.value = query
   input.dispatchEvent(new Event('input'))
-  return document.getElementById('search-results')!
+  await new Promise((resolve) => setTimeout(resolve, 30))
+  return document.querySelector('suggest-elemental')!
 }
 
 // docs.ts has no exports — it boots on import. Build the DOM first, then import.
@@ -36,16 +40,21 @@ beforeAll(async () => {
     mql.media = media
     return mql
   }) as unknown as typeof window.matchMedia
-  // jsdom ships no fetch, and an undefined one throws a ReferenceError the `.catch` on the
-  // promise never sees — the whole boot would go down with it.
-  window.fetch = jest.fn(() => Promise.resolve({ json: () => Promise.resolve(INDEX) })) as unknown as typeof window.fetch
+  // jsdom ships no fetch, and an undefined one is a ReferenceError thrown at the first query
+  // rather than a rejection the element can report.
+  window.fetch = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(INDEX) })) as unknown as typeof window.fetch
   document.body.innerHTML = `
     <div class="prose"><pre>npm install poops</pre></div>
     <switch-elemental><button data-theme-toggle aria-label="Dark mode"></button></switch-elemental>
-    <div class="search">
-      <input type="search" id="search-input">
-      <div class="search-results" id="search-results" hidden></div>
-    </div>
+    <search-elemental class="search" delay="10">
+      <search>
+        <input type="search" id="search-input" placeholder="Search docs…">
+        <button type="button" class="search-clear" aria-label="Clear the search" data-search-clear></button>
+      </search>
+      <suggest-elemental for="search-input"><ul></ul></suggest-elemental>
+      <p class="sr-note sr-empty">No results</p>
+      <p class="sr-note sr-error">Search failed</p>
+    </search-elemental>
     <aside class="sidebar" id="sidebar-nav" data-sidebar>
       <a class="nav-link" href="http://localhost/docs/intro/">Intro</a>
       <a class="nav-link" href="http://localhost/docs/other/">Other</a>
@@ -57,7 +66,7 @@ beforeAll(async () => {
   window.history.replaceState({}, '', '/docs/intro/index.html')
   Element.prototype.scrollIntoView = jest.fn()
   await import('../src/docs')
-  // the index arrives on a promise; let it land before anything types
+  // the elements upgrade on import; let their connected callbacks land before anything types
   await new Promise((resolve) => setTimeout(resolve, 0))
 })
 
@@ -196,35 +205,117 @@ test('crossing the breakpoint holds the rail open, and closes it again on the wa
   expect(sidebar.getAttribute('data-mode')).toBe('free')
 })
 
-test('search finds a page by its description and links to it', () => {
-  const box = search('begin')
-  const a = box.querySelector('a')!
+// First of the search tests on purpose: the index is fetched once and kept, so the only run
+// that can fail is the one before it has ever arrived — which is also the site this catches,
+// the one that never generated the file. `fetch` resolves on a 404, and the old code swallowed
+// it and answered every query with "No results" — a true sentence about a search that never
+// happened. The field is emptied at the end because the element treats a repeat of the query
+// it last answered as nothing to do, error or not.
+test('an index that never arrives says the search failed, not that nothing matched', async () => {
+  ;(window.fetch as jest.Mock).mockImplementationOnce(() => Promise.resolve({ ok: false, status: 404 }))
+  const panel = await search('begin')
+  expect(document.querySelector('search-elemental')!.getAttribute('data-state')).toBe('error')
+  expect(panel.hasAttribute('open')).toBe(false)
+  expect(document.querySelector('.sr-error')!.textContent).toBe('Search failed')
+  expect(document.querySelector('.search-elemental-status')!.textContent).toBe('Search failed')
+  await search('')
+})
+
+// And the next query tries again rather than living with it: the failed load is dropped, so a
+// blip is one search, not a dead box for the rest of the visit.
+test('search finds a page by its description and links to it', async () => {
+  const panel = await search('begin')
+  const a = panel.querySelector('a')!
   expect(a.getAttribute('href')).toBe('http://localhost/docs/intro/docs/getting-started/')
   expect(a.querySelector('.sr-title')!.textContent).toBe('Getting started')
+})
+
+// A row is only an option to `<suggest-elemental>` if it is an `<a href>` inside the list, and
+// only an option can be reached with the arrow keys or counted in what the live region says.
+test('a hit is an option: a link in the list, and one the panel is open to show', async () => {
+  const panel = await search('begin')
+  expect(panel.hasAttribute('open')).toBe(true)
+  expect(panel.querySelector('li > a')!.getAttribute('role')).toBe('option')
+  expect(document.querySelector('.search-elemental-status')!.textContent).toBe('1 result')
+})
+
+// The field going back under the minimum is a question no longer being asked, and a panel
+// left standing is an answer to it.
+test('emptying the field takes the panel down', async () => {
+  const panel = await search('begin')
+  expect(panel.hasAttribute('open')).toBe(true)
+  await search('')
+  expect(panel.hasAttribute('open')).toBe(false)
 })
 
 // The index is front matter, verbatim — nothing between the author and this list escapes a
 // thing. A title interpolated into `innerHTML` runs on every page the topbar sits on, which
 // is every page.
-test('a title carrying markup arrives as text: the tags are the title, not tags', () => {
-  const box = search('xss')
-  expect(box.querySelector('img')).toBeNull()
-  expect(box.querySelector('.sr-title')!.textContent).toBe('<img src=x onerror="alert(1)">')
+test('a title carrying markup arrives as text: the tags are the title, not tags', async () => {
+  const panel = await search('xss')
+  expect(panel.querySelector('img')).toBeNull()
+  expect(panel.querySelector('.sr-title')!.textContent).toBe('<img src=x onerror="alert(1)">')
 })
 
-test('a description carrying markup arrives as text too', () => {
-  const box = search('begin')
-  expect(box.querySelector('b')).toBeNull()
-  expect(box.querySelector('.sr-desc')!.textContent).toBe('How to <b>begin</b>')
+test('a description carrying markup arrives as text too', async () => {
+  const panel = await search('begin')
+  expect(panel.querySelector('b')).toBeNull()
+  expect(panel.querySelector('.sr-desc')!.textContent).toBe('How to <b>begin</b>')
 })
 
 // `href` takes a `javascript:` url as readily as a path, and a row whose link cannot be
 // followed safely is worth less than no row — so the entry is dropped rather than rendered
-// dead, and a list left with nothing says so.
-test('a url with a scheme that is not http never becomes a link', () => {
-  const box = search('bad link')
-  expect(box.querySelector('a')).toBeNull()
-  expect(box.querySelector('.sr-empty')!.textContent).toBe('No results')
+// dead, and a search left with nothing says so.
+//
+// A listbox owns options, so the message is a box outside the panel rather than a row inside
+// it, and the panel closes because nothing is in it. The live region says the same words: one
+// sentence on screen and a different one in the reader's ear is two answers to one question.
+test('a url with a scheme that is not http never becomes a link', async () => {
+  const panel = await search('bad link')
+  expect(panel.querySelector('a')).toBeNull()
+  expect(panel.hasAttribute('open')).toBe(false)
+  expect(document.querySelector('search-elemental')!.getAttribute('data-state')).toBe('empty')
+  expect(document.querySelector('.sr-empty')!.textContent).toBe('No results')
+  expect(document.querySelector('.search-elemental-status')!.textContent).toBe('No results')
+})
+
+// A search box in the topbar is on every page, so what is typed in it outlives the results it
+// fetched. Both are the field being emptied, and the `input` event is the load-bearing part:
+// `<search-elemental>` listens for nothing else, so a clear that fires none leaves the panel
+// answering a query that is gone.
+// The button replaces a native cross no keyboard could reach, so the caret goes back where it
+// was: clearing is what a reader does before typing the next query.
+test('the clear button empties the field and hands the caret back', async () => {
+  const input = document.getElementById('search-input') as HTMLInputElement
+  const panel = await search('begin')
+  expect(panel.hasAttribute('open')).toBe(true)
+
+  document.querySelector<HTMLButtonElement>('[data-search-clear]')!.click()
+  expect(input.value).toBe('')
+  expect(panel.hasAttribute('open')).toBe(false)
+  expect(document.activeElement).toBe(input)
+})
+
+test('escape empties the field, and the panel goes with it', async () => {
+  const input = document.getElementById('search-input') as HTMLInputElement
+  const panel = await search('begin')
+  expect(panel.hasAttribute('open')).toBe(true)
+
+  input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  expect(input.value).toBe('')
+  expect(panel.hasAttribute('open')).toBe(false)
+})
+
+test('focus leaving the field empties it, and focus into the panel does not', async () => {
+  const input = document.getElementById('search-input') as HTMLInputElement
+  const panel = await search('begin')
+
+  input.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: panel.querySelector('a') }))
+  expect(input.value).toBe('begin')
+
+  input.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: document.querySelector('main a') }))
+  expect(input.value).toBe('')
+  expect(panel.hasAttribute('open')).toBe(false)
 })
 
 // Dispatched at whatever holds focus and left to bubble, which is where a real keydown

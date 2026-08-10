@@ -2,6 +2,7 @@
 layout: docs
 title: Kitchen sink
 description: Every prose element the theme styles, on one page.
+navGroup: Samples
 order: 2
 ---
 
@@ -56,16 +57,16 @@ the inner keys get a cap.
 ## Admonitions
 
 > [!NOTE]
-> Purple. The default flavour.
+> Blue, same as info. The default flavour.
 
 > [!TIP]
 > Green. For the "you probably want this" aside.
 
 > [!IMPORTANT]
-> Blue, same as info.
+> Yellow.
 
 > [!WARNING]
-> Yellow. For things that break.
+> Orange. For things that break.
 
 > [!CAUTION]
 > Red — reserved for destructive operations.

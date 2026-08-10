@@ -34,7 +34,17 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — a page title could run script from the search box
+## [Unreleased] — the search box was a text field with a div under it
+
+Arrow keys did nothing. Enter did nothing. The panel had no role, the field never said it had
+a popup, and results appearing in it announced nothing at all — a change a sighted reader
+watches happen and a screen reader user is told nothing about, which is
+[WCAG 2.2 4.1.3](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html) unmet. The
+only way through a hit was the pointer.
+
+The index behind it was fetched on every docs page whether or not anybody searched, and if
+the file was not there the failure was swallowed: from then on every query answered
+**No results**, which is a true sentence about a search that never happened.
 
 The search index poops writes is every page's front matter copied out verbatim, and the
 theme dropped a result's title, description and url straight into `innerHTML`. A `<img
@@ -47,6 +57,44 @@ sentence as a full stop of its own, and a screen reader read it out as "pile of 
 
 ### Added
 
+- **The search field is `<search-elemental>` and `<suggest-elemental>`**, which is the whole
+  keyboard the panel never had: <kbd>↓</kbd> and <kbd>↑</kbd> walk the results and wrap,
+  <kbd>Home</kbd> and <kbd>End</kbd> reach the ends once a row is under the cursor and stay
+  with the caret until then, <kbd>Enter</kbd> follows the row, <kbd>Escape</kbd> closes. The
+  cursor is `aria-activedescendant` rather than focus, so typing carries on while you look,
+  and the field now reports itself as a combobox with a popup instead of as a plain text box.
+  A settled search says `5 results`, `No results` or `Search failed` in a `role="status"`
+  region — the announcement the panel filling itself never made.
+
+  Two more things the reader gets: **<kbd>Escape</kbd> empties the field** rather than only
+  closing the panel, and **focus leaving empties it too** — this field is in the topbar of
+  every page, so a query left in it outlives the results it fetched, and on a phone a field
+  with something in it will not fold back into its icon.
+
+  The DOM changes, and a site with its own rules for it needs them: `#search-results` is gone.
+  The panel is `suggest-elemental[open]` holding `ul > li > a[role="option"]`, the wrapper is
+  `search-elemental.search` carrying `data-state`, and the row classes `.sr-title` / `.sr-desc`
+  are unchanged inside it. `.sr-empty` still exists but has moved out of the panel and is now
+  `p.sr-note.sr-empty` (see below). The panel's look is the element's optional theme with
+  `--suggest-elemental-surface`, `--suggest-elemental-active`, `--suggest-elemental-radius`,
+  `--suggest-elemental-inset` and `--suggest-elemental-max-height` pointed at this theme's
+  tokens; anything that styled `.search-results` directly wants those instead.
+
+  Measured against the same build before the change, `docs.min.js` grows by 8.3KB and
+  `docs.min.css` by 2.9KB — minified, before compression, and everything in this entry
+  included.
+
+- **The empty and failed searches are drawn as well as spoken.** `p.sr-note.sr-empty` says
+  **No results** and `p.sr-note.sr-error` says **Search failed**, in a box under the field,
+  shown by `data-state` alone with no script involved. The words are `empty-text` and
+  `error-text` on the element, so what a reader sees and what the live region reads out is one
+  sentence rather than two that can drift.
+
+  They sit outside the panel, which is the one place this theme departs from the element's own
+  advice: a `listbox` may only own `option`s, so a "No results" row inside the panel is
+  `aria-required-children` — critical, and `script/a11y` fails the build on it. Measured, not
+  assumed: the row was written that way first and the sweep caught it.
+
 - **`/` and ⌘K / Ctrl+K put the cursor in the search field.** The field was reachable by
   pointer or by tabbing the length of the topbar, and every docs site a reader arrives from
   answers to one of these. The slash is ignored while an `<input>`, `<textarea>`, `<select>`
@@ -57,7 +105,30 @@ sentence as a full stop of its own, and a screen reader read it out as "pile of 
   address-bar search, on a docs page. Nothing was added to the markup: no hint sits beside the
   field.
 
+- **A grouped section in the mock site, and poops 2.3 to build it with.** `Kitchen sink` and
+  `Live samples` now carry `navGroup: Samples`, poops 2.3's front-matter grouping — the pages
+  stay where they are, urls and breadcrumbs unchanged, and only the sidebar gains the heading.
+  Filler with a job: a group is a section node with no page of its own, so it is the first
+  thing in the mock to render the `navtree.html` branch that omits the **Overview** link —
+  every other section there has an index page. The sweep and the unit suite cover it now
+  rather than by claim. `poops` moved to `^2.3.0` as a devDependency only; the peer range
+  stays `>=2.0.0`, because the theme reads the tree as data and an older poops just leaves the
+  field unread.
+
 ### Changed
+
+- **`search-index.json` is fetched on the first query, not on page load.** The field is in the
+  topbar of every docs page and most visits never type in it, so the request went out for
+  everybody and paid off for a few. The first search of a visit now waits for the network and
+  gets a spinner while it does; every one after it answers from an index already in memory.
+
+- **The search field is 2.2rem tall**, set rather than left to fall out of its padding and the
+  16px iOS floor, which came to 2.6rem — the tallest thing in a bar standing next to 2.25rem
+  icon buttons.
+
+- **`book-of-elementals` moves to `^0.7.0`** from `^0.5.0`, which is where the two search
+  elements arrive. Nothing this theme already used changed shape: the hover tint the 0.6
+  release evened out across the book is re-pointed at `--bg-alt` here and always was.
 
 - **The default footer names poops-docs-theme beside Poops**, and the 💩 moved in front of
   the Poops link with `aria-hidden="true"` on it, so it reads as decoration rather than as a
@@ -65,6 +136,14 @@ sentence as a full stop of its own, and a screen reader read it out as "pile of 
   untouched.
 
 ### Fixed
+
+- **A missing search index says so instead of reporting no results.** `fetch` resolves on a
+  404, and the load was wrapped in a `catch` that threw the error away — so a site that never
+  generated `search-index.json`, or one whose file was briefly unreachable, had a search box
+  that answered every query with **No results** for the rest of the visit. The response is
+  checked, the failure reaches the element as a rejection, and the field says **Search failed**
+  in the box and in the live region. The failed load is dropped rather than remembered, so the
+  next keystroke tries again.
 
 - **The mobile drawer no longer slides itself shut on page load.** Closed is the state the
   drawer _arrives_ in — `<disclosure-elemental>` writes it at upgrade — but the transform
@@ -95,10 +174,10 @@ sentence as a full stop of its own, and a screen reader read it out as "pile of 
   the one place the index is crossed from data into DOM: `title` and `description` go in as
   `textContent`, and the url is resolved against the page and dropped unless its scheme is
   `http:` or `https:` — `href` takes a `javascript:` url as readily as a path. An entry that
-  fails that check is left out of the list rather than rendered as a dead link. The markup a
-  result produces is unchanged, so a site styling `.sr-title` / `.sr-desc` / `.sr-empty` needs
-  no change. Authoring markup in a `title:` and expecting it to render never worked in the
-  sidebar or the `<title>` either; it now does not work here.
+  fails that check is left out of the list rather than rendered as a dead link. `.sr-title` and
+  `.sr-desc` still name the two pieces of a row, though the box around them moved with the
+  panel — see the search entry under _Added_. Authoring markup in a `title:` and expecting it
+  to render never worked in the sidebar or the `<title>` either; it now does not work here.
 
 ## [3.1.1] - 2026-08-07 — a sidebar three levels deep was not a list any more
 

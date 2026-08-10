@@ -3,6 +3,7 @@ layout: docs
 title: Live samples
 navTitle: Live samples
 description: A code-preview block running inside the theme, and the three collisions the theme settles for it.
+navGroup: Samples
 order: 3
 ---
 

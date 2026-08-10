@@ -61,12 +61,53 @@
   </nav>
   {% endif %}
   <div class="topbar-actions">
+    {#- `<search-elemental>` owns the query — the debounce, the abort, the state the spinner
+        hangs off and the live region that says "5 results" — and `<suggest-elemental>` owns
+        the panel: the listbox roles, the cursor, the arrow keys and Escape. What is left to
+        `docs.js` is fetching the index and building the rows, which is the seam both elements
+        draw. `class="search"` sits on the element rather than on a wrapper: it is
+        `position: relative` already, which is the containing block the panel needs.
+
+        No `<form>` around the field, unlike the element's own samples: a form degrades to a
+        search *page* on submit and the theme generates none, so an `action` here would be a
+        promise of a url that 404s. Without script the field is inert — as it was before these
+        elements, since the results have always come from the index poops writes.
+
+        `delay="100"`: the element's 200 is measured for a request, and after the first query
+        this is a filter over an index already in memory. -#}
     {% if docs %}
-    <div class="search">
-      <svg class="search-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"></path></svg>
-      <input type="search" id="search-input" placeholder="Search docs…" autocomplete="off" aria-label="Search documentation">
-      <div class="search-results" id="search-results" hidden></div>
-    </div>
+    <search-elemental class="search" delay="100" empty-text="No results" error-text="Search failed">
+      <search>
+        <svg class="search-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"></path></svg>
+        <input type="search" id="search-input" placeholder="Search docs…" autocomplete="off" aria-label="Search documentation">
+        {#- Chromium and Safari draw a cross in a `type="search"` field and Firefox draws none,
+            so this replaces the one they draw and supplies the one they do not. The native one
+            is mouse-only: the field reports to the accessibility tree as a single searchbox
+            with nothing inside it, and Tab from the field lands on the next control. A real
+            `<button>` with a name is a tab stop, an announced control, and the same octicon
+            weight as the magnifier at the other end. It is hidden while the field is empty,
+            which takes it out of the tab order too — a stop that clears an empty field is a
+            keystroke that does nothing. -#}
+        <button type="button" class="search-clear" aria-label="Clear the search" data-search-clear>
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"></path></svg>
+        </button>
+      </search>
+      <suggest-elemental for="search-input"><ul></ul></suggest-elemental>
+      {#- The two answers that are not a list of links, outside the panel and shown by CSS off
+          `data-state`. The element's own advice is to write the empty one as a row in the
+          panel, which keeps it open — but the panel is a `listbox`, and ARIA says a listbox
+          owns `option`s: an open one holding a single row that is not one is
+          `aria-required-children`, critical, and `script/a11y` fails on it. Kept out of the
+          list, the panel closes and these say what happened in its place.
+
+          The words are the ones in `empty-text` and `error-text` above, deliberately: what a
+          reader sees and what the live region reads out have to be one sentence. And the
+          error is drawn rather than only spoken because it is the state a docs site reaches
+          by never generating `search-index.json` — a field that answers every query with
+          nothing at all is the silent wrong this theme does not ship. -#}
+      <p class="sr-note sr-empty">No results</p>
+      <p class="sr-note sr-error">Search failed</p>
+    </search-elemental>
     {% endif %}
 
     {#- `site.iconLinks`: label-less buttons next to GitHub — package registries, chat,
