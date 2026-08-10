@@ -36,6 +36,11 @@ GitHub release verbatim.
 
 ## [Unreleased]
 
+### Fixed
+
+- Bumps `book-of-elementals` to `^0.7.2` to pick up a fix for listboxes pointer events not
+  working on iOS
+
 ## [4.0.1] - 2026-08-10
 
 ### Fixed
