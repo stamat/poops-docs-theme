@@ -140,9 +140,12 @@ reaches every one of them, the arrow keys walk the row, and Escape closes what i
 `aria-expanded`, `aria-controls` and `hidden` are the element's to write. The breakpoint is
 declared once, as the `media` attribute in `topbar.html`, and no stylesheet here repeats it.
 
-Search, the icon links and the theme switch stay on the bar at every width — only the links
-fold away. Below 40rem the search field shrinks to its icon and expands across the bar when
-you tap it. What it does once you type is [Search](#search).
+When the row becomes a drawer the icon links and the theme switch go into it, as the row
+under the links, and come back onto the bar when the links do. They are moved and not copied,
+so there is never a second switch able to disagree with the theme on screen — and with
+scripting off, where there is no drawer either, they stay on the bar at every width. Search
+does stay: below 40rem the field shrinks to its icon and expands across the bar when you tap
+it. What it does once you type is [Search](#search).
 
 The docs sidebar is the same idea with a different element: a rail above 60rem and a drawer
 below it, [`<disclosure-elemental>`](https://github.com/stamat/book-of-elementals) with the
@@ -170,8 +173,9 @@ is `hidden="until-found"`, so find-in-page still reaches a link inside it and op
 ```
 
 `site.iconLinks` is the same shape without labels: buttons in the row next to GitHub, for
-package registries, chat rooms, anything worth a permanent spot. They keep their spot on a
-phone rather than folding away, and `title` becomes the `aria-label`.
+package registries, chat rooms, anything worth a permanent spot. On a phone they follow the
+links into the drawer rather than staying on a bar with no room left, and `title` becomes the
+`aria-label`.
 
 ```json
 {

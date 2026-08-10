@@ -60,6 +60,30 @@ exactly like one corrected this morning.
   hugging the left edge and the button the right read as two unrelated things. A
   site overriding either class should look at it once.
 
+### Changed
+
+- **The icon links and the theme switch go into the drawer with the links.** On a
+  phone the bar held a brand, a search field, every `site.iconLinks` button, the
+  GitHub link, the theme switch and a hamburger — so the title truncated to a few
+  characters to pay for controls the drawer under it had room for. They now move
+  into the drawer as the row under the links, and move back onto the bar when
+  `<navbar-elemental>` measures its way out of stack mode. Search stays: it is
+  already an icon at that width and expanding it is the reason to keep it in reach.
+
+  **Moved, not copied.** One `<switch-elemental>` in the page at every width, so
+  there is never a second switch left saying the theme is off while the page is
+  dark. With scripting off there is no drawer either, and the controls stay on the
+  bar exactly as before.
+
+  **New DOM and a moved custom property.** In stack mode the row gains a final
+  `<li class="drawer-actions" data-navbar-stack>` holding those controls —
+  `data-navbar-stack` keeps it out of the element's measurement, so it never
+  competes with a link for room on the bar. `--actions-inset` is now declared on
+  `.topbar > navbar-elemental` rather than on `.topbar-actions`: read from the
+  group the switch has just left, the padding it sets would compute to nothing. A
+  site overriding it on `.topbar-actions` still gets what it asked for on the bar
+  and should set it on the bar instead.
+
 ## [4.0.2] - 2026-08-10
 
 ### Fixed

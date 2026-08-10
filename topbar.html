@@ -111,7 +111,10 @@
     {% endif %}
 
     {#- `site.iconLinks`: label-less buttons next to GitHub — package registries, chat,
-        whatever else earns a permanent spot. They stay put on a phone. -#}
+        whatever else earns a permanent spot. These and the switch below them are moved into
+        the drawer by `prose.js` once the row of links has become one, and moved back out when
+        it is a bar again — the nodes themselves, since two switches for one setting is one of
+        them able to disagree with the page. Without script they stay here at every width. -#}
     {%- for link in site.iconLinks -%}
       {%- set external = '//' in link.url -%}
     <a class="icon-btn" href="{{ link.url if external else prefix + link.url }}" aria-label="{{ link.title }}"{% if external %} target="_blank" rel="noopener"{% endif %}>{{ (icons[link.icon] or link.icon) | safe }}</a>

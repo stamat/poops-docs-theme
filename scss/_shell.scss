@@ -92,6 +92,17 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
   --navbar-elemental-hover: var(--bg-alt);
   --navbar-elemental-shadow: var(--shadow);
   --navbar-elemental-radius: var(--radius);
+
+  // Every control in the actions group carries its own clear space instead of taking it from a
+  // gap, and the group's gap is zero — which is the only way the spacing comes out even. An
+  // icon button is a 2.25rem box around a 20px glyph, so it already brings 8px to each edge; a
+  // gap lands on top of that between two buttons and on nothing between a button and the
+  // switch, so one number cannot serve both. With the inset on every item instead, any two
+  // neighbours are 16px apart whichever two they are.
+  // Declared on the whole bar rather than on `.topbar-actions`, because the switch is carried
+  // out of that group and into the drawer on a narrow screen — read from a box it has left, the
+  // padding it sets would compute to nothing the moment it moved.
+  --actions-inset: 0.5rem;
 }
 
 // The row of links: a flex item that takes what the rest of the bar leaves, which is what
@@ -195,14 +206,6 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
 // Right-hand group: search (docs only) + GitHub + theme switcher + the drawer's button. One
 // `auto` margin here keeps the group flush right whether or not the rail is in the row.
 .topbar-actions {
-  // Every control here carries its own clear space instead of taking it from a gap, and the
-  // group's gap is zero — which is the only way the spacing comes out even. An icon button is a
-  // 2.25rem box around a 20px glyph, so it already brings 8px to each edge; a gap lands on top
-  // of that between two buttons and on nothing between a button and the switch, so one number
-  // cannot serve both. With the inset on every item instead, any two neighbours are 16px apart
-  // whichever two they are.
-  --actions-inset: 0.5rem;
-
   display: flex;
   align-items: center;
   gap: 0;
@@ -234,6 +237,32 @@ switch-elemental {
 
   &:hover { color: var(--fg); }
 }
+
+// The same controls once `prose.js` has carried them into the drawer, in the row it makes for
+// them. A row and not the drawer's own full-width lines: these are glyphs, and a column of them
+// is a drawer twice as tall saying nothing more. Wrapped, because how many icon links a site
+// has is the site's business and a drawer is as wide as a phone.
+.drawer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  // The element's theme indents every label in the drawer by the room a caret takes, so that
+  // rows with one and rows without still read as a column. The glyphs join that column — less
+  // the space each already has inside its own button box, which is the difference between
+  // lining up the icons and lining up the boxes they are drawn in.
+  padding-inline-start: calc(var(--navbar-elemental-caret-size) + 0.75rem - (2.25rem - 1rem) / 2);
+}
+
+// That same indent, applied to an icon button, is a 2.25rem hover backdrop with a 1rem glyph
+// pushed to its right-hand edge. The button centres its own glyph and needs no padding to do
+// it, so the backdrop is a square around the icon rather than beside it.
+.drawer-actions .icon-btn { padding: 0; }
+
+// The switch is a setting and not a link, and the drawer is wide enough to say so: the links
+// and the icon buttons read down the left edge, and the one control that changes the page
+// rather than leaving it sits at the other end of its row.
+.drawer-actions switch-elemental { margin-inline-start: auto; }
 
 // ---- Content column ----
 .content {

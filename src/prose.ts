@@ -101,6 +101,56 @@ export function setupTheme(): void {
   })
 }
 
+// The icon links and the theme switch sit at the right of the bar, which on a phone is a row
+// already holding a brand, a search field and a hamburger. Once the site's links have folded
+// into the drawer, these follow them down into it and come back up when the bar returns.
+//
+// Moved and never copied. A second `<switch-elemental>` is a second control for one setting,
+// and two of them is one that can be left saying the opposite of the theme on screen; a second
+// copy of the links is a second thing to keep in step with `site.iconLinks`. `<navbar-elemental>`
+// moves nothing the page wrote — that is its promise — so the move is the page's own.
+//
+// `data-navbar-stack` is the element's hook for a row belonging to the drawer alone: it is left
+// out of the measurement and out of the copy being measured, so a bar that has room for one
+// more link still gets it.
+export function setupDrawerActions(): void {
+  const bar = document.querySelector<HTMLElement>('.topbar navbar-elemental')
+  const actions = document.querySelector<HTMLElement>('.topbar-actions')
+  // The row of links *is* the drawer, so no `site.links` means there is nowhere to move to —
+  // and no hamburger either. The controls stay on the bar at every width, which is where a
+  // topbar with nothing else on it has the room for them anyway.
+  const row = bar?.querySelector<HTMLElement>('.rail > ul:not([data-navbar-probe])')
+  if (!bar || !actions || !row) return
+
+  const controls = Array.from(actions.querySelectorAll<HTMLElement>(':scope > .icon-btn, :scope > switch-elemental'))
+  if (!controls.length) return
+
+  const slot = document.createElement('li')
+  slot.className = 'drawer-actions'
+  slot.setAttribute('data-navbar-stack', '')
+
+  const sync = (): void => {
+    const stacked = bar.dataset.mode === 'stack'
+    if (stacked === slot.isConnected) return
+    if (stacked) {
+      row.append(slot)
+      slot.append(...controls)
+      return
+    }
+    // Back where the markup had them, in their own order: ahead of the drawer's button, which
+    // is last in the row and stays there.
+    const toggle = actions.querySelector('[data-navbar-toggle]')
+    for (const control of controls) actions.insertBefore(control, toggle)
+    slot.remove()
+  }
+
+  // The element writes `data-mode` and rewrites it on every resize that crosses the point where
+  // the links stop fitting — which is measured, not a breakpoint, so there is no media query
+  // here to watch instead.
+  new MutationObserver(sync).observe(bar, { attributeFilter: ['data-mode'] })
+  sync()
+}
+
 // Run fn once the DOM is parsed. Exported so docs.ts boots on the same tick.
 export function onReady(fn: () => void): void {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn)
@@ -112,4 +162,5 @@ onReady(() => {
   makeTablesScrollable()
   fixHeadingAnchors()
   setupTheme()
+  setupDrawerActions()
 })
