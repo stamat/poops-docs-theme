@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the icon links say what they are
+## [Unreleased]
+
+## [4.2.0] - 2026-08-11 — the icon links say what they are
 
 A row of glyphs told a sighted reader nothing a screen reader was not already
 being told. The npm mark, the package cube, an emoji someone pasted in for a chat
