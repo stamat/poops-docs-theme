@@ -7,10 +7,10 @@
   {% if item.children %}
     <li class="nav-section">
       <details open>
-        <summary>{{ item.title }}</summary>
+        <summary>{{ item.title | escape }}</summary>
         <ul class="nav-list">
           {% if item.url != null %}
-            <li><a class="nav-link{% if item.url == pageUrl %} active{% endif %}" href="{{ prefix }}{{ item.url }}">Overview</a>{% if item.url == pageUrl %}{{ toc }}{% endif %}</li>
+            <li><a class="nav-link{% if item.url == pageUrl %} active{% endif %}" href="{{ prefix }}{{ item.url | escape }}">Overview</a>{% if item.url == pageUrl %}{{ toc }}{% endif %}</li>
           {% endif %}
           {% for child in item.children %}
             {{ navnode(child, pageUrl, prefix, toc) }}
@@ -19,7 +19,7 @@
       </details>
     </li>
   {% else %}
-    <li><a class="nav-link{% if item.url == pageUrl %} active{% endif %}" href="{{ prefix }}{{ item.url }}">{{ item.title }}</a>{% if item.url == pageUrl %}{{ toc }}{% endif %}</li>
+    <li><a class="nav-link{% if item.url == pageUrl %} active{% endif %}" href="{{ prefix }}{{ item.url | escape }}">{{ item.title | escape }}</a>{% if item.url == pageUrl %}{{ toc }}{% endif %}</li>
   {% endif %}
 {% endmacro %}
 

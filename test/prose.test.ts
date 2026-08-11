@@ -97,7 +97,7 @@ describe('the icon links and the theme switch ride into the drawer', () => {
       <header class="topbar"><navbar-elemental>
         <nav class="rail"><ul><li><a href="/docs/">Docs</a></li></ul></nav>
         <div class="topbar-actions">
-          <a class="icon-btn" href="https://example.com" aria-label="npm">n</a>
+          <tooltip-elemental><a class="icon-btn" href="https://example.com" title="npm"><span aria-hidden="true">n</span></a><span>npm</span></tooltip-elemental>
           <switch-elemental><button data-theme-toggle aria-label="Dark mode"></button></switch-elemental>
           <button data-navbar-toggle aria-label="Site navigation"></button>
         </div>
@@ -129,7 +129,11 @@ describe('the icon links and the theme switch ride into the drawer', () => {
     expect(slot!.querySelector('.icon-btn')).not.toBeNull()
     expect(slot!.querySelector('switch-elemental')).not.toBeNull()
     expect(document.querySelectorAll('switch-elemental')).toHaveLength(1)
-    expect(document.querySelector('.topbar-actions > .icon-btn')).toBeNull()
+    expect(document.querySelector('.topbar-actions .icon-btn')).toBeNull()
+    // The link travels alone. Its `<tooltip-elemental>` stays on the bar holding the bubble it
+    // already wired, which is what keeps the element from being torn down and built again.
+    expect(document.querySelector('.topbar-actions > tooltip-elemental')).not.toBeNull()
+    expect(slot!.querySelector('tooltip-elemental')).toBeNull()
   })
 
   test('and back onto the bar ahead of the drawer button when the row is one again', async () => {
@@ -139,7 +143,26 @@ describe('the icon links and the theme switch ride into the drawer', () => {
     expect(document.querySelector('.drawer-actions')).toBeNull()
     const order = Array.from(document.querySelectorAll('.topbar-actions > *'))
       .map((el) => el.className || el.localName)
-    expect(order).toEqual(['icon-btn', 'switch-elemental', 'button'])
+    expect(order).toEqual(['tooltip-elemental', 'switch-elemental', 'button'])
+    // Back inside the wrapper it started in, and not merely back in the row: a link left beside
+    // its own tooltip is markup no template would produce and nothing downstream expects.
+    expect(document.querySelector('.topbar-actions > tooltip-elemental > .icon-btn')).not.toBeNull()
+  })
+
+  // The words in `title` are the only name this link has, so the element writes them back as
+  // `aria-label` and stops there. The trip into the drawer is where that can come undone: an
+  // element rebuilt against a trigger whose `title` is gone reads the bubble as a description
+  // instead, and the link is announced as "npm, npm".
+  test('the icon link is named once, before and after the trip', async () => {
+    const link = document.querySelector<HTMLElement>('.icon-btn')!
+    expect(link.getAttribute('aria-label')).toBe('npm')
+    expect(link.hasAttribute('title')).toBe(false)
+
+    await setMode('stack')
+    await setMode('bar')
+
+    expect(link.getAttribute('aria-label')).toBe('npm')
+    expect(link.getAttribute('aria-describedby')).toBeNull()
   })
 
   test('the switch still flips the theme after the trip', async () => {

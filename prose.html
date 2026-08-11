@@ -1,19 +1,19 @@
 {% import "./topbar.html" as header %}<!DOCTYPE html>
 {# Standalone page layout: docs topbar without search or the "docs" pill, one prose
    body, no sidebar. For small projects that want a single page, not a docs site. #}
-<html lang="{{ page.lang or site.lang or 'en' }}"{% if site.theme and site.theme != 'system' %} data-theme="{{ site.theme }}"{% endif %}>
+<html lang="{{ (page.lang or site.lang or 'en') | escape }}"{% if site.theme and site.theme != 'system' %} data-theme="{{ site.theme | escape }}"{% endif %}>
 <head>
   <meta charset="UTF-8">
   {# A landing page titled after the site would read "Name · Name", so the suffix is dropped
      when the two match. #}
-  <title>{% if page.title and page.title != site.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <title>{% if page.title and page.title != site.title %}{{ page.title | escape }} · {{ site.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="{{ page.description or page.excerpt or site.description }}">
-  {% if page.robots %}<meta name="robots" content="{{ page.robots }}">{% endif %}
+  {{ page | description(site) }}
+  {% if page.robots %}<meta name="robots" content="{{ page.robots | escape }}">{% endif %}
   {{ page | canonical(site) }}
   {{ page | og(site) }}
   {{ page | jsonld(site) }}
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{ site.brandMark or '💩' }}</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{ (site.brandMark or '💩') | urlencode }}</text></svg>">
   <link rel="stylesheet" href="{{ relativePathPrefix }}css/prose.min.css">
   {# site.theme pins the theme: no boot script, no toggle. "light"/"dark" go on <html>; "system"
      sets nothing and lets the stylesheet's prefers-color-scheme block do it. Unset = this script:
@@ -35,7 +35,7 @@
     {% block footer %}
     <footer class="page-footer">
       {% if site.footer %}{{ site.footer | safe }}{% else %}
-      <a href="{{ package.homepage }}" target="_blank" rel="noopener">{{ site.brand or site.title }}</a> v{{ package.version }} —
+      <a href="{{ package.homepage | escape }}" target="_blank" rel="noopener">{{ (site.brand or site.title) | escape }}</a> v{{ package.version | escape }} —
       {% if package.license %}{{ package.license }} licensed. {% endif %}Built with <span aria-hidden="true">💩</span> <a href="https://github.com/stamat/poops" target="_blank" rel="noopener">Poops</a> and <a href="https://github.com/stamat/poops-docs-theme" target="_blank" rel="noopener">poops-docs-theme</a>.
       {% endif %}
     </footer>

@@ -8,9 +8,11 @@ Documentation theme for sites built with [Poops](https://github.com/stamat/poops
 layouts, their self-contained styles, and the client scripts. Ships as a dependency so a
 site consumes it instead of copying files.
 
-Requires Poops **≥ 2.0.0** — that is where the dev server started appending its own
-livereload client, so the layouts stopped carrying the snippet and the `livereload_port`
-global it read is gone.
+Requires Poops **≥ 2.5.0** — that is where the `description` filter arrived, which both
+layouts use for `<meta name="description">`; an older Poops raises an unknown-filter error
+rather than skipping it. (≥ 2.0.0 was the floor before that: the dev server appends its own
+livereload client from there on, so the layouts stopped carrying the snippet and the
+`livereload_port` global it read is gone.)
 
 ## Two layouts
 
@@ -39,7 +41,7 @@ contains everything `prose.min.css` has, and `docs.min.js` already contains
 | `scss/_chrome.scss`    | docs-only chrome — `docs` pill, search, sidebar, breadcrumb, TOC, last-updated + edit link                    |
 | `scss/docs.scss`       | entry: base + shell + chrome + prose                                                                         |
 | `scss/prose-only.scss` | entry: base + shell + prose                                                                                  |
-| `src/prose.ts`         | copy buttons, theme toggle, the topbar's nav element — everything a bare page needs                          |
+| `src/prose.ts`         | copy buttons, theme toggle, the topbar's nav element and icon-link tooltips — everything a bare page needs   |
 | `src/docs.ts`          | imports `prose.ts`, adds search, active nav, the sidebar drawer                                              |
 | `preview/src`          | mock site for looking at the theme — see [Preview](#preview)                                                 |
 
@@ -174,8 +176,22 @@ is `hidden="until-found"`, so find-in-page still reaches a link inside it and op
 
 `site.iconLinks` is the same shape without labels: buttons in the row next to GitHub, for
 package registries, chat rooms, anything worth a permanent spot. On a phone they follow the
-links into the drawer rather than staying on a bar with no room left, and `title` becomes the
-`aria-label`.
+links into the drawer rather than staying on a bar with no room left.
+
+A glyph names nothing to a reader who has not met it before, so `title` is both the link's
+accessible name and the words in a tooltip —
+[`<tooltip-elemental>`](https://stamat.github.io/book-of-elementals/elementals/tooltip.html),
+which shows them on hover and on focus and takes Escape to dismiss. The GitHub button gets the
+same treatment. There is no hover on a touch screen, and the element ignores pointer events
+coming from one rather than half-handling them, so a tap opens the link instead of a bubble —
+the name is on the link the whole time, which is what a screen reader reads either way. With
+scripting off the browser's own tooltip does the job, from the `title` the element would
+otherwise have taken over.
+
+The look is the element's optional theme with `--tooltip-elemental-surface`,
+`--tooltip-elemental-color` and `--tooltip-elemental-border-color` re-pointed at `--fg` and
+`--bg`: its own default is `CanvasText` on `Canvas`, which follows the operating system rather
+than the switch in this bar.
 
 ```json
 {
@@ -467,8 +483,10 @@ grouping is the sidebar's alone. It is filler with a job as well: a group is a s
 node with **no page of its own**, so it renders with no **Overview** link, and every other
 section in the mock has an index page that gives it one. Building the mock on a poops
 older than 2.3 leaves the field unread and both pages sitting directly under `Guide` — the
-theme itself asks for nothing newer than the `>=2.0.0` peer range, since the tree it
-renders arrives as data either way.
+grouping degrades to a flat list rather than failing, since the tree it renders arrives as
+data either way. The peer range is `>=2.5.0` for a different reason: the layouts call the
+`description` filter, which 2.5.0 introduced, and an older poops raises an unknown-filter
+error rather than skipping it.
 
 ## Local development
 

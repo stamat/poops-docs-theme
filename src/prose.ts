@@ -16,6 +16,11 @@ import 'book-of-elementals/navbar'
 // takes the button away on a page where `navigator.clipboard` is not there to be asked, which
 // is any page served over plain `http`.
 import 'book-of-elementals/copy'
+// And `<tooltip-elemental>`, which is what the topbar's icon links say when a pointer or the
+// keyboard reaches one: the bubble, its placement, Escape to dismiss it, and the `title` it
+// takes over from the browser. Icon-only links are the case it exists for — an octicon names
+// nothing to a reader who has not met it before.
+import 'book-of-elementals/tooltip'
 
 // Put a copy button on every code block. Markdown output has none, so something has to add
 // them; what a press then does is the element's, and the button is only markup here.
@@ -122,8 +127,19 @@ export function setupDrawerActions(): void {
   const row = bar?.querySelector<HTMLElement>('.rail > ul:not([data-navbar-probe])')
   if (!bar || !actions || !row) return
 
-  const controls = Array.from(actions.querySelectorAll<HTMLElement>(':scope > .icon-btn, :scope > switch-elemental'))
+  // The icon links are a level down, inside the `<tooltip-elemental>` that describes each one,
+  // so this reaches through it — and it is the link that travels, never the wrapper. Moving the
+  // wrapper would disconnect the element and reconnect it, and its second pass sees a trigger
+  // whose `title` its first pass already took: the words go on as a description of a link they
+  // are also the name of, which is a screen reader saying "npm" twice. Left where it is, the
+  // element keeps the references it made at boot, and the bubble it places against a link's
+  // rectangle does not care which row that link is in — it is `position: fixed` either way.
+  const controls = Array.from(actions.querySelectorAll<HTMLElement>('.icon-btn, :scope > switch-elemental'))
   if (!controls.length) return
+
+  // Where each one came from, so the trip back is a restoration rather than a flattening: the
+  // links belong inside their wrappers and the switch belongs in the row.
+  const homes = new Map(controls.map((control) => [control, control.parentElement!]))
 
   const slot = document.createElement('li')
   slot.className = 'drawer-actions'
@@ -140,7 +156,11 @@ export function setupDrawerActions(): void {
     // Back where the markup had them, in their own order: ahead of the drawer's button, which
     // is last in the row and stays there.
     const toggle = actions.querySelector('[data-navbar-toggle]')
-    for (const control of controls) actions.insertBefore(control, toggle)
+    for (const control of controls) {
+      const home = homes.get(control)!
+      if (home === actions) actions.insertBefore(control, toggle)
+      else home.append(control)
+    }
     slot.remove()
   }
 

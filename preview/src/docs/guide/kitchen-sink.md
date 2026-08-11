@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: Kitchen sink
-description: Every prose element the theme styles, on one page.
+description: Every prose element the theme styles — headings, tables, "quotes" & code — on one page.
 navGroup: Samples
 order: 2
 ---

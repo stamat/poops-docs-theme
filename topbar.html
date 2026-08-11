@@ -35,8 +35,8 @@
   {%- set brandUrl = site.brandUrl or '' -%}
   {%- set brandExternal = '//' in brandUrl -%}
   <div class="brand-group">
-    <a href="{{ brandUrl if brandExternal else prefix + brandUrl }}" class="brand"{% if brandExternal %} target="_blank" rel="noopener"{% endif %}>
-      <span class="brand-mark">{{ site.brandMark or '💩' }}</span> {{ site.brand or site.title }}
+    <a href="{{ (brandUrl if brandExternal else prefix + brandUrl) | escape }}" class="brand"{% if brandExternal %} target="_blank" rel="noopener"{% endif %}>
+      <span class="brand-mark">{{ (site.brandMark or '💩') | escape }}</span> {{ (site.brand or site.title) | escape }}
     </a>
     {%- if docs %}<a href="{{ prefix }}docs/" class="brand-docs">docs</a>{% endif %}
   </div>
@@ -54,7 +54,7 @@
       {#- the section you are in stays in the list, marked: "page" on the page itself,
           "true" anywhere under it -#}
       {%- set current = '' if external else ('page' if here == target else ('true' if here.startsWith(target + '/') else '')) -%}
-      <li><a href="{{ link.url if external else prefix + link.url }}"{% if external %} target="_blank" rel="noopener"{% endif %}{% if current %} aria-current="{{ current }}"{% endif %}>{% if link.icon %}{{ (icons[link.icon] or link.icon) | safe }}{% endif %}{{ link.title }}</a></li>
+      <li><a href="{{ (link.url if external else prefix + link.url) | escape }}"{% if external %} target="_blank" rel="noopener"{% endif %}{% if current %} aria-current="{{ current }}"{% endif %}>{% if link.icon %}{{ (icons[link.icon] or link.icon) | safe }}{% endif %}{{ link.title | escape }}</a></li>
     {%- endfor %}
       <li data-navbar-more><button>More</button><ul></ul></li>
     </ul>
@@ -115,13 +115,27 @@
         the drawer by `prose.js` once the row of links has become one, and moved back out when
         it is a bar again — the nodes themselves, since two switches for one setting is one of
         them able to disagree with the page. Without script they stay here at every width. -#}
+    {#- `title` rather than `aria-label`, wrapped in `<tooltip-elemental>`: the attribute is the
+        link's accessible name until the element upgrades — and forever, on a page whose script
+        never lands, where the browser's own tooltip is what a mouse gets. Once it does upgrade
+        the element takes the attribute off so the two tooltips cannot double up, and writes the
+        same words back as `aria-label`, because words that were a control's only name have to
+        stay its name rather than become a description of a nameless button.
+        The `<span>` is those words written out: the bubble the element shows, and before it is
+        defined a sentence its stylesheet hides for exactly as long as the `title` beside it is
+        still doing the job.
+        The glyph is wrapped in an `aria-hidden` span because `icon` may be an emoji or a pasted
+        `<svg>` — text the name computation would otherwise read, leaving a link called "💬"
+        with "Discord" as a description of it. -#}
     {%- for link in site.iconLinks -%}
       {%- set external = '//' in link.url -%}
-    <a class="icon-btn" href="{{ link.url if external else prefix + link.url }}" aria-label="{{ link.title }}"{% if external %} target="_blank" rel="noopener"{% endif %}>{{ (icons[link.icon] or link.icon) | safe }}</a>
+    <tooltip-elemental><a class="icon-btn" href="{{ (link.url if external else prefix + link.url) | escape }}" title="{{ link.title | escape }}"{% if external %} target="_blank" rel="noopener"{% endif %}><span aria-hidden="true">{{ (icons[link.icon] or link.icon) | safe }}</span></a><span>{{ link.title | escape }}</span></tooltip-elemental>
     {%- endfor -%}
 
+    {#- No `aria-hidden` wrapper here, unlike the loop above: this icon is the theme's own and
+        carries the attribute already. -#}
     {% if repo %}
-    <a class="icon-btn" href="{{ repo }}" aria-label="GitHub" target="_blank" rel="noopener">{{ icons.github | safe }}</a>
+    <tooltip-elemental><a class="icon-btn" href="{{ repo | escape }}" title="GitHub" target="_blank" rel="noopener">{{ icons.github | safe }}</a><span>GitHub</span></tooltip-elemental>
     {% endif %}
     {% if not site.theme %}
     {#- A setting with two states, which is what the APG calls a switch: the element writes

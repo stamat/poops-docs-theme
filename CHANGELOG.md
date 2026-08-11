@@ -34,7 +34,76 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — the icon links say what they are
+
+A row of glyphs told a sighted reader nothing a screen reader was not already
+being told. The npm mark, the package cube, an emoji someone pasted in for a chat
+room — the name was in `aria-label`, where a mouse and a pair of eyes never reach
+it.
+
+### Added
+
+- **`site.iconLinks` and the GitHub button carry a tooltip**, shown on hover and
+  on focus by
+  [`<tooltip-elemental>`](https://stamat.github.io/book-of-elementals/elementals/tooltip.html),
+  dismissed with Escape. The words are the `title` you already write: the element
+  takes the attribute over so the browser's own tooltip cannot double up, and
+  writes those same words back as `aria-label`, which is where they were before.
+  Nothing to configure and no new key in `poops.json`.
+
+  A touch screen has no hover, and the element ignores pointer events coming from
+  one rather than half-handling them, so a tap opens a link instead of a bubble.
+  Nothing is lost: the name is on the link the whole time, which is what a screen
+  reader reads either way. With scripting off the browser draws the native tooltip
+  from the `title` the element never came to claim.
+
+  **New DOM in the topbar.** Each icon link is now
+  `tooltip-elemental > a.icon-btn + span`, and the glyph inside the link is
+  wrapped in `<span aria-hidden="true">` — `icon` may be an emoji or a pasted
+  `<svg>`, and text the name computation can read would otherwise leave a link
+  called "💬" described as "Discord". That wrapper is `display: flex`, so it is
+  the size of the glyph rather than a line box with the glyph on its baseline —
+  inline, it lands the icon a few pixels above the middle of its button. A site
+  styling `.topbar-actions > .icon-btn` should drop the `>`; `.icon-btn` itself is
+  unchanged.
+
+  **New custom properties.** `--tooltip-elemental-surface`,
+  `--tooltip-elemental-color` and `--tooltip-elemental-border-color` are
+  re-pointed at `--fg` and `--bg`; the element's own default is `CanvasText` on
+  `Canvas`, which follows the operating system rather than the switch in the bar.
+  The bubble is also lifted to `z-index: 30`, over the drawer it can be opened
+  inside.
+
+### Fixed
+
+- **A quote in a page's `description` no longer truncates the description.**
+  Poops renders with `autoescape` off, so the hand-written
+  `content="{{ page.description or page.excerpt or site.description }}"` shipped
+  front matter verbatim — and one `"` in a sentence closed the attribute, leaving
+  the page described by the words before it. Both layouts now use Poops'
+  `description` filter, which reads the same chain and escapes what it emits:
+
+  ```nunjucks
+  {{ page | description(site) }}
+  ```
+
+- **Every other value written into an attribute is escaped.** Same cause, same
+  silence, and none of it needed a filter — both engines ship `escape`. `lang`,
+  `data-theme`, `robots`, the edit-link `href`, the brand and nav link `href`s and
+  titles, and the footer's package links all go through it now, as does the
+  `<title>` element, where a `<` opens a tag rather than ending a value. The
+  favicon's `site.brandMark` gets `urlencode` instead: it sits inside a `data:`
+  URI, which wants URI encoding, not entities.
+
+  Site-owned front matter and config, so this was a footgun rather than a
+  vulnerability — unless a site takes docs pages by pull request, where front
+  matter is somebody else's input.
+
+### Changed
+
+- **`poops >=2.5.0` is now the peer range**, up from `>=2.0.0`. The `description`
+  filter arrived in 2.5.0, and an older Poops raises an unknown-filter error
+  rather than skipping it quietly.
 
 ## [4.1.0] - 2026-08-10 — a docs page says when it was last touched
 
