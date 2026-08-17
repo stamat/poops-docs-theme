@@ -142,10 +142,14 @@ reaches every one of them, the arrow keys walk the row, and Escape closes what i
 `aria-expanded`, `aria-controls` and `hidden` are the element's to write. The breakpoint is
 declared once, as the `media` attribute in `topbar.html`, and no stylesheet here repeats it.
 
-When the row becomes a drawer the icon links and the theme switch go into it, as the row
-under the links, and come back onto the bar when the links do. They are moved and not copied,
-so there is never a second switch able to disagree with the theme on screen — and with
-scripting off, where there is no drawer either, they stay on the bar at every width. Search
+Below that same 40rem the icon links and the theme switch go into the drawer too, as the row
+under the links, and come back onto the bar above it. The breakpoint and not the drawer: a row
+that folded its links away because they stopped fitting is still on a screen with room for two
+icon buttons, and moving them off it would free the room the links were measured against —
+which is a bar that fits, folds, fits again for as long as the window sits there. They are
+moved and not copied, so there is never a second switch able to disagree with the theme on
+screen — and with scripting off, where there is no drawer either, they stay on the bar at
+every width. Search
 does stay: below 40rem the field shrinks to its icon and expands across the bar when you tap
 it. What it does once you type is [Search](#search).
 
@@ -269,7 +273,15 @@ consumer's `poops.json` needs `"includePaths": ["node_modules"]` (top level, not
 dependency of this package, so npm installs it, and the same `includePaths` is what finds
 it. The full token set: `--bg`, `--bg-alt`, `--bg-code`, `--fg`, `--fg-muted`,
 `--border`, `--accent`, `--accent-fg`, `--link`, `--focus`, `--danger`, `--shadow`, plus
-`--content-max`, `--radius`, `--topbar-h`, `--sidebar-w`, `--font-body`, `--font-mono`.
+`--content-max`, `--radius`, `--topbar-h`, `--sidebar-w`, `--font-body`, `--font-mono`,
+`--font-body-ex`.
+
+`--font-body-ex` is the odd one out: it is the x-height of `--font-body` as a fraction of
+its font-size, and a code block matches it through `font-size-adjust` so mono glyphs read
+at the size of the prose beside them. A code block stays at 16px whatever this number says —
+below that, iOS Safari zooms the page when a `code-preview` pane takes focus. The shipped
+0.508 is measured for the default stack; override `--font-body` with a face of a different
+x-height and override this too, or code will read a little large or small against it.
 
 Nothing in the theme paints an error, so `--danger` is there for elements you embed in a
 page — [Live samples](#live-samples) is the case it was added for.

@@ -84,17 +84,31 @@ test('boots without a sidebar, search field or nav toggle', () => {
   expect(document.getElementById('search-input')).toBeNull()
 })
 
-// The bar's mode is measured by `<navbar-elemental>` and jsdom cannot measure anything, so
-// `data-mode` is written by hand here — which is the seam the theme's own code reads anyway.
+// The trip is keyed off the breakpoint the bar declares, and jsdom answers every media query
+// with `false` and never fires a change — so `matchMedia` is a stub here, which is the seam the
+// theme's own code reads. Deliberately not the mode `<navbar-elemental>` writes: that one is
+// measured, the measurement is of the room this group leaves, and a page that moves the group
+// in answer to it feeds the element back its own reply.
+//
 // What is asserted is that the controls are *moved*: found in one place and gone from the
 // other, in both directions. A copy left behind is a second switch for one setting, and a
 // switch missing on the way back is a theme a reader cannot change again without a reload.
 describe('the icon links and the theme switch ride into the drawer', () => {
-  let bar: HTMLElement
+  let narrow = false
+  const listeners = new Set<() => void>()
 
   beforeEach(async () => {
+    narrow = false
+    listeners.clear()
+    window.matchMedia = ((media: string) => ({
+      media,
+      get matches(): boolean { return !narrow },
+      addEventListener: (_: string, fn: () => void): void => { listeners.add(fn) },
+      removeEventListener: (_: string, fn: () => void): void => { listeners.delete(fn) }
+    })) as unknown as typeof window.matchMedia
+
     document.body.innerHTML = `
-      <header class="topbar"><navbar-elemental>
+      <header class="topbar"><navbar-elemental media="(min-width: 40rem)">
         <nav class="rail"><ul><li><a href="/docs/">Docs</a></li></ul></nav>
         <div class="topbar-actions">
           <tooltip-elemental><a class="icon-btn" href="https://example.com" title="npm"><span aria-hidden="true">n</span></a><span>npm</span></tooltip-elemental>
@@ -103,23 +117,20 @@ describe('the icon links and the theme switch ride into the drawer', () => {
         </div>
       </navbar-elemental></header>
     `
-    bar = document.querySelector('navbar-elemental')!
-    bar.dataset.mode = 'bar'
     const { setupDrawerActions, setupTheme } = await import('../src/prose')
     // The bundle wired the switch that was in the document at boot, and this one is not it.
     setupTheme()
     setupDrawerActions()
   })
 
-  // A `MutationObserver` delivers on a microtask, so every mode change is awaited before it is
-  // asked about.
-  const setMode = async (mode: string): Promise<void> => {
-    bar.dataset.mode = mode
-    await Promise.resolve()
+  // Crossing the breakpoint, in the one form the theme hears about it.
+  const setNarrow = (value: boolean): void => {
+    narrow = value
+    for (const fn of Array.from(listeners)) fn()
   }
 
-  test('into the drawer as its own row, and out of the bar', async () => {
-    await setMode('stack')
+  test('into the drawer as its own row, and out of the bar', () => {
+    setNarrow(true)
 
     const slot = document.querySelector('.rail > ul > li.drawer-actions')
     expect(slot).not.toBeNull()
@@ -136,9 +147,9 @@ describe('the icon links and the theme switch ride into the drawer', () => {
     expect(slot!.querySelector('tooltip-elemental')).toBeNull()
   })
 
-  test('and back onto the bar ahead of the drawer button when the row is one again', async () => {
-    await setMode('stack')
-    await setMode('bar')
+  test('and back onto the bar ahead of the drawer button when the row is one again', () => {
+    setNarrow(true)
+    setNarrow(false)
 
     expect(document.querySelector('.drawer-actions')).toBeNull()
     const order = Array.from(document.querySelectorAll('.topbar-actions > *'))
@@ -153,21 +164,21 @@ describe('the icon links and the theme switch ride into the drawer', () => {
   // `aria-label` and stops there. The trip into the drawer is where that can come undone: an
   // element rebuilt against a trigger whose `title` is gone reads the bubble as a description
   // instead, and the link is announced as "npm, npm".
-  test('the icon link is named once, before and after the trip', async () => {
+  test('the icon link is named once, before and after the trip', () => {
     const link = document.querySelector<HTMLElement>('.icon-btn')!
     expect(link.getAttribute('aria-label')).toBe('npm')
     expect(link.hasAttribute('title')).toBe(false)
 
-    await setMode('stack')
-    await setMode('bar')
+    setNarrow(true)
+    setNarrow(false)
 
     expect(link.getAttribute('aria-label')).toBe('npm')
     expect(link.getAttribute('aria-describedby')).toBeNull()
   })
 
-  test('the switch still flips the theme after the trip', async () => {
-    await setMode('stack')
-    await setMode('bar')
+  test('the switch still flips the theme after the trip', () => {
+    setNarrow(true)
+    setNarrow(false)
 
     document.documentElement.dataset.theme = 'light'
     document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!.click()

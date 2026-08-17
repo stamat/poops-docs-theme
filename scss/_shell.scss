@@ -38,6 +38,15 @@
 
 :root {
   --topbar-h: 3.25rem;
+
+  // The header's rules, and the drawer's step past them. One name because the step has to
+  // clear the line exactly: shorter and the rest of the line sits above the panel, longer and
+  // a strip of header shows between the two — either way a hairline nobody can find.
+  // Device pixels, and never a fraction of one. A sub-pixel border is painted at the width of
+  // a whole device pixel and a sub-pixel margin is honoured as written, so the two stop
+  // agreeing at exactly the point a px-to-rem pass rewrites them: 0.0625rem against a 62.5%
+  // root is a 1px line with a 0.625px step past it, and the 0.375px left over is the gap.
+  --topbar-border: 1px;
 }
 
 html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
@@ -82,8 +91,8 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
   z-index: 40;
   height: var(--topbar-h);
   background: var(--bg);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border-top: var(--topbar-border) solid var(--border);
+  border-bottom: var(--topbar-border) solid var(--border);
 }
 .topbar a { text-decoration: none; }
 
@@ -144,11 +153,12 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
 
 // Two things the element's theme cannot know about this header. The drawer hangs off the
 // element's padding box, which is inside the border the header draws, so its first row of
-// pixels lands on that border — one pixel down is the header's own line handed back. And the
-// bar is full-bleed, so the panel's side borders would be lines drawn down the edges of the
-// screen.
+// pixels lands on that border — a step of exactly the border's own width is the header's line
+// handed back whole, and the reason that width is a property rather than a `1px` written here
+// for the second time. And the bar is full-bleed, so the panel's side borders would be lines
+// drawn down the edges of the screen.
 .topbar navbar-elemental[data-mode="stack"] .rail > ul:not([data-navbar-probe]) {
-  margin-block-start: 1px;
+  margin-block-start: var(--topbar-border);
   border-inline: 0;
 }
 

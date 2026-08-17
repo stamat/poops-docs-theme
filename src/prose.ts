@@ -107,8 +107,8 @@ export function setupTheme(): void {
 }
 
 // The icon links and the theme switch sit at the right of the bar, which on a phone is a row
-// already holding a brand, a search field and a hamburger. Once the site's links have folded
-// into the drawer, these follow them down into it and come back up when the bar returns.
+// already holding a brand, a search field and a hamburger. Below the breakpoint the bar
+// declares they follow the site's links down into the drawer, and above it they come back up.
 //
 // Moved and never copied. A second `<switch-elemental>` is a second control for one setting,
 // and two of them is one that can be left saying the opposite of the theme on screen; a second
@@ -145,8 +145,14 @@ export function setupDrawerActions(): void {
   slot.className = 'drawer-actions'
   slot.setAttribute('data-navbar-stack', '')
 
+  // The breakpoint, read off the element rather than written again here — `topbar.html` declares
+  // it once, as the `media` the bar exists in. An element without one has no phone to fold into,
+  // so the controls stay where the markup put them at every width.
+  const media = bar.getAttribute('media')
+  const query = media && window.matchMedia ? window.matchMedia(media) : null
+
   const sync = (): void => {
-    const stacked = bar.dataset.mode === 'stack'
+    const stacked = !!query && !query.matches
     if (stacked === slot.isConnected) return
     if (stacked) {
       row.append(slot)
@@ -164,10 +170,15 @@ export function setupDrawerActions(): void {
     slot.remove()
   }
 
-  // The element writes `data-mode` and rewrites it on every resize that crosses the point where
-  // the links stop fitting — which is measured, not a breakpoint, so there is no media query
-  // here to watch instead.
-  new MutationObserver(sync).observe(bar, { attributeFilter: ['data-mode'] })
+  // The query and not the `data-mode` the element writes, which is the one thing here that can
+  // start a loop. A bar becomes a drawer two ways: below the breakpoint, and at any width where
+  // the links have stopped fitting — and how much room they have is measured against what this
+  // group leaves them. Keyed off the mode, the controls leaving widened the rail, the links fit
+  // again, the bar came back, the controls returned and the row overflowed once more: 72 mode
+  // changes in 600ms at 864–928px on the preview site, for as long as the window sat there. So
+  // a bar that folded its links away because they stopped fitting keeps its controls — above
+  // the breakpoint there is room for them, which is what the breakpoint says.
+  query?.addEventListener('change', sync)
   sync()
 }
 

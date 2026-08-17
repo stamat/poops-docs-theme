@@ -34,7 +34,66 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — the drawer hangs off the bar with no seam
+
+Opening the hamburger left a hairline between the bar and the menu under it. The
+boxes were flush — that line was the header's own bottom border, and with the
+same surface on both sides of it it read as a slit between two panels rather than
+as an edge against the page.
+
+### Fixed
+
+- **The header's border width and the drawer's step past it are one number.** The
+  drawer hangs off `<navbar-elemental>`'s padding box, which is inside the border
+  the header draws, so it steps down by that border's width to hand the line back
+  whole. Written out as `1px` in both places, those were two numbers that could be
+  rewritten one at a time — and a step shorter than the line leaves part of the
+  line above the panel, a step longer leaves a strip of header between the two.
+  Either way it reads as a gap between the bar and the menu it opened.
+
+  **New custom property, `--topbar-border`**, shipped at `1px` and used for both
+  of the header's rules and the drawer's step. Override it in device pixels only:
+  a sub-pixel border is painted at the width of a whole device pixel while a
+  sub-pixel margin is honoured as written, so `0.0625rem` against a `62.5%` root
+  is a 1px line with a 0.625px step past it, and the remainder is the hairline
+  this exists to prevent. A px-to-rem pass over this stylesheet has the same
+  effect and is the reason to keep the value literal.
+
+- **The topbar no longer flickers between a bar and a drawer at one width.** On
+  a band of widths — 864px to 928px on this repo's own preview site, and
+  wherever your links, labels and font put it on yours — the bar folded, sprang
+  back and folded again, 72 mode changes in 600 milliseconds, for as long as the
+  window sat there. The theme was moving the icon links and the theme switch into the
+  drawer whenever `<navbar-elemental>` said it had stacked, and that move freed
+  the room the element measures the links against: they fitted, the bar came
+  back, the controls returned, the links stopped fitting. The element measures a
+  copy of its row precisely so nothing can invalidate its own measurement; this
+  invalidated it from the outside.
+
+  **The controls now follow the breakpoint rather than the drawer** — the
+  `media` attribute in `topbar.html`, read off the element so it is still
+  declared once. Below it they ride into the drawer as before. Above it they
+  stay on the bar, including at the widths where the links have folded away on
+  their own: a media query cannot be changed by moving a button, so there is no
+  loop left to enter. Between 40rem and wherever your links fold, this is a
+  visible change — the icon links and the switch are on the bar where they used
+  to be in the drawer, and a long `site.brand` truncates sooner for it.
+
+### Changed
+
+- **A code block reads at the size of the prose around it**, without moving off
+  16px. It was already the same number as the body text and still looked a size
+  larger: the mono face carries a taller x-height, and x-height is what the eye
+  measures. `font-size-adjust: ex-height` now scales the glyphs to the body
+  face's ratio — measured 7% down for the default stack — while `font-size`
+  stays where it was, because that is the value iOS Safari reads before it zooms
+  the page on a focused field, and a `code-preview` pane can make a block one.
+
+  **New custom property, `--font-body-ex`**, the x-height of `--font-body` as a
+  fraction of its font-size, shipped at `0.508` for the default stack. Override
+  `--font-body` with a face of a different x-height and override this with it, or
+  code will read slightly large or small beside the prose. Before Safari 16.4 and
+  Chrome 127 the property is ignored and a block keeps the size it had.
 
 ## [4.2.0] - 2026-08-11 — the icon links say what they are
 

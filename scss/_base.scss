@@ -6,6 +6,12 @@
   --radius: 0.5rem;
   --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+  // The x-height of the body face, as a fraction of its font-size — what `font-size-adjust`
+  // on a code block matches so mono glyphs read at the size of the prose around them without
+  // touching `font-size`, which is the number iOS Safari's focus zoom looks at. Measured at
+  // 0.508 for the stack above resolving to system-ui on macOS; a body face with a different
+  // ratio wants its own number, and 1em of code will be off by whatever the difference is.
+  --font-body-ex: 0.508;
 }
 
 :root, :root[data-theme="light"] {
