@@ -273,10 +273,19 @@ consumer's `poops.json` needs `"includePaths": ["node_modules"]` (top level, not
 dependency of this package, so npm installs it, and the same `includePaths` is what finds
 it. The full token set: `--bg`, `--bg-alt`, `--bg-code`, `--fg`, `--fg-muted`,
 `--border`, `--accent`, `--accent-fg`, `--link`, `--focus`, `--danger`, `--shadow`, plus
-`--content-max`, `--radius`, `--topbar-h`, `--sidebar-w`, `--font-body`, `--font-mono`,
-`--font-body-ex`.
+`--content-max`, `--radius`, `--topbar-h`, `--topbar-border`, `--sidebar-w`, `--font-body`,
+`--font-mono`, `--font-body-ex`.
 
-`--font-body-ex` is the odd one out: it is the x-height of `--font-body` as a fraction of
+Two of those are not colours or sizes you can set to taste. `--topbar-border` is the width
+of the header's rules **and** the distance the open drawer steps past them, one name because
+the step has to clear the line exactly — shorter and the rest of the line sits above the
+panel, longer and a strip of header shows between the two. Set it in whole device pixels: a
+sub-pixel border is painted at the width of a whole device pixel while a sub-pixel margin is
+honoured as written, so `0.0625rem` against a `62.5%` root is a 1px line with a 0.625px step
+past it, and the remainder is a hairline nobody can find. A px-to-rem pass over your own
+stylesheet does the same thing, which is the reason to leave the value literal.
+
+`--font-body-ex` is the other: it is the x-height of `--font-body` as a fraction of
 its font-size, and a code block scales to 94% of it through `font-size-adjust` so mono
 glyphs read at the size of the prose beside them — 94% rather than all of it because mono
 sets wider and heavier, and an equal x-height still reads a size up. That lands the default
