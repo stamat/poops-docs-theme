@@ -277,8 +277,10 @@ it. The full token set: `--bg`, `--bg-alt`, `--bg-code`, `--fg`, `--fg-muted`,
 `--font-body-ex`.
 
 `--font-body-ex` is the odd one out: it is the x-height of `--font-body` as a fraction of
-its font-size, and a code block matches it through `font-size-adjust` so mono glyphs read
-at the size of the prose beside them. A code block stays at 16px whatever this number says —
+its font-size, and a code block scales to 94% of it through `font-size-adjust` so mono
+glyphs read at the size of the prose beside them — 94% rather than all of it because mono
+sets wider and heavier, and an equal x-height still reads a size up. That lands the default
+stack on the same 14px inline code takes. A code block stays at 16px whatever this says —
 below that, iOS Safari zooms the page when a `code-preview` pane takes focus. The shipped
 0.508 is measured for the default stack; override `--font-body` with a face of a different
 x-height and override this too, or code will read a little large or small against it.

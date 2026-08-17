@@ -125,10 +125,13 @@
   // sideways cannot be pinched back up without taking the page along. Width goes to that scroll.
   font-size: max(16px, 1em);
   // Mono faces run a taller x-height than the body face, so 16px of code reads bigger than
-  // 16px of prose. This scales the glyphs down to the body face's x-height with `font-size`
-  // left at 16px, which is the value the zoom threshold above is measured against. Ignored
-  // before Safari 16.4 and Chrome 127, where the block keeps the size it has today.
-  font-size-adjust: ex-height var(--font-body-ex);
+  // 16px of prose. This scales the glyphs against the body face's x-height with `font-size`
+  // left at 16px, which is the value the zoom threshold above is measured against — but to
+  // 94% of that x-height, not to it: mono sets wider and carries heavier stems, so at an
+  // equal x-height it still reads a size up. The factor is what levels the two by eye, and
+  // it lands the shipped stack on the 14px that inline code takes below. Ignored before
+  // Safari 16.4 and Chrome 127, where the block keeps the size it has today.
+  font-size-adjust: ex-height calc(var(--font-body-ex) * 0.94);
   line-height: 1.6;
 }
 .prose .code-wrap > pre { margin: 0; }

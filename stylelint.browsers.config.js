@@ -22,7 +22,11 @@ export default {
       ignore: [
         'css3-cursors',
         'css3-cursors-grab',
-        'css-scrollbar'
+        'css-scrollbar',
+        // Samsung Internet has no font-size-adjust, so a code block there keeps
+        // the 16px it is set at rather than being scaled to the prose x-height.
+        // Nothing is lost that was not there before the property existed.
+        'font-size-adjust'
       ]
     }]
   }
