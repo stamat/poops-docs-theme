@@ -70,9 +70,10 @@ Include the theme version, the Poops version, the relevant part of your
 - **Keep the bundles supportable.** `script/build` then `npm run lint:browsers`
   and `npm run lint:es` check the compiled CSS and JS against
   [.browserslistrc](.browserslistrc) and the esbuild target. CI runs both after
-  the build; a feature that degrades to nothing can be added to the ignore list
-  in [stylelint.browsers.config.js](stylelint.browsers.config.js), with a
-  comment saying why.
+  the build; a feature that degrades to nothing, or one caniuse has out of date,
+  can be added to the ignore list in
+  [stylelint.browsers.config.js](stylelint.browsers.config.js), with a comment
+  saying why — and for a stale entry, which engines it was measured in.
 - **Add a changelog entry** under `## [Unreleased]` in
   [CHANGELOG.md](CHANGELOG.md) — that file explains the format.
 

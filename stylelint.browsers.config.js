@@ -26,7 +26,13 @@ export default {
         // Samsung Internet has no font-size-adjust, so a code block there keeps
         // the 16px it is set at rather than being scaled to the prose x-height.
         // Nothing is lost that was not there before the property existed.
-        'font-size-adjust'
+        'font-size-adjust',
+        // Not a degradation — caniuse is wrong. Its entry is still a working
+        // draft with every engine marked "n", and `@media (scripting: enabled)`
+        // matched in all three: Chromium 151, WebKit 26.5, Firefox 153. Only
+        // `scripting: initial-only` is unimplemented, and nothing here uses it.
+        // book-of-elementals gates its pre-upgrade rendering on this query.
+        'css-media-scripting'
       ]
     }]
   }

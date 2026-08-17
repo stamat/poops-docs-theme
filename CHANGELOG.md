@@ -64,9 +64,9 @@ as an edge against the page.
   `setupTheme()` is left with is the two directions between the switch and the
   root attribute, below.
 
-  **Needs the `book-of-elementals` release that adds `checked-if`** — the floor
-  here is still `^0.7.2` and has to move with it. On an older one the attribute
-  is inert and the switch starts off, which is the bug above rather than a crash.
+  **`checked-if` arrived in `book-of-elementals` 0.11.0**, which is why the floor
+  moved to `^0.11.1` below. On an older one the attribute is inert and the switch
+  starts off, which is the bug above rather than a crash.
 
   Verified in Chromium over a built site, sampling every rendering opportunity:
   the switch carries the right state in every frame, with no transition fired at
@@ -117,6 +117,58 @@ as an edge against the page.
   to be in the drawer, and a long `site.brand` truncates sooner for it.
 
 ### Changed
+
+- **`book-of-elementals` moves from `^0.7.2` to `^0.11.1`.** The floor had to
+  move for `checked-if` above, and what comes with it is that release's war on
+  first-paint flashes. Progressive-enhancement markup is authored expanded —
+  every navbar link visible, the tooltip's words a sentence in the flow — and it
+  painted that way until the bundle collapsed it. The structure stylesheets now
+  split that pre-upgrade rendering on `@media (scripting)`: scripting off keeps
+  the old fallback, scripting on paints the closed state the upgrade is about to
+  wire. The theme switch and the copy button change the other way — they were
+  `display: none` until `:defined`, so the row they sit in closed up and reopened
+  when they landed, and with scripting on they now hold their box with
+  `visibility: hidden` instead: no click, no tab stop, no announcement, but no
+  reflow either.
+
+  **The trade is upstream's and it is worth knowing.** With scripting *on* and
+  the bundle never arriving — blocked, 404, a syntax error in a sibling script —
+  the closed state is what stays on screen, with nothing left to open it. The
+  `scripting` fallback covers scripting turned off, not every way a script can
+  fail to run. The navbar is the one to watch: whether it is a bar or a drawer is
+  the `media` attribute's call and no stylesheet can read it, so a page about to
+  stack shows a row for the length of the fetch.
+
+  No DOM changed and nothing this theme styles moved. Between 0.7.2 and 0.11.1
+  upstream also added `<slider-elemental>`, `<progress-elemental>`,
+  `<marquee-elemental>` and `<tilt-elemental>`, and none of them is in here: the
+  theme imports subpaths, so what it does not name is not bundled. Built both
+  ways, the cost of the upgrade is 768 bytes of JS on each bundle — `checked-if`,
+  which both import — and 831 and 699 bytes of CSS on `docs` and `prose`, which
+  is the `@media (scripting)` split. Build, tests, `npm run lint` and
+  `npm run a11y` are green on the new floor. The flash itself is upstream's
+  measurement, not one taken again here.
+
+- **The browser gate no longer fails on `@media (scripting)`.** The compiled CSS
+  carries the new query fourteen times, and `npm run lint:browsers` failed on
+  every one: caniuse's `css-media-scripting` is still a working draft with every
+  engine marked unsupported. It is wrong. Measured with Playwright,
+  `(scripting: enabled)` matches in Chromium 151, WebKit 26.5 and Firefox 153 —
+  the whole of `.browserslistrc` and then some. Only `scripting: initial-only` is
+  unimplemented anywhere, and nothing here uses it. `css-media-scripting` joins
+  the ignore list in `stylelint.browsers.config.js` with those engines named in
+  the comment, which is the first entry there that is a stale datum rather than a
+  feature degrading to nothing — `CONTRIBUTING.md` says so now.
+
+- **`code-preview-element` moves to `^3.0.1`**, which closes a seam under the code
+  strip and stops a preview shifting the page twice while its manifest loads.
+  Nothing in the theme changes for it — the element stays a devDependency, in
+  neither bundle and not a dependency of the published package, and the three
+  collisions [Live samples](README.md#live-samples) settles are the same three.
+  It is here because the README tells a consuming site to add the element itself,
+  and this is the floor worth adding. Measured on the mock's **Live samples** page
+  at 1200×900 in Chromium: CLS 0.0000 over the load, and the console strip's
+  padding resolves to the asymmetric `0px 0px 4px` the fix ships.
 
 - **A code block reads at the size of the prose around it**, without moving off
   16px. It was already the same number as the body text and still looked a size
