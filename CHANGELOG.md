@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the drawer hangs off the bar with no seam
+## [Unreleased]
+
+## [4.3.0] - 2026-08-17 — the drawer hangs off the bar with no seam
 
 Opening the hamburger left a hairline between the bar and the menu under it. The
 boxes were flush — that line was the header's own bottom border, and with the
