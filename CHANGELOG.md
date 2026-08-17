@@ -43,6 +43,43 @@ as an edge against the page.
 
 ### Fixed
 
+- **The theme switch is already on when the page opens dark.** A visitor whose
+  last choice was dark got a topbar switch painted in the *off* position over a
+  page that had already painted dark, and then watched the knob slide across on
+  its own a moment later. Measured on a docs site built with this theme: the
+  button is on screen in the wrong state for two frames, about 90 milliseconds,
+  before it corrects itself with the full 250ms transition.
+
+  The boot script in `<head>` was never the problem — it stamps `data-theme`
+  before first paint, as it always did. The switch was being seeded from it at
+  `DOMContentLoaded`, and registering `<switch-elemental>` is what takes the
+  button out of the `display: none` it wears until it is defined. Registration
+  happens at the top of the bundle and four more elements register after it, so
+  the button was on screen, off, for the whole gap.
+
+  **`topbar.html` now declares the starting state on the element**, as
+  `checked-if="[data-theme=dark]"`, and the bundle no longer seeds anything. The
+  element reads that selector at upgrade — before its button comes out of the
+  `display: none` it wears while undefined — so no load order can be wrong. What
+  `setupTheme()` is left with is the two directions between the switch and the
+  root attribute, below.
+
+  **Needs the `book-of-elementals` release that adds `checked-if`** — the floor
+  here is still `^0.7.2` and has to move with it. On an older one the attribute
+  is inert and the switch starts off, which is the bug above rather than a crash.
+
+  Verified in Chromium over a built site, sampling every rendering opportunity:
+  the switch carries the right state in every frame, with no transition fired at
+  load. Before, it was wrong for the first two frames and then slid.
+
+- **The theme switch follows a theme changed from somewhere else.** It only ever
+  listened to its own flips, so a page carrying a second toggle — a docs page
+  demonstrating one in its prose, say — could leave the header switch saying "on"
+  over a page that had gone light: two controls for one setting, disagreeing, which
+  is the thing the drawer code refuses to create by never copying the switch. A
+  `MutationObserver` on the root's `data-theme` now moves it, and the write is
+  idempotent, so it and the flip listener cannot chase each other.
+
 - **The header's border width and the drawer's step past it are one number.** The
   drawer hangs off `<navbar-elemental>`'s padding box, which is inside the border
   the header draws, so it steps down by that border's width to hand the line back
@@ -84,16 +121,20 @@ as an edge against the page.
 - **A code block reads at the size of the prose around it**, without moving off
   16px. It was already the same number as the body text and still looked a size
   larger: the mono face carries a taller x-height, and x-height is what the eye
-  measures. `font-size-adjust: ex-height` now scales the glyphs to the body
-  face's ratio — measured 7% down for the default stack — while `font-size`
-  stays where it was, because that is the value iOS Safari reads before it zooms
-  the page on a focused field, and a `code-preview` pane can make a block one.
+  measures. `font-size-adjust: ex-height` now scales the glyphs against the body
+  face's ratio — to 94% of it, because mono sets wider and carries heavier stems,
+  so matching the x-height outright still leaves the block reading a size up.
+  That is 13% down from 16px for the default stack, the same 14px inline code
+  takes. `font-size` stays where it was, because that is the value iOS Safari
+  reads before it zooms the page on a focused field, and a `code-preview` pane
+  can make a block one.
 
   **New custom property, `--font-body-ex`**, the x-height of `--font-body` as a
   fraction of its font-size, shipped at `0.508` for the default stack. Override
   `--font-body` with a face of a different x-height and override this with it, or
-  code will read slightly large or small beside the prose. Before Safari 16.4 and
-  Chrome 127 the property is ignored and a block keeps the size it had.
+  code will read slightly large or small beside the prose — the 94% above is the
+  theme's and rides on whatever you set here. Before Safari 16.4 and Chrome 127
+  the property is ignored and a block keeps the size it had.
 
 ## [4.2.0] - 2026-08-11 — the icon links say what they are
 

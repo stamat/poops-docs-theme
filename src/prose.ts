@@ -87,23 +87,31 @@ export function makeTablesScrollable(): void {
   document.querySelectorAll<HTMLTableElement>('.prose table').forEach((table) => { table.tabIndex = 0 })
 }
 
-// `<switch-elemental>` owns `checked`, and `role="switch"` plus `aria-checked` follow it. What
-// is left here is the two ends: seeding the switch from the theme the inline boot script has
-// already chosen, and writing the theme back out when it flips.
+// `<switch-elemental>` owns `checked`, and `role="switch"` plus `aria-checked` follow it. The
+// state it *starts* in is the element's too, from the `checked-if` in topbar.html: the boot
+// script stamps `data-theme` on the root before first paint, and the element reads it at
+// upgrade. What is left here is the two directions between the switch and the root attribute.
 export function setupTheme(): void {
+  // No switch is a pinned `site.theme`: the layout renders no toggle, and there is nothing to
+  // write the theme back out from.
   const sw = document.querySelector('switch-elemental') as (HTMLElement & { checked?: boolean }) | null
   if (!sw) return
-
-  // The boot script in the <head> sets data-theme before this bundle runs — from storage, or
-  // from prefers-color-scheme on a first visit. Seeding rather than defaulting to off is what
-  // stops a page that rendered dark from announcing its dark-mode switch as off.
-  sw.checked = document.documentElement.dataset.theme === 'dark'
 
   sw.addEventListener('switch-toggle', (e) => {
     const next = (e as CustomEvent<{ checked: boolean }>).detail.checked ? 'dark' : 'light'
     document.documentElement.dataset.theme = next
     try { localStorage.setItem('theme', next) } catch { /* private mode */ }
   })
+
+  // And the way back: the theme is a document-wide setting, so this switch is not necessarily
+  // what changed it. A docs page with a theme toggle of its own in the prose is the case here,
+  // and a switch left saying "on" over a page that has gone light is the exact disagreement
+  // between two controls for one setting that the drawer code below refuses to create by
+  // copying. The write is idempotent — an unchanged `checked` toggles no attribute and fires no
+  // `switch-toggle` — so this and the listener above cannot chase each other.
+  new MutationObserver(() => {
+    sw.checked = document.documentElement.dataset.theme === 'dark'
+  }).observe(document.documentElement, { attributeFilter: ['data-theme'] })
 }
 
 // The icon links and the theme switch sit at the right of the bar, which on a phone is a row

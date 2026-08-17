@@ -7,6 +7,9 @@
 // here: it measures its own row with an `IntersectionObserver`, which jsdom does not have, and
 // a stub of one would be a test of the stub. What this file owes that element is the import
 // that registers it, and that is asserted.
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 let written = ''
 
 beforeAll(async () => {
@@ -69,6 +72,52 @@ test('the theme switch flips the root theme, persists it, and announces it', () 
   btn.click()
   expect(document.documentElement.dataset.theme).toBe('light')
   expect(btn.getAttribute('aria-checked')).toBe('false')
+})
+
+// The starting state belongs to the element now, through the `checked-if` in topbar.html, and
+// this is the half of that contract the bundle can break: seed the switch from here as well and
+// there are two answers to one question again, the later one winning. So a switch that arrives
+// on stays on, whatever the root says — the bundle only writes the theme back out.
+test('the bundle does not decide the starting state, only what a flip means', async () => {
+  document.body.innerHTML = `
+    <switch-elemental checked><button data-theme-toggle aria-label="Dark mode"></button></switch-elemental>
+  `
+  const { setupTheme } = await import('../src/prose')
+  setupTheme()
+
+  const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!
+  expect(btn.getAttribute('aria-checked')).toBe('true')
+
+  btn.click()
+  expect(document.documentElement.dataset.theme).toBe('light')
+})
+
+// The theme is a document-wide setting and this switch is not the only thing that can change
+// it — a page with a second toggle in its prose is the case. Left alone the switch keeps saying
+// what it last said, which is a control claiming "on" over a page that has gone light.
+test('a theme changed by something else moves the switch with it', async () => {
+  document.body.innerHTML = `
+    <switch-elemental><button data-theme-toggle aria-label="Dark mode"></button></switch-elemental>
+  `
+  const { setupTheme } = await import('../src/prose')
+  setupTheme()
+
+  const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!
+  document.documentElement.dataset.theme = 'dark'
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(btn.getAttribute('aria-checked')).toBe('true')
+
+  document.documentElement.dataset.theme = 'light'
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(btn.getAttribute('aria-checked')).toBe('false')
+})
+
+// The `checked-if` is what keeps the topbar switch from being painted off over a page that has
+// already painted dark, and it is one attribute in a template nothing else asserts. Deleting it
+// breaks no test that runs the bundle, because the bundle is not what seeds the switch.
+test('the topbar declares the theme switch\'s starting state on the element', () => {
+  const topbar = readFileSync(join(process.cwd(), 'topbar.html'), 'utf8')
+  expect(topbar).toMatch(/<switch-elemental[^>]*checked-if="\[data-theme=dark\]"/)
 })
 
 // The topbar is built out of two custom elements, and this bundle is the only thing that
