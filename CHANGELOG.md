@@ -34,7 +34,28 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — a long sample line stops reflowing at upgrade
+
+### Changed
+
+- **`code-preview-element` moves to `^3.0.2`**, which stops a sample too wide for
+  its column reflowing the moment the element upgrades. CodeJar writes
+  `white-space: pre-wrap` and `overflow-wrap: break-word` inline on the block it
+  takes over, so an overflowing line scrolled sideways before upgrade and wrapped
+  after it — one extra visual line for each, under a height reservation that could
+  not see it coming. Editable blocks wear both from the start now, the same
+  treatment `3.0.1` gave the editor's padding. The sibling-pane hide crosses the
+  same line: keyed off `.is-tabbed` rather than `:defined`, so the later fences
+  cannot stand on the page for the one frame between upgrade and the tab strip
+  taking over.
+
+  Nothing in the theme changes for it — the element stays a devDependency, in
+  neither bundle and not a dependency of the published package, and the three
+  collisions [Live samples](README.md#live-samples) settles are the same three.
+  Checked here that the copy landing in `preview/dist/vendor` carries both rules,
+  and that build, `npm test`, `npm run lint`, `npm run lint:browsers`,
+  `npm run lint:es` and `npm run a11y` are green on it. The reflow itself is
+  upstream's measurement, not one taken again here.
 
 ## [4.3.0] - 2026-08-17 — the drawer hangs off the bar with no seam
 
