@@ -73,7 +73,7 @@ above rather than described:
 
 | Collision | What you can see |
 | --- | --- |
-| Two copy buttons — the theme puts one on every `.prose pre`, the element has its own on the strip | only the element's is there. Its copies whichever pane is showing; a button bolted to one `<pre>` cannot, and this sample is two fences |
+| Two copy buttons — the theme puts one on every `.prose pre`, the element has its own on the strip | only the element's is there. Its copies whichever pane is showing; a button bolted to one `<pre>` cannot, and this sample is three fences |
 | A gap between the frame and its code, from the theme's `1.75rem` block rhythm outranking the package's reset | the code sits flush under the preview |
 | The package's error red falls back to a fixed `#cf222e`, dark-mode-blind | the console strip finds this theme's `--danger` |
 
