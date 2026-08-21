@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the topbar tooltips drop their caret
+## [Unreleased]
+
+## [4.4.1] - 2026-08-21 — the topbar tooltips drop their caret
 
 The bubbles naming the icon buttons carried a triangle pointing back at the
 button under them. On a row of small square buttons with the bubble already
