@@ -34,7 +34,30 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — the topbar tooltips drop their caret
+
+The bubbles naming the icon buttons carried a triangle pointing back at the
+button under them. On a row of small square buttons with the bubble already
+sitting directly below the one it belongs to, the triangle aims at something
+nobody had to look for, and it is the only pointed corner in a bar built out of
+flat rectangles. This is taste, not a bug — nothing was misplaced.
+
+### Changed
+
+- **`<tooltip-elemental>` bubbles in the topbar have no caret.** The element's
+  theme draws it as two positioned pseudo-elements, so the theme turns those off
+  with `content: none` rather than shrinking `--tooltip-elemental-caret` to zero,
+  which would still leave two boxes and a border-width rim behind. CSS an author
+  may be overriding: `--tooltip-elemental-caret` is still declared by the
+  element's own theme and still does nothing here — putting the caret back means
+  restoring `content` on `tooltip-elemental:defined > [role="tooltip"]::before`
+  and `::after`, not setting the size again. No markup and no bundle changes, and
+  the gap between button and bubble is unchanged.
+
+  Checked by building and reading the compiled `dist/css/docs.min.css`: the rule
+  is present and lands after the element theme's caret block, so it wins the
+  cascade at level specificity. `npm run lint:css` is green. Not checked in a
+  browser.
 
 ## [4.4.0] - 2026-08-21 — the docs pill can point somewhere else, or come off
 

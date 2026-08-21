@@ -244,6 +244,16 @@ tooltip-elemental {
 // under the panel holding the link that opened it. Anything past 20 settles it.
 tooltip-elemental:defined > [role="tooltip"] { z-index: 30; }
 
+// No caret. The bubbles in this bar hang off small square buttons a few pixels below them,
+// where a triangle is more mark than aim, and the topbar is the only place the theme uses one.
+// `content: none` rather than a zero `--tooltip-elemental-caret`: the size knob still leaves
+// two positioned boxes and a border-width rim behind, and the pseudo-elements are the caret.
+tooltip-elemental:defined[role="tooltip"],
+tooltip-elemental:defined > [role="tooltip"] {
+  &::before,
+  &::after { content: none; }
+}
+
 // Right-hand group: search (docs only) + GitHub + theme switcher + the drawer's button. One
 // `auto` margin here keeps the group flush right whether or not the rail is in the row.
 .topbar-actions {

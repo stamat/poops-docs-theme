@@ -200,7 +200,9 @@ otherwise have taken over.
 The look is the element's optional theme with `--tooltip-elemental-surface`,
 `--tooltip-elemental-color` and `--tooltip-elemental-border-color` re-pointed at `--fg` and
 `--bg`: its own default is `CanvasText` on `Canvas`, which follows the operating system rather
-than the switch in this bar.
+than the switch in this bar. The caret is off — the element draws it as two pseudo-elements
+and the theme gives both `content: none`, so putting it back is restoring that rather than
+setting `--tooltip-elemental-caret`.
 
 ```json
 {
