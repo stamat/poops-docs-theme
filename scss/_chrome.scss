@@ -329,6 +329,9 @@ search-elemental[data-state="error"] .sr-error { display: block; }
   line-height: 1.4;
 }
 .toc a:hover { color: var(--fg); text-decoration: none; }
+// The section being read, marked by the scrollspy in docs.ts. Weight as well as colour, for
+// the same reason the sidebar's own current page carries an attribute and not just a class.
+.toc a[aria-current] { color: var(--link); font-weight: 600; }
 .toc .toc-h3 a { padding-left: 1.25rem; }
 .nav-list .toc .toc-h3 { display: none; }
 

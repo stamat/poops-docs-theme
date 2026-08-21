@@ -304,6 +304,25 @@ x-height and override this too, or code will read a little large or small agains
 Nothing in the theme paints an error, so `--danger` is there for elements you embed in a
 page — [Live samples](#live-samples) is the case it was added for.
 
+### Table of contents
+
+Poops' `toc` filter builds a flat list of a page's `H2`s and `H3`s, and `docs.html` nests it
+under that page's link in the sidebar, so the tree and the page's own headings are one list.
+`H3` entries are in the markup and hidden by `.nav-list .toc .toc-h3`, which is every place
+this theme puts the list: a third level of indent inside `--sidebar-w` is a column of wrapped
+fragments.
+
+As you scroll, the entry for the section you are in gets `aria-current="location"`, styled by
+`.toc a[aria-current]` in `var(--link)` at `font-weight: 600`. The line it measures against is
+where a clicked entry parks its heading: the root's `scroll-padding-top` plus the heading's
+`scroll-margin-top`, both derived from `--topbar-h`, so a taller bar moves the mark with it.
+
+Two edges are deliberate. Nothing is marked while you are above the first `H2` — the text
+under the `H1` is not in any section the list names, and marking the first would be a guess.
+At the foot of the page the last entry is marked outright, because a final section shorter
+than the screen never reaches the line. Un-hiding `.toc-h3` in your own CSS shows those
+entries but does not light them up: the mark stays on their parent `H2`.
+
 ### Search
 
 The field in the topbar of every `docs` page. It filters `search-index.json` — the file poops

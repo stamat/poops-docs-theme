@@ -63,6 +63,7 @@
     "typescript-eslint": "^8.65.0"
   },
   "dependencies": {
-    "book-of-elementals": "^1.0.0"
+    "book-of-elementals": "^1.0.0",
+    "book-of-spells": "^2.4.0"
   }
 }

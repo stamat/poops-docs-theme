@@ -12,6 +12,10 @@ import 'book-of-elementals/disclosure'
 // what is left below.
 import 'book-of-elementals/search'
 import 'book-of-elementals/suggest'
+// The scrollspy under the table of contents. Which section counts as the one being read, and
+// the two cases a naive IntersectionObserver gets wrong, are the helper's problem — what is
+// left here is which headings to watch and what to write on the link.
+import { scrollSpy } from 'book-of-spells'
 
 // The drawer is `<disclosure-elemental>`: it owns `open`, writes `aria-expanded` on the
 // toggle and `hidden="until-found"` on the panel, and its `media` attribute holds the rail
@@ -89,6 +93,55 @@ function markActiveNav(): void {
       a.scrollIntoView({ block: 'center' })
     }
   })
+}
+
+// Mark the section being read in the table of contents, the one poops built from the page's own
+// headings and `navtree.html` nested under the active nav link.
+//
+// The links are the source of the list, not the headings: a heading the TOC skipped — an
+// `.sr-only` one, an H4 — is not a place the reader can be taken to, so it is not a place worth
+// reporting. `.toc-h3` entries are `display: none` inside the rail, so they are skipped too and
+// their enclosing H2 stays current while reading them; unhide them in a site's own CSS and they
+// will show without ever lighting up, which is the one thing here a site override can break.
+//
+// `aria-current="location"` rather than `page`: `page` is the sidebar link for the document you
+// are on, and it is already on one of these links' parent. A section of that page is a location
+// within it. `:target-current` and `scroll-target-group` would do the highlight in CSS with no
+// script at all, but they are Chromium-only and, as of Chrome 144, not exposed to the
+// accessibility tree — so the attribute would still have to be written from here.
+//
+// The line the spy measures against is where a clicked TOC link parks a heading, and that is
+// two declarations added together, not one: the root's `scroll-padding-top` shrinks the
+// scrollport, the heading's own `scroll-margin-top` pads the target inside it, and the browser
+// applies both. Measured in Chromium on the kitchen-sink page, a heading lands 136px down from
+// 68px of each — reading only the margin puts the line at half the height and marks the section
+// above the one on screen. Read once: both are `--topbar-h` plus a rem, and neither changes with
+// the viewport. Nothing scrolls the rail to follow the mark either — a sidebar that jumps while
+// the reader scrolls the article is worse than one entry out of sight.
+function setupToc(): void {
+  const toc = document.querySelector('.toc')
+  if (!toc) return
+
+  const links = Array.from(toc.querySelectorAll<HTMLAnchorElement>('li:not(.toc-h3) > a[href^="#"]'))
+  const linkFor = new Map<string, HTMLAnchorElement>()
+  const headings: HTMLElement[] = []
+  for (const link of links) {
+    const id = decodeURIComponent(link.hash.slice(1))
+    const heading = document.getElementById(id)
+    if (!heading || linkFor.has(id)) continue
+    linkFor.set(id, link)
+    headings.push(heading)
+  }
+  if (!headings.length) return
+
+  const px = (value: string): number => parseFloat(value) || 0
+  const offset = px(getComputedStyle(document.documentElement).scrollPaddingTop) +
+    px(getComputedStyle(headings[0]).scrollMarginTop)
+
+  scrollSpy(headings, (section: HTMLElement | null) => {
+    for (const link of links) link.removeAttribute('aria-current')
+    if (section) linkFor.get(section.id)?.setAttribute('aria-current', 'location')
+  }, { offset })
 }
 
 interface Entry { title: string; description?: string; url: string; keywords?: string[] }
@@ -259,6 +312,7 @@ const BASE = (document.currentScript as HTMLScriptElement | null)?.dataset.base 
 
 onReady(() => {
   markActiveNav()
+  setupToc()
   setupMobileNav()
   setupSearch(BASE)
 })

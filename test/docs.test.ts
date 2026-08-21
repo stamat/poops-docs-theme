@@ -44,7 +44,7 @@ beforeAll(async () => {
   // rather than a rejection the element can report.
   window.fetch = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(INDEX) })) as unknown as typeof window.fetch
   document.body.innerHTML = `
-    <div class="prose"><pre>npm install poops</pre></div>
+    <div class="prose"><pre>npm install poops</pre><h2 id="one">One</h2><h3 id="one-a">One, closer up</h3><h2 id="two">Two</h2></div>
     <switch-elemental><button data-theme-toggle aria-label="Dark mode"></button></switch-elemental>
     <search-elemental class="search" delay="10">
       <search>
@@ -57,6 +57,12 @@ beforeAll(async () => {
     </search-elemental>
     <aside class="sidebar" id="sidebar-nav" data-sidebar>
       <a class="nav-link" href="http://localhost/docs/intro/">Intro</a>
+      <nav class="toc" aria-label="On this page"><ul>
+        <li class="toc-h2"><a href="#one">One</a></li>
+        <li class="toc-h3"><a href="#one-a">One, closer up</a></li>
+        <li class="toc-h2"><a href="#two">Two</a></li>
+        <li class="toc-h2"><a href="#gone">A heading nobody wrote</a></li>
+      </ul></nav>
       <a class="nav-link" href="http://localhost/docs/other/">Other</a>
     </aside>
     <disclosure-elemental for="sidebar-nav" media="(min-width: 60rem)"><button data-nav-toggle></button></disclosure-elemental>
@@ -65,6 +71,20 @@ beforeAll(async () => {
   `
   window.history.replaceState({}, '', '/docs/intro/index.html')
   Element.prototype.scrollIntoView = jest.fn()
+  // The scrollspy reads geometry, and jsdom has none: every heading gets a fixed place in a
+  // document tall enough to scroll past all of them. Installed before the import, because
+  // docs.ts boots on it and takes its first reading there.
+  Object.defineProperty(window, 'scrollY', { value: 0, writable: true, configurable: true })
+  Object.defineProperty(document.documentElement, 'scrollHeight', { value: 5000, configurable: true })
+  window.innerHeight = 800
+  for (const [id, top] of [['one', 1000], ['one-a', 1500], ['two', 2000]] as [string, number][]) {
+    const heading = document.getElementById(id)!
+    heading.getBoundingClientRect = () => ({ top: top - window.scrollY, height: 0 }) as DOMRect
+    heading.style.scrollMarginTop = '28px'
+  }
+  // Inline, because jsdom has no stylesheet to read them from. The two together are the line a
+  // clicked link parks a heading on, and 68 is the number the assertions below are pinned to.
+  document.documentElement.style.scrollPaddingTop = '40px'
   await import('../src/docs')
   // the elements upgrade on import; let their connected callbacks land before anything types
   await new Promise((resolve) => setTimeout(resolve, 0))
@@ -388,4 +408,56 @@ test('escape leaves the rail standing above the breakpoint', () => {
 
   mql.matches = false
   crossBreakpoint({ matches: false })
+})
+// The table of contents, and which of its entries carries the mark. Where the reading line
+// falls, and what happens at the foot of the page, are `scrollSpy`'s own tests in
+// book-of-spells — what is covered here is the wiring: the right link, one at a time, and the
+// entries this theme does not show left out of it.
+function scrollTo(y: number): void {
+  (window as unknown as { scrollY: number }).scrollY = y
+  // rAF only, and only for the length of the scroll: the throttle is what makes the update
+  // asynchronous, and every assertion below wants the answer on the next line.
+  const raf = jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => { (cb as FrameRequestCallback)(0); return 1 })
+  window.dispatchEvent(new Event('scroll'))
+  raf.mockRestore()
+}
+
+const marked = (): string[] => Array.from(document.querySelectorAll('.toc a[aria-current]')).map((a) => (a as HTMLAnchorElement).hash)
+
+test('the section being read is the one marked in the table of contents', () => {
+  scrollTo(1100)
+  expect(marked()).toEqual(['#one'])
+  scrollTo(2100)
+  expect(marked()).toEqual(['#two'])
+})
+
+test('the mark says location, not page — the page is the sidebar link this list hangs under', () => {
+  scrollTo(1100)
+  expect(document.querySelector('.toc a[href="#one"]')!.getAttribute('aria-current')).toBe('location')
+  expect(document.querySelector('.nav-link.active')!.getAttribute('aria-current')).toBe('page')
+})
+
+test('an H3 entry the rail does not show never takes the mark, and its H2 keeps it', () => {
+  scrollTo(1600)
+  expect(marked()).toEqual(['#one'])
+})
+
+test('a link pointing at a heading that is not on the page is left out rather than thrown at', () => {
+  scrollTo(4200)
+  expect(marked()).toEqual(['#two'])
+})
+
+test('the reading line is where a clicked link parks a heading: the root\'s scroll padding and the heading\'s own margin, added', () => {
+  // 40 + 28 = 68. At 950 the first heading sits 50px down — inside the line, so it is being
+  // read; at 920 it is 80px down, still below it. Either declaration dropped moves the line
+  // past one of these two.
+  scrollTo(950)
+  expect(marked()).toEqual(['#one'])
+  scrollTo(920)
+  expect(marked()).toEqual([])
+})
+
+test('nothing is marked above the first heading', () => {
+  scrollTo(0)
+  expect(marked()).toEqual([])
 })

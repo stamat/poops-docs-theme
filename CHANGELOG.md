@@ -34,7 +34,48 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — the table of contents keeps its place
+
+The in-nav table of contents was a list of links and nothing more: on a long page
+it told you where you could go and never where you were. Reading past the fold
+meant scrolling the article with one eye on the sidebar, counting headings.
+
+### Added
+
+- **The table of contents marks the section being read.** The entry for the
+  section under the reading line gets `aria-current="location"` as you scroll —
+  the reading line being where a clicked entry parks its heading, which is the
+  root's `scroll-padding-top` plus the heading's own `scroll-margin-top`, both
+  already declared. `location` rather than `page`: the sidebar link this list
+  hangs under is the page, and a section of it is a location within one, so a
+  screen reader announcing both reads them as the two different things they are.
+
+  Where a section starts and ends is
+  [`scrollSpy`](https://github.com/stamat/book-of-spells)'s, new in
+  book-of-spells 2.4.0 and a **new direct dependency of this package** — it was
+  already in the tree under `book-of-elementals`. Two behaviours worth knowing
+  before you style around them: nothing is marked while the reader is above the
+  first `H2`, since the text under the `H1` is not in any section the list names,
+  and at the foot of the page the last entry is marked outright, because a final
+  section shorter than the screen can never reach the line.
+
+  `.toc-h3` entries are skipped, not marked: the rail hides them with
+  `display: none`, and a mark landing on an invisible entry would take the
+  visible one off its parent `H2` for as long as the reader stayed in that
+  subsection. A site that unhides them in its own CSS will see them show without
+  ever lighting up.
+
+  CSS an author may be overriding: one new rule, `.toc a[aria-current]`, in
+  `var(--link)` at `font-weight: 600` — the same pair the topbar already uses for
+  its current link, so colour is not carrying it alone. No markup changes: poops
+  builds the list, and this only writes an attribute onto links that were already
+  there. Nothing scrolls the rail to follow the mark, so on a page with more
+  headings than the rail is tall the current entry can be out of view.
+
+  Checked in Chromium against the built preview site, light and dark: the mark
+  follows a plain scroll and an anchor click, and the marked link holds 6.3:1 on
+  white and 7.36:1 on the dark ground. `script/a11y` does not cover it — the
+  sweep audits each page as served, and as served no entry is marked yet.
 
 ## [4.4.1] - 2026-08-21 — the topbar tooltips drop their caret
 
