@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the table of contents keeps its place
+## [Unreleased]
+
+## [4.5.0] - 2026-08-21 — the table of contents keeps its place
 
 The in-nav table of contents was a list of links and nothing more: on a long page
 it told you where you could go and never where you were. Reading past the fold
