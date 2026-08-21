@@ -31,14 +31,19 @@
     <svg class="nav-icon-close" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6.823 7.823a.25.25 0 0 1 0 .354l-2.396 2.396A.25.25 0 0 1 4 10.396V5.604a.25.25 0 0 1 .427-.177Z"></path><path d="M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0ZM1.5 1.75v12.5c0 .138.112.25.25.25H9.5v-13H1.75a.25.25 0 0 0-.25.25ZM11 14.5h3.25a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25H11Z"></path></svg>
   </button></disclosure-elemental>{% endif %}
   {#- Two links, not one: the title goes to the site root (or wherever `site.brandUrl`
-      points), the pill always goes back to the docs index. -#}
+      points), the pill goes back to the docs index — `docs/` under the root, which is where
+      a site with a landing page in front of its docs keeps them. `site.docsUrl` moves it,
+      and `false` takes the pill off: a site whose docs *are* the root has no second place
+      to send anyone, and a pill pointing at a `docs/` that was never built is a 404 on
+      every page of it. -#}
   {%- set brandUrl = site.brandUrl or '' -%}
   {%- set brandExternal = '//' in brandUrl -%}
+  {%- set docsUrl = site.docsUrl if site.docsUrl is defined else 'docs/' -%}
   <div class="brand-group">
     <a href="{{ (brandUrl if brandExternal else prefix + brandUrl) | escape }}" class="brand"{% if brandExternal %} target="_blank" rel="noopener"{% endif %}>
       <span class="brand-mark">{{ (site.brandMark or '💩') | escape }}</span> {{ (site.brand or site.title) | escape }}
     </a>
-    {%- if docs %}<a href="{{ prefix }}docs/" class="brand-docs">docs</a>{% endif %}
+    {%- if docs and docsUrl %}<a href="{{ (prefix + docsUrl) | escape }}" class="brand-docs">docs</a>{% endif %}
   </div>
   {#- The row of links, and the box the element measures a copy of it in — the landmark is
       that box rather than something around the whole bar, which would be a "Site" navigation

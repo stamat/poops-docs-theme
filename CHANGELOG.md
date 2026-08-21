@@ -34,7 +34,24 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — a long sample line stops reflowing at upgrade
+## [Unreleased] — the docs pill can point somewhere else, or come off
+
+### Added
+
+- **`site.docsUrl` is where the `docs` pill next to the title goes**, and `false` takes the
+  pill off the bar. It was hardcoded to `docs/` under the site root, which is right for a
+  site with a landing page in front of its docs and wrong for one whose docs *are* the root:
+  there the pill points at a directory nobody built, on every page of the site —
+  [book-of-elementals](https://github.com/stamat/book-of-elementals) shipped 32 pages with a
+  header link 404ing on all of them. Unset still means `docs/`, so a site that never sets the
+  key sees no change; a string is site-relative and picks up the page's path prefix like
+  every other url in the bar. DOM: with `false` the `<a class="brand-docs">` is absent rather
+  than hidden, so a stylesheet reaching for it finds nothing rather than something invisible.
+
+  Checked by rendering the macro against each state — unset, `false`, `""`, a path of its
+  own, and the `prose` layout that has never had the pill — and reading the href out of the
+  markup. The `preview/` site keeps its docs under `docs/` and so exercises the default only,
+  which is the shape it was already testing.
 
 ### Changed
 

@@ -121,6 +121,11 @@ site-relative url gets the page's path prefix, an absolute one opens in a new ta
 `docs` layout the `docs` pill next to it is a second link, back to `docs/`, so the title
 leaves the docs section and the pill returns to it.
 
+`site.docsUrl` is where that pill points, for a site that keeps its docs somewhere other
+than `docs/` — and `false` takes the pill off altogether, which is what a site whose docs
+*are* the site root wants: the title already goes there, and a pill pointing at a `docs/`
+nobody built is a 404 on every page of the site.
+
 `site.links` adds nav links — a row at the right of the bar, against the search field and the
 icon buttons rather than against the brand. Site-relative
 urls get the page's path prefix; absolute ones open in a new tab. Every link shows on every
@@ -441,8 +446,8 @@ All Poops built-ins, present in any Poops build:
 | Data    | `nav` tree (`markup.nav`), `search-index.json` (`markup.searchIndex`) | —                           |
 
 Both read `site` config: `title`, `description`, `lang`, `repo`, `branch` (edit link, docs
-only), plus the optional `brand`, `brandMark`, `brandUrl`, `links` and `footer` covered under
-[Topbar config](#topbar-config).
+only), plus the optional `brand`, `brandMark`, `brandUrl`, `docsUrl`, `links` and `footer`
+covered under [Topbar config](#topbar-config).
 
 ### Last updated
 
