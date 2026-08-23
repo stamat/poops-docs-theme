@@ -34,7 +34,38 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — the footer says who wrote it, and adding a credit no longer costs the version
+
+Both layouts carried their own copy of the footer line, so the two had to be edited in
+step. Neither had a copyright, and neither had a seam: a site that wanted one more name in
+the "Built with" list had to restate the whole line through `site.footer`. Across the
+sites doing that, the version is what went missing on the way — the hand-written string
+had no `{{ version }}` in it, and nothing failed to say so.
+
+### Added
+
+- **`site.builtWith` appends to the credits.** An array of `{ title, url }` — the shape
+  `site.links` already uses — joined onto Poops and this theme with commas and a final
+  *and*. A site adding `code-preview-element` writes one entry instead of restating the
+  brand, the version, the licence and the two credits it did not want to change.
+
+- **The footer names the author.** `MIT © @you` where it used to say `MIT licensed`,
+  read from `package.json`'s `author`. A `@handle` in the email slot of npm's string form
+  (`"Ada Lovelace <@ada>"`) is read as a GitHub account and linked there; npm's object
+  form is linked to its `url`; anything else prints the bare name unlinked, and a
+  package.json with no `author` at all still renders `MIT licensed.` exactly as before.
+  The handle wins over a `url` when both are given.
+
+### Changed
+
+- **The footer moved into `footer.html`, imported by both layouts.** One source for a line
+  that was duplicated in `docs.html` and `prose.html`. Nothing about the markup it emits
+  changed — same `<footer class="page-footer">`, same place in the document — so a site
+  styling or scripting against it needs no change. The `{% block footer %}` in `prose.html`
+  is still there and still overridable.
+
+- **A missing `version` drops its clause instead of printing `v`.** The old line printed
+  the `v` unconditionally, so a package.json without a version rendered `brand v — MIT`.
 
 ## [4.5.1] - 2026-08-23 — a code block in an admonition is no longer flush against the border
 

@@ -3,7 +3,7 @@
   "version": "4.5.1",
   "description": "Documentation theme (layout, styles, script) for Poops-built sites.",
   "license": "MIT",
-  "author": "Nikola Stamatovic",
+  "author": "Nikola Stamatovic <@stamat>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stamat/poops-docs-theme.git"
@@ -25,6 +25,7 @@
     "prose.html",
     "navtree.html",
     "topbar.html",
+    "footer.html",
     "scss",
     "src",
     "dist"

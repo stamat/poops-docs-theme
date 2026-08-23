@@ -1,0 +1,30 @@
+{# Shared page footer. Both layouts had a copy of this line and both had to be edited in
+   step; a site adding one credit to it had to restate the whole thing through
+   `site.footer`, and the version and the copyright were what got dropped on the way. #}
+{% macro pagefooter(site, package) %}
+{#- `site.footer` is still the full escape hatch: html, unescaped, replacing everything
+    below. `site.builtWith` is the seam that means a site rarely needs it — one more
+    `{ title, url }` on the end of the credits, without restating the rest. -#}
+<footer class="page-footer">
+  {% if site.footer %}{{ site.footer | safe }}{% else %}
+  {#- npm's author is either `Name <email> (url)` or `{ name, url }`, and a `@handle` in the
+      email slot is the convention this theme reads as a GitHub account. The handle wins over
+      a url when both are given: it names the account, where the url names whatever the author
+      happened to point it at. With neither, the bare name is printed — an author who is not
+      on GitHub is not linked somewhere they are not. -#}
+  {%- set author = package.author if package.author is string else (package.author.name or '' if package.author else '') -%}
+  {%- set handle = author.split('<@')[1].split('>')[0] if '<@' in author else '' -%}
+  {%- set authorUrl = 'https://github.com/' + handle if handle else (package.author.url or '' if package.author and package.author is not string else '') -%}
+  {%- set authorName = '@' + handle if handle else author.split('<')[0].split('(')[0].trim() -%}
+  {#- `.concat` rather than a loop appending: `site.builtWith` is frozen config, and pushing
+      onto the literal would mutate it across every page of the build. -#}
+  {%- set credits = [
+    { title: 'Poops', url: 'https://github.com/stamat/poops' },
+    { title: 'poops-docs-theme', url: 'https://github.com/stamat/poops-docs-theme' }
+  ].concat(site.builtWith or []) -%}
+  <a href="{{ package.homepage | escape }}" target="_blank" rel="noopener">{{ (site.brand or site.title) | escape }}</a>{% if package.version %} v{{ package.version | escape }}{% endif %} —
+  {% if package.license %}{{ package.license | escape }} {% endif %}{% if author %}&copy; {% if authorUrl %}<a href="{{ authorUrl | escape }}" target="_blank" rel="noopener">{{ authorName | escape }}</a>{% else %}{{ authorName | escape }}{% endif %}{% elif package.license %}licensed{% endif %}.
+  Built with <span aria-hidden="true">💩</span> {% for credit in credits %}{% if not loop.first %}{{ ' and ' if loop.last else ', ' }}{% endif %}<a href="{{ credit.url | escape }}" target="_blank" rel="noopener">{{ credit.title | escape }}</a>{% endfor %}.
+  {% endif %}
+</footer>
+{% endmacro %}

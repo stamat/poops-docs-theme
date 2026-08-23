@@ -35,6 +35,7 @@ contains everything `prose.min.css` has, and `docs.min.js` already contains
 | `docs.html`            | full docs layout — topbar, sidebar nav, breadcrumb, TOC, prose                                               |
 | `prose.html`           | standalone layout — topbar, one prose body, no sidebar or search                                             |
 | `topbar.html`          | shared topbar macro (both layouts import it)                                                                 |
+| `footer.html`          | shared page-footer macro (both layouts import it)                                                            |
 | `navtree.html`         | recursive sidebar-nav macro (`docs.html` imports it)                                                         |
 | `scss/_base.scss`      | tokens + element base                                                                                        |
 | `scss/_shell.scss`     | the frame both layouts share — skip link, topbar, brand, icon buttons (GitHub + theme switcher), content column, footer |
@@ -109,10 +110,8 @@ no index. The consumer produces those files.
 
 Both layouts read `site` for the header: `brand` (falls back to `title`), `brandMark`
 (the emoji, defaults to 💩), and `repo` (falls back to `package.homepage`) for the GitHub
-button — omit both and the button disappears. Both render `site.footer` (html, unescaped)
-if set; without it both fall back to the same line — brand, version, license, then credit to
-Poops and this theme — read from the consuming site's `package.json` (`homepage`, `version`,
-`license` — a missing `license` just drops that clause).
+button — omit both and the button disappears. The line at the bottom of the page is
+[Footer config](#footer-config).
 
 `brandMark` is also the tab icon, drawn as an inline svg — no favicon file needed.
 
@@ -226,6 +225,51 @@ Both lists take the same `icon` values:
 | `npm`         | the npm mark                                                    |
 | `package`     | a generic package box — use it for Packagist, PyPI, crates.io…  |
 | anything else | printed as given, so an emoji or a pasted `<svg>` works         |
+
+### Footer config
+
+Both layouts close with the same line, written by `footer.html` and read from the consuming
+site's `package.json`:
+
+> [your-package](#) v1.4.0 — MIT © [@you](#). Built with 💩 [Poops](https://github.com/stamat/poops), [poops-docs-theme](https://github.com/stamat/poops-docs-theme) and [code-preview-element](https://github.com/stamat/code-preview-element).
+
+The brand links to `homepage`, the version is `version`, and the licence is `license` — a
+package.json missing any one of them drops that clause rather than printing a blank.
+
+The name after the © comes from `author`, in either form npm accepts. A `@handle` in the
+email slot of the string form is read as a GitHub account and linked there — which is the
+one identifier most package.json files already carry:
+
+| `author`                                    | renders                                    |
+| ------------------------------------------- | ------------------------------------------ |
+| `"Ada Lovelace <@ada>"`                     | [@ada](https://github.com/ada)             |
+| `{ "name": "Ada Lovelace", "url": "https://ada.dev" }` | [Ada Lovelace](https://ada.dev) |
+| `"Ada Lovelace <ada@example.com>"`          | Ada Lovelace, unlinked                     |
+| omitted                                     | `MIT licensed.`, as before this key existed |
+
+A handle wins over a `url` when both are given: the handle names the account, the url names
+whatever the author happened to point it at. With neither, the bare name is printed rather
+than linked somewhere the author is not.
+
+`site.builtWith` appends credits to the Poops-and-this-theme list — the `{ title, url }`
+shape `site.links` uses, joined with commas and a final *and*:
+
+```json
+{
+  "markup": {
+    "site": {
+      "builtWith": [
+        { "title": "code-preview-element", "url": "https://github.com/stamat/code-preview-element" }
+      ]
+    }
+  }
+}
+```
+
+`site.footer` is still there and still wins over all of the above — html, unescaped,
+replacing the line entirely. Reach for it when the footer is not a credit line at all; a
+site that only wants one more name in the list wants `builtWith`, which keeps the version
+and the copyright a hand-written string tends to lose.
 
 ### Pinning the theme
 
@@ -467,8 +511,9 @@ All Poops built-ins, present in any Poops build:
 | Data    | `nav` tree (`markup.nav`), `search-index.json` (`markup.searchIndex`) | —                           |
 
 Both read `site` config: `title`, `description`, `lang`, `repo`, `branch` (edit link, docs
-only), plus the optional `brand`, `brandMark`, `brandUrl`, `docsUrl`, `links` and `footer`
-covered under [Topbar config](#topbar-config).
+only), plus the optional `brand`, `brandMark`, `brandUrl`, `docsUrl` and `links` covered
+under [Topbar config](#topbar-config), and `builtWith` and `footer` under
+[Footer config](#footer-config).
 
 ### Last updated
 

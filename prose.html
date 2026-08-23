@@ -1,4 +1,4 @@
-{% import "./topbar.html" as header %}<!DOCTYPE html>
+{% import "./topbar.html" as header %}{% import "./footer.html" as footer %}<!DOCTYPE html>
 {# Standalone page layout: docs topbar without search or the "docs" pill, one prose
    body, no sidebar. For small projects that want a single page, not a docs site. #}
 <html lang="{{ (page.lang or site.lang or 'en') | escape }}"{% if site.theme and site.theme != 'system' %} data-theme="{{ site.theme | escape }}"{% endif %}>
@@ -32,14 +32,7 @@
     <article class="prose">
       {% block content %}{% endblock %}
     </article>
-    {% block footer %}
-    <footer class="page-footer">
-      {% if site.footer %}{{ site.footer | safe }}{% else %}
-      <a href="{{ package.homepage | escape }}" target="_blank" rel="noopener">{{ (site.brand or site.title) | escape }}</a> v{{ package.version | escape }} —
-      {% if package.license %}{{ package.license }} licensed. {% endif %}Built with <span aria-hidden="true">💩</span> <a href="https://github.com/stamat/poops" target="_blank" rel="noopener">Poops</a> and <a href="https://github.com/stamat/poops-docs-theme" target="_blank" rel="noopener">poops-docs-theme</a>.
-      {% endif %}
-    </footer>
-    {% endblock %}
+    {% block footer %}{{ footer.pagefooter(site, package) }}{% endblock %}
   </main>
 
   <script src="{{ relativePathPrefix }}js/prose.min.js"></script>
