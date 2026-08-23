@@ -34,7 +34,22 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — a code block in an admonition is no longer flush against the border
+
+The admonition box carries no padding of its own, so the title's tint can reach its
+own border, and the inset was handed to the children — but only to `p`. Anything
+else inside a note or a warning ran edge to edge: a `pre`, a list, a table. A code
+block also kept the 1.75rem bottom margin it takes in the open, so the last line of
+a note sat further from the border than the last line of a paragraph.
+
+### Fixed
+
+- **Every child of an admonition takes the 1rem inset, not just `p`.** The two rules
+  are now keyed to the children of the box rather than to a tag: `> :not(.admonition-title)`
+  for the inset, `> :last-child` for the 0.75rem bottom. The inset is `margin-inline`,
+  not padding, so a `pre` puts the gap outside its own background instead of inside it.
+  A site that was overriding `.admonition p` to reclaim the padding no longer needs to,
+  and one that was adding its own inset to a `pre` inside an admonition now doubles it.
 
 ## [4.5.0] - 2026-08-21 — the table of contents keeps its place
 
