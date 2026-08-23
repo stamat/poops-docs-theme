@@ -34,12 +34,14 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the sidebar says where you are before the script runs
+## [Unreleased] — the sidebar says where you are before the script runs, and the topbar's breakpoints say what they switch
 
 Which page you were on was marked in the browser, so a docs page whose script had not
 arrived yet — or never did — showed forty links with none of them current. And the table
 of contents beside them was one malformed heading id away from taking the search box and
-the mobile drawer down with it.
+the mobile drawer down with it. Up in the topbar, the bar and the rail declared their
+breakpoints under the same name, `media`, which says a media query is involved without
+saying which state it decides.
 
 ### Changed
 
@@ -54,6 +56,26 @@ the mobile drawer down with it.
   The comparison also stopped missing the home page, whose nav url is empty while the
   layout is handed `index.html`, and a section index arriving with a trailing slash the
   nav does not carry. Both used to depend on the client pass to light up at all.
+
+- **`book-of-elementals` moves to `^2.0.0`, and the topbar's breakpoints are spelled the
+  way 2.0 names them.** `media` said *a* media query without saying which state it owned,
+  and 2.0 renames it per element: `bar-when` on `<navbar-elemental>`, `open-when` on
+  `<disclosure-elemental>`. `media` still answers in 2.0 and is only marked for removal at
+  the next major, so this is the theme moving early rather than a break it had to absorb.
+
+  **This is a DOM change**: `topbar.html` writes `bar-when="(min-width: 40rem)"` and
+  `open-when="(min-width: 60rem)"` where it wrote `media`, so a site selecting
+  `navbar-elemental[media]` or `disclosure-elemental[media]` in CSS or script has to
+  follow. Nothing else in the topbar moved, and `data-mode` — what the theme's own drawer
+  rules key off — is untouched.
+
+  The theme reads that attribute as well as writing it: `setupDrawerActions` takes the
+  breakpoint off the element rather than restating it, and now reads `bar-when` alone. A
+  hand-written topbar still on `media` keeps its bar and drawer, since the element answers
+  both, but stops folding the topbar controls into the drawer — reading both spellings was
+  rejected as two names to keep in step for markup this theme ships itself. Nothing else in
+  2.0 reaches this theme: the elements it uses behave as they did, and 2.0's new
+  `<splitter-elemental>`, `<tree-view-elemental>` and sliding tabs are not used here.
 
 ### Fixed
 

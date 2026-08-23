@@ -144,7 +144,7 @@ single link it would be a drawer at every width.
 It is the APG *disclosure navigation* pattern and not a menubar: the items stay links, `Tab`
 reaches every one of them, the arrow keys walk the row, and Escape closes what is open.
 `aria-expanded`, `aria-controls` and `hidden` are the element's to write. The breakpoint is
-declared once, as the `media` attribute in `topbar.html`, and no stylesheet here repeats it.
+declared once, as the `bar-when` attribute in `topbar.html`, and no stylesheet here repeats it.
 
 Below that same 40rem the icon links and the theme switch go into the drawer too, as the row
 under the links, and come back onto the bar above it. The breakpoint and not the drawer: a row
@@ -159,7 +159,7 @@ it. What it does once you type is [Search](#search).
 
 The docs sidebar is the same idea with a different element: a rail above 60rem and a drawer
 below it, [`<disclosure-elemental>`](https://github.com/stamat/book-of-elementals) with the
-breakpoint as its `media` attribute, so a drawer left open cannot survive a rotation into a
+breakpoint as its `open-when` attribute, so a drawer left open cannot survive a rotation into a
 layout that has no drawer. It is **not** modal — focus is not trapped, the article is not
 `inert`, and tabbing past the last link leaves it, which is the disclosure pattern. What the
 theme adds is the two ends that pattern does not owe you: opening the drawer hands focus to

@@ -76,7 +76,7 @@ beforeAll(async () => {
         <li><a class="nav-link" href="http://localhost/docs/other/">Other</a></li>
       </ul></nav>
     </aside>
-    <disclosure-elemental for="sidebar-nav" media="(min-width: 60rem)"><button data-nav-toggle></button></disclosure-elemental>
+    <disclosure-elemental for="sidebar-nav" open-when="(min-width: 60rem)"><button data-nav-toggle></button></disclosure-elemental>
     <button data-nav-close></button>
     <main><a href="/somewhere/">In the article</a><textarea id="scratch"></textarea></main>
   `
@@ -229,7 +229,7 @@ test('the article is never inerted — this is a disclosure, not a dialog', () =
   expect(main.hasAttribute('inert')).toBe(false)
 })
 
-// The breakpoint is the element's `media` attribute now, not a matchMedia listener in here.
+// The breakpoint is the element's `open-when` attribute now, not a matchMedia listener in here.
 test('crossing the breakpoint holds the rail open, and closes it again on the way back', () => {
   const sidebar = document.querySelector('[data-sidebar]')!
   const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]')!
@@ -411,7 +411,7 @@ test('k without a modifier, with the wrong one, or with shift held, is left alon
   expect(document.activeElement).toBe(scratch)
 })
 
-// The rail is not a drawer to dismiss. `media` writes `open` when the query *changes*, so
+// The rail is not a drawer to dismiss. `open-when` writes `open` when the query *changes*, so
 // nothing puts back a rail Escape closed, and the toggle that would is `display: none` up
 // here — the panel would be gone for the rest of the visit.
 test('escape leaves the rail standing above the breakpoint', () => {

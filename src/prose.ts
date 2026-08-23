@@ -8,7 +8,7 @@ import 'book-of-elementals/switch'
 // And `<navbar-elemental>`, for the same reason: the topbar's row of `site.links` is the
 // element, and with it the overflow panel, the drawer, the hamburger and the APG's disclosure
 // navigation keyboard. Nothing to instantiate and no state here — the element measures its own
-// row, so the only breakpoint anyone writes is the `media` attribute in topbar.html.
+// row, so the only breakpoint anyone writes is the `bar-when` attribute in topbar.html.
 import 'book-of-elementals/navbar'
 // And `<copy-elemental>`, which is the copy button below: the clipboard write, the copied and
 // failed states, and the live region that says which — a swapped icon announces nothing, and
@@ -154,10 +154,12 @@ export function setupDrawerActions(): void {
   slot.setAttribute('data-navbar-stack', '')
 
   // The breakpoint, read off the element rather than written again here — `topbar.html` declares
-  // it once, as the `media` the bar exists in. An element without one has no phone to fold into,
-  // so the controls stay where the markup put them at every width.
-  const media = bar.getAttribute('media')
-  const query = media && window.matchMedia ? window.matchMedia(media) : null
+  // it once, as the `bar-when` the bar exists in. An element without one has no phone to fold
+  // into, so the controls stay where the markup put them at every width. Only the current
+  // spelling is read: `<navbar-elemental>` still answers the older `media`, but a topbar
+  // writing that one is not this theme's, and reading both would be two names to keep in step.
+  const barWhen = bar.getAttribute('bar-when')
+  const query = barWhen && window.matchMedia ? window.matchMedia(barWhen) : null
 
   const sync = (): void => {
     const stacked = !!query && !query.matches

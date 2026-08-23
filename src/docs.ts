@@ -18,7 +18,7 @@ import 'book-of-elementals/suggest'
 import { scrollSpy } from 'book-of-spells'
 
 // The drawer is `<disclosure-elemental>`: it owns `open`, writes `aria-expanded` on the
-// toggle and `hidden="until-found"` on the panel, and its `media` attribute holds the rail
+// toggle and `hidden="until-found"` on the panel, and its `open-when` attribute holds the rail
 // open above the breakpoint. So there is no state here, and no matchMedia — what is left is
 // light dismiss, which the APG disclosure pattern does not owe you and a drawer over a scrim
 // still wants.
@@ -39,7 +39,7 @@ function setupMobileNav(): void {
     // from its query when the query *changes*, and a query that still matches changes
     // nothing — so a rail closed by Escape stays closed, with the toggle that would bring it
     // back `display: none` at this width. `pinned` rather than not-`free`: a disclosure with
-    // no `media` has no mode and is a drawer at every width.
+    // no `open-when` has no mode and is a drawer at every width.
     if ((drawer as HTMLElement).dataset.mode === 'pinned') return
     // Focus first, while the drawer is still rendered. Closing sets `hidden`, which takes
     // the panel out of the a11y tree with the focused link inside it — focus would land on

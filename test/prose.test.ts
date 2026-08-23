@@ -157,7 +157,7 @@ describe('the icon links and the theme switch ride into the drawer', () => {
     })) as unknown as typeof window.matchMedia
 
     document.body.innerHTML = `
-      <header class="topbar"><navbar-elemental media="(min-width: 40rem)">
+      <header class="topbar"><navbar-elemental bar-when="(min-width: 40rem)">
         <nav class="rail"><ul><li><a href="/docs/">Docs</a></li></ul></nav>
         <div class="topbar-actions">
           <tooltip-elemental><a class="icon-btn" href="https://example.com" title="npm"><span aria-hidden="true">n</span></a><span>npm</span></tooltip-elemental>

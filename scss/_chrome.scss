@@ -385,7 +385,7 @@ search-elemental[data-state="error"] .sr-error { display: block; }
 
 // ---- The drawer ----
 // Not a width question, and so not a media query: the element reflects which side of its
-// `media` query it is on, so these rules key off `data-mode` and the breakpoint stays declared
+// `open-when` query it is on, so these rules key off `data-mode` and the breakpoint stays declared
 // once, in the markup, where it cannot drift from this file.
 // `free` is the element saying its query stopped matching. It arrives at upgrade, so none of
 // this can apply to a page whose script never loaded — which is the point: an off-canvas

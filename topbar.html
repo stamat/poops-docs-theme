@@ -20,13 +20,13 @@
     clothes, so it becomes the hamburger instead. Only past one link, because the threshold is
     read against the total as well as against how many fit — a site with a single link would be
     a drawer at every width, which is the same silliness the other way up. -#}
-  <navbar-elemental{% if site.links %} media="(min-width: 40rem)"{% if site.links.length > 1 %} min-bar-items="2"{% endif %}{% endif %}>
+  <navbar-elemental{% if site.links %} bar-when="(min-width: 40rem)"{% if site.links.length > 1 %} min-bar-items="2"{% endif %}{% endif %}>
   {#- The panel is a flex item down in the layout and the button belongs up here, so the two
-      cannot be wrapped in a `<details>`; `for` points across that distance. `media` is the
+      cannot be wrapped in a `<details>`; `for` points across that distance. `open-when` is the
       breakpoint, declared once and only here — the element holds the rail open above it and
       hands it back to the button below. `aria-expanded` and `aria-controls` are the
       element's to write, which is why they are not in this markup. -#}
-  {% if docs %}<disclosure-elemental for="sidebar-nav" media="(min-width: 60rem)"><button class="icon-btn nav-toggle" aria-label="Documentation navigation" data-nav-toggle>
+  {% if docs %}<disclosure-elemental for="sidebar-nav" open-when="(min-width: 60rem)"><button class="icon-btn nav-toggle" aria-label="Documentation navigation" data-nav-toggle>
     <svg class="nav-icon-open" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="m4.177 7.823 2.396-2.396A.25.25 0 0 1 7 5.604v4.792a.25.25 0 0 1-.427.177L4.177 8.177a.25.25 0 0 1 0-.354Z"></path><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25H9.5v-13Zm12.5 13a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25H11v13Z"></path></svg>
     <svg class="nav-icon-close" viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6.823 7.823a.25.25 0 0 1 0 .354l-2.396 2.396A.25.25 0 0 1 4 10.396V5.604a.25.25 0 0 1 .427-.177Z"></path><path d="M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0ZM1.5 1.75v12.5c0 .138.112.25.25.25H9.5v-13H1.75a.25.25 0 0 0-.25.25ZM11 14.5h3.25a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25H11Z"></path></svg>
   </button></disclosure-elemental>{% endif %}
