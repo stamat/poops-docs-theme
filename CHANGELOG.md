@@ -26,12 +26,13 @@ ending in a code block at the 1.75rem a `pre` takes out in the open.
 ### Fixed
 
 - **The admonition body is padded, and the title bleeds back out over it.** The box now
-  takes `padding: 0 1rem 0.75rem`, so every child is inset by the box rather than by a
+  takes `padding: 0 1rem 1rem`, so every child is inset by the box rather than by a
   rule naming its tag, and the last child drops its bottom margin so the box's padding is
-  the only gap under it. The title cancels the inline pair with `margin: 0 -1rem 0.75rem`,
+  the only gap under it — 1rem, the same as the sides, where a note ending in a paragraph
+  used to close at 0.75rem. The title cancels the inline pair with `margin: 0 -1rem 0.75rem`,
   which is what keeps its tint running border to border. Block-start stays 0 so the tint
   still sits on the top border. Verified in Chromium: title flush at both ends, children
-  at 16px each side, 12px under the last one.
+  at 16px each side, 16px under the last one.
 
   Two things to check on upgrade. A site overriding `.admonition p` to reclaim the old
   `padding: 0 1rem` is now adding a second inset — drop the override. A site that gave a

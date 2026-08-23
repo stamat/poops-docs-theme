@@ -214,7 +214,7 @@ code-preview copy-elemental { display: none; }
   // back out over the inline padding with a negative margin, and that -1rem is this 1rem,
   // so the two move together. The box owning the inset is what makes it reach every child:
   // it was on `p` before, and a `pre`, list or table in a note ran flush to the border.
-  padding: 0 1rem 0.75rem !important;
+  padding: 0 1rem 1rem !important;
 }
 // The bottom gap is the box's padding, so the last child gives up its own margin rather
 // than stacking a second one under it - which is also what levels the flavours of child:
