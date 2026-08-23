@@ -36,14 +36,14 @@ contains everything `prose.min.css` has, and `docs.min.js` already contains
 | `prose.html`           | standalone layout — topbar, one prose body, no sidebar or search                                             |
 | `topbar.html`          | shared topbar macro (both layouts import it)                                                                 |
 | `footer.html`          | shared page-footer macro (both layouts import it)                                                            |
-| `navtree.html`         | recursive sidebar-nav macro (`docs.html` imports it)                                                         |
+| `navtree.html`         | recursive sidebar-nav macro (`docs.html` imports it) — also marks the current page `.active` + `aria-current="page"` |
 | `scss/_base.scss`      | tokens + element base                                                                                        |
 | `scss/_shell.scss`     | the frame both layouts share — skip link, topbar, brand, icon buttons (GitHub + theme switcher), content column, footer |
 | `scss/_chrome.scss`    | docs-only chrome — `docs` pill, search, sidebar, breadcrumb, TOC, last-updated + edit link                    |
 | `scss/docs.scss`       | entry: base + shell + chrome + prose                                                                         |
 | `scss/prose-only.scss` | entry: base + shell + prose                                                                                  |
 | `src/prose.ts`         | copy buttons, theme toggle, the topbar's nav element and icon-link tooltips — everything a bare page needs   |
-| `src/docs.ts`          | imports `prose.ts`, adds search, active nav, the sidebar drawer                                              |
+| `src/docs.ts`          | imports `prose.ts`, adds search, the TOC scrollspy, the sidebar drawer                                       |
 | `preview/src`          | mock site for looking at the theme — see [Preview](#preview)                                                 |
 
 ## Build
@@ -364,8 +364,9 @@ where a clicked entry parks its heading: the root's `scroll-padding-top` plus th
 Two edges are deliberate. Nothing is marked while you are above the first `H2` — the text
 under the `H1` is not in any section the list names, and marking the first would be a guess.
 At the foot of the page the last entry is marked outright, because a final section shorter
-than the screen never reaches the line. Un-hiding `.toc-h3` in your own CSS shows those
-entries but does not light them up: the mark stays on their parent `H2`.
+than the screen never reaches the line. Which entries the spy reports is read off their
+computed `display` rather than off the class, so un-hiding `.toc-h3` in your own CSS gets
+them marked as you reach them — hide any entry and it drops out the same way.
 
 ### Search
 

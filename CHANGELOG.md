@@ -34,10 +34,40 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — small print is an element, not a class
+## [Unreleased] — the sidebar says where you are before the script runs
 
-A photo credit or a licence line under a demo had no styling of its own, so every site
-carrying one invented a class for it.
+Which page you were on was marked in the browser, so a docs page whose script had not
+arrived yet — or never did — showed forty links with none of them current. And the table
+of contents beside them was one malformed heading id away from taking the search box and
+the mobile drawer down with it.
+
+### Changed
+
+- **The current page is marked in the markup, not in the browser.** `navtree.html` now
+  compares the page against the urls poops built the nav from and writes both `.active`
+  and `aria-current="page"` on the link itself. **This is a DOM change**: the sidebar's
+  current link carries `aria-current="page"` where it used to get one only once `docs.js`
+  ran, and a site styling `[aria-current]` in the sidebar will see it apply earlier and
+  on a page with no script at all. The client-side `markActiveNav` is gone; what is left
+  of it is scrolling that link into view, which a template cannot do.
+
+  The comparison also stopped missing the home page, whose nav url is empty while the
+  layout is handed `index.html`, and a section index arriving with a trailing slash the
+  nav does not carry. Both used to depend on the client pass to light up at all.
+
+### Fixed
+
+- **One heading id no longer takes the rest of the page with it.** A heading with a hand-
+  written `id` carrying a lone `%` is a `URIError` out of `decodeURIComponent`, and the
+  four setups ran as four bare calls — so that one throw left the page with no search box
+  and no mobile nav. Each runs in its own `try` now, and the malformed entry drops out of
+  the contents rather than the decode coming out. The error still reaches the console.
+
+- **Unhiding `.toc-h3` in a site's own CSS now works.** Which contents entries the
+  scrollspy reports was hard-coded to skip `.toc-h3`, matching a rule in the theme's
+  stylesheet — so a site that showed those entries got them rendered but never marked.
+  The spy reads the computed `display` instead, which is the same answer with the mobile
+  drawer shut as with it open. A site that has not touched the rule sees no change.
 
 ### Added
 

@@ -14,6 +14,12 @@ const mql = {
 }
 let crossBreakpoint: (e: { matches: boolean }) => void
 
+// Which element was scrolled to, not how many times: what the rail owes the reader is *their*
+// page brought into view, and a call count cannot tell that from scrolling to the top of the
+// list. `mock.instances` is the receiver of each call, which on a prototype stub is the element.
+const scrolledIntoView = (): unknown =>
+  (Element.prototype.scrollIntoView as jest.Mock).mock.instances[0]
+
 // The index poops writes is every page's front matter verbatim, so these three entries are
 // what a docs author can put in one: markup in a title, markup in a description, and a url
 // that is not a url. Nothing here is exotic — it is the same file the theme fetches.
@@ -55,15 +61,20 @@ beforeAll(async () => {
       <p class="sr-note sr-empty">No results</p>
       <p class="sr-note sr-error">Search failed</p>
     </search-elemental>
+    <style>.nav-list .toc .toc-h3 { display: none }</style>
     <aside class="sidebar" id="sidebar-nav" data-sidebar>
-      <a class="nav-link" href="http://localhost/docs/intro/">Intro</a>
-      <nav class="toc" aria-label="On this page"><ul>
-        <li class="toc-h2"><a href="#one">One</a></li>
-        <li class="toc-h3"><a href="#one-a">One, closer up</a></li>
-        <li class="toc-h2"><a href="#two">Two</a></li>
-        <li class="toc-h2"><a href="#gone">A heading nobody wrote</a></li>
+      <nav class="nav" aria-label="Documentation"><ul class="nav-list">
+        <li><a class="nav-link active" aria-current="page" href="http://localhost/docs/intro/">Intro</a>
+          <nav class="toc" aria-label="On this page"><ul>
+            <li class="toc-h2"><a href="#one">One</a></li>
+            <li class="toc-h3"><a href="#one-a">One, closer up</a></li>
+            <li class="toc-h2"><a href="#two">Two</a></li>
+            <li class="toc-h2"><a href="#gone">A heading nobody wrote</a></li>
+            <li class="toc-h2"><a href="#100%">A heading id nothing can decode</a></li>
+          </ul></nav>
+        </li>
+        <li><a class="nav-link" href="http://localhost/docs/other/">Other</a></li>
       </ul></nav>
-      <a class="nav-link" href="http://localhost/docs/other/">Other</a>
     </aside>
     <disclosure-elemental for="sidebar-nav" media="(min-width: 60rem)"><button data-nav-toggle></button></disclosure-elemental>
     <button data-nav-close></button>
@@ -101,10 +112,20 @@ test('the docs bundle carries prose.ts, so code blocks get their copy button', (
   expect(wrap!.querySelector('copy-elemental > button')).not.toBeNull()
 })
 
-test('marks the nav link for the current page active, ignoring index.html', () => {
-  const links = document.querySelectorAll('.sidebar a.nav-link')
-  expect(links[0].classList.contains('active')).toBe(true)
-  expect(links[1].classList.contains('active')).toBe(false)
+// Which link carries the mark is `navtree.html`'s, and its cases are in navtree.test.ts. What
+// is left here is the half a template cannot do: a rail deeper than the viewport opens at the
+// reader's own page rather than at the top of the list.
+test('the rail opens at the page the reader is on, not at the top of the list', () => {
+  expect(scrolledIntoView()).toBe(document.querySelector('.sidebar a.nav-link.active'))
+})
+
+// The fixture's TOC carries `#100%`, which is a `URIError` out of `decodeURIComponent` rather
+// than a link that fails to match. Every other test in this file is the rest of the assertion:
+// the search box and the drawer below still work, because the boot no longer stops here.
+test('a heading id that cannot be decoded drops out of the contents, and takes nothing with it', () => {
+  expect(document.querySelector('.toc a[href="#100%"]')).not.toBeNull()
+  expect(document.querySelector('search-elemental input')).not.toBeNull()
+  expect(document.querySelector('[data-nav-toggle]')).not.toBeNull()
 })
 
 test('theme toggle flips the root theme and persists it', () => {
@@ -434,6 +455,8 @@ test('the section being read is the one marked in the table of contents', () => 
 test('the mark says location, not page — the page is the sidebar link this list hangs under', () => {
   scrollTo(1100)
   expect(document.querySelector('.toc a[href="#one"]')!.getAttribute('aria-current')).toBe('location')
+  // The sidebar link keeps `page` throughout — it is written server-side and nothing here
+  // touches it, which is the distinction this test exists to hold.
   expect(document.querySelector('.nav-link.active')!.getAttribute('aria-current')).toBe('page')
 })
 

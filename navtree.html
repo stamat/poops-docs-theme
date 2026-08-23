@@ -3,14 +3,21 @@
    straight inside the parent `<ul>` with no `<li>` between — invalid, and the list counts a
    screen reader reads out come from that nesting. Only bites from the third level down, so
    the preview site never rendered it and the axe sweep never saw it. #}
+
+{# `pageUrl` arrives normalised — `navtree` keys it once and the recursion below carries that
+   value down, so only the item side is keyed here. The expression is written out twice because
+   a template has no way to return a value from a macro; it is one rule, and the two copies must
+   stay identical or the current page stops matching itself. #}
 {% macro navnode(item, pageUrl, prefix, toc) %}
+  {% set key = ("/" ~ (item.url or "") ~ "/") | replace("/index.html/", "/") | replace("//", "/") %}
+  {% set here = item.url != null and key == pageUrl %}
   {% if item.children %}
     <li class="nav-section">
       <details open>
         <summary>{{ item.title | escape }}</summary>
         <ul class="nav-list">
           {% if item.url != null %}
-            <li><a class="nav-link{% if item.url == pageUrl %} active{% endif %}" href="{{ prefix }}{{ item.url | escape }}">Overview</a>{% if item.url == pageUrl %}{{ toc }}{% endif %}</li>
+            <li><a class="nav-link{% if here %} active{% endif %}"{% if here %} aria-current="page"{% endif %} href="{{ prefix }}{{ item.url | escape }}">Overview</a>{% if here %}{{ toc }}{% endif %}</li>
           {% endif %}
           {% for child in item.children %}
             {{ navnode(child, pageUrl, prefix, toc) }}
@@ -19,14 +26,20 @@
       </details>
     </li>
   {% else %}
-    <li><a class="nav-link{% if item.url == pageUrl %} active{% endif %}" href="{{ prefix }}{{ item.url | escape }}">{{ item.title | escape }}</a>{% if item.url == pageUrl %}{{ toc }}{% endif %}</li>
+    <li><a class="nav-link{% if here %} active{% endif %}"{% if here %} aria-current="page"{% endif %} href="{{ prefix }}{{ item.url | escape }}">{{ item.title | escape }}</a>{% if here %}{{ toc }}{% endif %}</li>
   {% endif %}
 {% endmacro %}
 
+{# The key is what makes a page match its own nav entry when the two are written differently:
+   poops hands the home page `index.html` while its nav url is empty, and a section index can
+   arrive with a trailing slash the nav does not carry. Wrapping the url in slashes before
+   stripping is what anchors `index.html` to the end and leaves the home page a `/` rather than
+   an empty string — and it is why a page genuinely called `my-index.html` keeps its name. #}
 {% macro navtree(items, pageUrl, prefix, toc) %}
+{% set here = ("/" ~ (pageUrl or "") ~ "/") | replace("/index.html/", "/") | replace("//", "/") %}
 <ul class="nav-list">
   {% for item in items %}
-    {{ navnode(item, pageUrl, prefix, toc) }}
+    {{ navnode(item, here, prefix, toc) }}
   {% endfor %}
 </ul>
 {% endmacro %}

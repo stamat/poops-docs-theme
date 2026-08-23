@@ -81,18 +81,13 @@ function setupMobileNav(): void {
   }, { once: true })
 }
 
-// Highlight the current page in the sidebar. Done client-side because the
-// server-side page.url carries the output-dir prefix while nav urls don't.
-function markActiveNav(): void {
-  const norm = (p: string): string => (p.replace(/index\.html$/, '').replace(/\/$/, '') || '/')
-  const here = norm(location.pathname)
-  document.querySelectorAll<HTMLAnchorElement>('.sidebar a.nav-link').forEach((a) => {
-    if (norm(new URL(a.href).pathname) === here) {
-      a.classList.add('active')
-      a.setAttribute('aria-current', 'page') // colour alone shouldn't carry it
-      a.scrollIntoView({ block: 'center' })
-    }
-  })
+// Bring the current page into view in the sidebar. Which link that is comes from `navtree.html`,
+// which compares the page's url against the urls poops built the nav from and writes `.active`
+// and `aria-current="page"` there — so the mark is in the HTML, and a page whose script never
+// loaded still says where the reader is. What a template cannot do is scroll: a rail of forty
+// links opens at the top with the reader's own page somewhere below the fold.
+function revealCurrentNav(): void {
+  document.querySelector<HTMLAnchorElement>('.sidebar a.nav-link.active')?.scrollIntoView({ block: 'center' })
 }
 
 // Mark the section being read in the table of contents, the one poops built from the page's own
@@ -100,9 +95,10 @@ function markActiveNav(): void {
 //
 // The links are the source of the list, not the headings: a heading the TOC skipped — an
 // `.sr-only` one, an H4 — is not a place the reader can be taken to, so it is not a place worth
-// reporting. `.toc-h3` entries are `display: none` inside the rail, so they are skipped too and
-// their enclosing H2 stays current while reading them; unhide them in a site's own CSS and they
-// will show without ever lighting up, which is the one thing here a site override can break.
+// reporting. That is why an entry the rail does not show is left out too — `.toc-h3` is
+// `display: none` in there, and its enclosing H2 stays current while reading it. Which entries
+// those are is read back off the CSS rather than restated here, so a site that unhides them gets
+// them lighting up instead of showing without ever being marked.
 //
 // `aria-current="location"` rather than `page`: `page` is the sidebar link for the document you
 // are on, and it is already on one of these links' parent. A section of that page is a location
@@ -122,11 +118,20 @@ function setupToc(): void {
   const toc = document.querySelector('.toc')
   if (!toc) return
 
-  const links = Array.from(toc.querySelectorAll<HTMLAnchorElement>('li:not(.toc-h3) > a[href^="#"]'))
+  // `display` computes whatever an ancestor is doing, so this reads the rail's own rule with the
+  // mobile drawer shut exactly as it does with it open.
+  const shown = (link: HTMLAnchorElement): boolean =>
+    !!link.parentElement && getComputedStyle(link.parentElement).display !== 'none'
+  const links = Array.from(toc.querySelectorAll<HTMLAnchorElement>('li > a[href^="#"]')).filter(shown)
   const linkFor = new Map<string, HTMLAnchorElement>()
   const headings: HTMLElement[] = []
   for (const link of links) {
-    const id = decodeURIComponent(link.hash.slice(1))
+    // A heading id is the author's, and one written by hand can carry a lone `%` — which is a
+    // `URIError` out of `decodeURIComponent`, not a link that fails to match. Decoding is still
+    // needed for the ids that are percent-encoded, so the malformed one drops out of the spy
+    // rather than the decode coming out.
+    let id: string
+    try { id = decodeURIComponent(link.hash.slice(1)) } catch { continue }
     const heading = document.getElementById(id)
     if (!heading || linkFor.has(id)) continue
     linkFor.set(id, link)
@@ -310,9 +315,16 @@ function setupSearch(base: string): void {
 
 const BASE = (document.currentScript as HTMLScriptElement | null)?.dataset.base ?? ''
 
+// Four independent features, each in its own `try`. They used to be four bare calls, where a
+// throw in one took the ones after it with it — one heading id the TOC could not decode left the
+// page with no search box and no mobile drawer. The error still reaches the console: this
+// degrades to three working features, it does not swallow the reason for the fourth.
 onReady(() => {
-  markActiveNav()
-  setupToc()
-  setupMobileNav()
-  setupSearch(BASE)
+  for (const setup of [revealCurrentNav, setupToc, setupMobileNav, (): void => setupSearch(BASE)]) {
+    try {
+      setup()
+    } catch (error) {
+      console.error(error)
+    }
+  }
 })
