@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the footer says who wrote it, and adding a credit no longer costs the version
+## [Unreleased]
+
+## [4.6.0] - 2026-08-23 — the footer says who wrote it, and adding a credit no longer costs the version
 
 Both layouts carried their own copy of the footer line, so the two had to be edited in
 step. Neither had a copyright, and neither had a seam: a site that wanted one more name in
