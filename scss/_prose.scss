@@ -210,17 +210,18 @@ code-preview copy-elemental { display: none; }
   border: 1px solid var(--adm);
   border-left: 1px solid var(--adm) !important;
   border-radius: var(--radius);
-  padding: 0 !important;
+  // Block-start stays 0 so the title's tint sits against the top border - the title bleeds
+  // back out over the inline padding with a negative margin, and that -1rem is this 1rem,
+  // so the two move together. The box owning the inset is what makes it reach every child:
+  // it was on `p` before, and a `pre`, list or table in a note ran flush to the border.
+  padding: 0 1rem 0.75rem !important;
 }
-// The box keeps `padding: 0` so the title's tint reaches its own border, which leaves the
-// inset to the children. Keyed to `p` it only ever insetted prose: a `pre`, list or table
-// in an admonition sat flush against the border. Margin, not padding, so a `pre` puts the
-// gap outside its own background rather than inside it. Only the inline pair moves - the
-// block spacing between children is the prose rhythm, and it reads the same in here.
-.admonition > :not(.admonition-title),
-.marked-github-alert > :not(.marked-github-alert-title) { margin-inline: 1rem; }
-.admonition p:last-child,
-.marked-github-alert p:last-child { margin-bottom: 0.75rem; }
+// The bottom gap is the box's padding, so the last child gives up its own margin rather
+// than stacking a second one under it - which is also what levels the flavours of child:
+// a `pre` ends a note at the same 0.75rem a paragraph does, not at the 1.75rem it takes
+// out in the open.
+.admonition > :last-child,
+.marked-github-alert > :last-child { margin-bottom: 0; }
 .admonition-title,
 .marked-github-alert-title {
   background: color-mix(in srgb, var(--adm) 7%, var(--bg));
@@ -228,7 +229,10 @@ code-preview copy-elemental { display: none; }
   border-top-right-radius: var(--radius);
   border-bottom: 1px solid var(--adm);
   padding: 0.5rem 1rem !important;
-  margin-bottom: 0.75rem !important;
+  // The inline pair cancels the box's own padding so the tint runs border to border, and
+  // it is `!important` because `.prose p` sets the whole `margin` shorthand at a higher
+  // specificity than this class - it would zero the negative pair along with the rest.
+  margin: 0 -1rem 0.75rem !important;
   font-weight: 700;
   font-size: 0.9rem;
   color: var(--adm);

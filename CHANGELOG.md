@@ -15,40 +15,28 @@ Give the heading a short title after an em dash and open with one paragraph
 saying what was wrong before:
 
 ```markdown
-## [Unreleased] — the sidebar remembers where you were
-
-Navigating between pages scrolled the nav tree back to the top.
-
-### Fixed
-
-- ...
-```
-
-Write it for the person upgrading the theme. This package ships markup, styles
-and script that a site already depends on, so call out anything that changes
-**the DOM a layout produces**, **a CSS custom property or class an author may be
-overriding**, or **the shape of `poops.json` a consumer needs** — none of those
-show up in a function signature.
-
-On `script/publish`, `script/changelog` cuts this section into a released entry
-in the same commit as the version bump, and the entry becomes the body of the
-GitHub release verbatim.
-
 ## [Unreleased] — a code block in an admonition is no longer flush against the border
 
-The admonition box carries no padding of its own, so the title's tint can reach its
-own border, and the inset was handed to the children — but only to `p`. Anything
-else inside a note or a warning ran edge to edge: a `pre`, a list, a table.
+An admonition carried no padding of its own, so the title's tint could reach its own
+border, and the inset was handed down to the children — but only to `p`. Anything else
+inside a note or a warning ran edge to edge: a `pre`, a list, a table. The bottom was
+uneven for the same reason: a note ending in a paragraph closed at 0.75rem and one
+ending in a code block at the 1.75rem a `pre` takes out in the open.
 
 ### Fixed
 
-- **Every child of an admonition takes the 1rem inline inset, not just `p`.** The rule
-  is keyed to the children of the box rather than to a tag, `> :not(.admonition-title)`,
-  and it is `margin-inline` rather than padding so a `pre` puts the gap outside its own
-  background instead of inside it. Vertical spacing is untouched: the children keep the
-  prose rhythm they had, and the 0.75rem bottom is still `p:last-child`. A site that was
-  overriding `.admonition p` to reclaim the padding no longer needs to, and one that was
-  adding its own inset to a `pre` inside an admonition now doubles it.
+- **The admonition body is padded, and the title bleeds back out over it.** The box now
+  takes `padding: 0 1rem 0.75rem`, so every child is inset by the box rather than by a
+  rule naming its tag, and the last child drops its bottom margin so the box's padding is
+  the only gap under it. The title cancels the inline pair with `margin: 0 -1rem 0.75rem`,
+  which is what keeps its tint running border to border. Block-start stays 0 so the tint
+  still sits on the top border. Verified in Chromium: title flush at both ends, children
+  at 16px each side, 12px under the last one.
+
+  Two things to check on upgrade. A site overriding `.admonition p` to reclaim the old
+  `padding: 0 1rem` is now adding a second inset — drop the override. A site that gave a
+  `pre` inside an admonition its own inset is doing the same. The `-1rem` on the title is
+  the box's `1rem` negated; retuning one means retuning both.
 
 ## [4.5.0] - 2026-08-21 — the table of contents keeps its place
 
