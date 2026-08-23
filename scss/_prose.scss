@@ -61,6 +61,11 @@
   text-align: center;
 }
 
+// Small print — a photo credit, a licence line, a caveat under a demo. `<small>` is the
+// element the spec gives that, so a page writes the meaning and gets the look; the browser
+// already sizes it down, and the colour is the only part left for the theme.
+.prose small { color: var(--fg-muted); }
+
 // inline code
 .prose :not(pre) > code {
   background: var(--bg-code);

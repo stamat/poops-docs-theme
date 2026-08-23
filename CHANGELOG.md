@@ -34,7 +34,17 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — small print is an element, not a class
+
+A photo credit or a licence line under a demo had no styling of its own, so every site
+carrying one invented a class for it.
+
+### Added
+
+- **`<small>` in prose is muted.** `.prose small` takes `--fg-muted`; the size stays the
+  browser's `smaller`. A credit line is written as `<small>…</small>` and needs no class.
+  A site with its own credit class is unaffected — the rule only reaches `<small>`, which
+  nothing styled before.
 
 ## [4.6.0] - 2026-08-23 — the footer says who wrote it, and adding a credit no longer costs the version
 

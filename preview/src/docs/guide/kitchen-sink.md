@@ -112,3 +112,5 @@ docker run --rm -it -v "$PWD":/app -w /app --env NODE_ENV=production node:22-alp
 ![A placeholder banner](data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc2NDAnIGhlaWdodD0nMjQwJz48cmVjdCB3aWR0aD0nNjQwJyBoZWlnaHQ9JzI0MCcgZmlsbD0nIzcwNDhlOCcvPjx0ZXh0IHg9JzMyMCcgeT0nMTM0JyBmb250LWZhbWlseT0nc2Fucy1zZXJpZicgZm9udC1zaXplPScyOCcgZmlsbD0nI2ZmZicgdGV4dC1hbmNob3I9J21pZGRsZSc+cGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+)
 
 Images are capped at the column width and get the theme radius.
+
+<small>Placeholder banner, drawn here as an inline SVG data URI. A credit, a licence line or a caveat is `<small>` — muted, a size down, no class.</small>
