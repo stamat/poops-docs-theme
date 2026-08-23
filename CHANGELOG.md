@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the sidebar says where you are before the script runs, and the topbar's breakpoints say what they switch
+## [Unreleased]
+
+## [5.0.0] - 2026-08-23 — the sidebar says where you are before the script runs, and the topbar's breakpoints say what they switch
 
 Which page you were on was marked in the browser, so a docs page whose script had not
 arrived yet — or never did — showed forty links with none of them current. And the table
