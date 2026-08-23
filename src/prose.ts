@@ -62,20 +62,6 @@ export function addCopyButtons(): void {
   })
 }
 
-// Poops writes a permalink anchor into every heading, and before 2.2.0 it wrote one that was
-// `aria-hidden="true"` and still focusable — a link a keyboard reaches once per heading and a
-// screen reader cannot name when it lands there. Fixed at the source, but `poops` is a peer
-// here at `>=2.0.0`, so the versions this theme says it supports include the ones that write
-// it. Cheap to make right from this end, and a no-op on a build that already did.
-//
-// Remove when the peer floor rises past the fixed release.
-export function fixHeadingAnchors(): void {
-  document.querySelectorAll<HTMLAnchorElement>('.heading-anchor[aria-hidden="true"]').forEach((a) => {
-    a.tabIndex = -1
-    a.removeAttribute('aria-label')
-  })
-}
-
 // A wide table scrolls sideways inside the column — `.prose table` is `display: block` with
 // `overflow-x: auto` — which is the same box a mouse can pan and a keyboard cannot. Focusable
 // for the same reason a code block is, and by the same unconditional rule: how wide the column
@@ -201,7 +187,6 @@ export function onReady(fn: () => void): void {
 onReady(() => {
   addCopyButtons()
   makeTablesScrollable()
-  fixHeadingAnchors()
   setupTheme()
   setupDrawerActions()
 })

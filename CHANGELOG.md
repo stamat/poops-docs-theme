@@ -45,6 +45,28 @@ saying which state it decides.
 
 ### Changed
 
+- **`poops >=3.0.0` is now the peer range**, up from `>=2.5.0`. **A site on poops 2.x cannot
+  install this release.** Nothing in the markup or the script forces that: no layout here calls
+  a filter or a tag that arrived in 3.0, whose one addition is the `mermaid` fence below, and
+  `scrollSpy` — the only book-of-spells function this theme imports — has not changed since
+  2.4. What forces it is testing. Poops 3.0.0 is the version the build and the suite run
+  against, and nothing here is measured against 2.5 any more; a supported version nobody builds
+  on is a claim rather than a guarantee, so the floor now says what is true.
+
+  Two of Poops 3's own changes reach your site through it. The first moves urls: `slugify`
+  folds letters whose mark is written through the glyph — `Đ Ł Ø Ħ Þ ß` — and `slugify` is
+  what Poops builds heading anchors and permalinks from, so `Đorđe Balašević` gives
+  `dorde-balasevic` where it used to give `ore-balasevic`. **A heading or a title carrying one
+  of those letters moves the urls it generates**, and anything linking to an old anchor wants a
+  redirect.
+
+  The second is markup this theme has no rule for. A `mermaid` fence compiles to
+  `<pre class="mermaid">` with no `<code>` inside — confirmed against a poops 3 build of the
+  mock site, where it lands in `.prose` like any other block. `.prose pre` in the stylesheet
+  and the copy-button pass in `src/prose.ts` both select the bare `pre`, so a diagram takes a
+  code block's background, a tab stop and a copy button it has no use for. Excluding it in your
+  own CSS is the workaround until the theme carries the rule itself.
+
 - **The current page is marked in the markup, not in the browser.** `navtree.html` now
   compares the page against the urls poops built the nav from and writes both `.active`
   and `aria-current="page"` on the link itself. **This is a DOM change**: the sidebar's
@@ -97,6 +119,16 @@ saying which state it decides.
   browser's `smaller`. A credit line is written as `<small>…</small>` and needs no class.
   A site with its own credit class is unaffected — the rule only reaches `<small>`, which
   nothing styled before.
+
+### Removed
+
+- **`fixHeadingAnchors` is gone**, retired by the peer floor above. Poops wrote
+  the heading permalink `aria-hidden="true"` and still focusable until 2.2.0, and the theme
+  repaired it on load for as long as the supported range included a version that shipped the
+  bug. At `>=3.0.0` it no longer can: a poops 3 build writes `tabindex="-1"` and no
+  `aria-label`, so the pass had nothing left to correct. Nothing outside `src/prose.ts`
+  referenced it — the package publishes no `exports` map and a site loads `dist/js`, not the
+  module — so this is dead code going, not an API being taken away.
 
 ## [4.6.0] - 2026-08-23 — the footer says who wrote it, and adding a credit no longer costs the version
 

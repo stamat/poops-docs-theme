@@ -8,11 +8,18 @@ Documentation theme for sites built with [Poops](https://github.com/stamat/poops
 layouts, their self-contained styles, and the client scripts. Ships as a dependency so a
 site consumes it instead of copying files.
 
-Requires Poops **≥ 2.5.0** — that is where the `description` filter arrived, which both
-layouts use for `<meta name="description">`; an older Poops raises an unknown-filter error
-rather than skipping it. (≥ 2.0.0 was the floor before that: the dev server appends its own
-livereload client from there on, so the layouts stopped carrying the snippet and the
-`livereload_port` global it read is gone.)
+Requires Poops **≥ 3.0.0** — not for a feature, but because 3.0.0 is the only version this
+theme is built and tested against. Nothing in the layouts or the script calls anything that
+arrived in 3.0; the floor is there so the supported version and the measured one are the same
+one. (≥ 2.5.0 was the floor before that, for the `description` filter both layouts use for
+`<meta name="description">`, which an older Poops answers with an unknown-filter error.)
+
+Two of Poops 3's changes land on a site upgrading with this theme. `slugify` folds letters
+whose mark is written through the glyph — `Đ Ł Ø Ħ Þ ß` — so a heading or title carrying one
+**moves the url it generates** and wants a redirect. And a `mermaid` fence compiles to
+`<pre class="mermaid">` with no `<code>` inside, which `.prose pre` and the copy-button pass
+both still select — a diagram gets a code block's background, a tab stop and a copy button
+until you exclude it in your own CSS.
 
 ## Two layouts
 
@@ -577,12 +584,7 @@ filing a page under a section the urls do not produce. The urls stay
 `docs/guide/kitchen-sink` and `docs/guide/live-samples`, and so do the breadcrumbs — the
 grouping is the sidebar's alone. It is filler with a job as well: a group is a section
 node with **no page of its own**, so it renders with no **Overview** link, and every other
-section in the mock has an index page that gives it one. Building the mock on a poops
-older than 2.3 leaves the field unread and both pages sitting directly under `Guide` — the
-grouping degrades to a flat list rather than failing, since the tree it renders arrives as
-data either way. The peer range is `>=2.5.0` for a different reason: the layouts call the
-`description` filter, which 2.5.0 introduced, and an older poops raises an unknown-filter
-error rather than skipping it.
+section in the mock has an index page that gives it one.
 
 ## Local development
 

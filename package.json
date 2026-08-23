@@ -43,7 +43,7 @@
     "lint:es": "es-check es2020 \"dist/js/*.js\""
   },
   "peerDependencies": {
-    "poops": ">=2.5.0"
+    "poops": ">=3.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
