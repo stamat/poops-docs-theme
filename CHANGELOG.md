@@ -38,18 +38,17 @@ GitHub release verbatim.
 
 The admonition box carries no padding of its own, so the title's tint can reach its
 own border, and the inset was handed to the children — but only to `p`. Anything
-else inside a note or a warning ran edge to edge: a `pre`, a list, a table. A code
-block also kept the 1.75rem bottom margin it takes in the open, so the last line of
-a note sat further from the border than the last line of a paragraph.
+else inside a note or a warning ran edge to edge: a `pre`, a list, a table.
 
 ### Fixed
 
-- **Every child of an admonition takes the 1rem inset, not just `p`.** The two rules
-  are now keyed to the children of the box rather than to a tag: `> :not(.admonition-title)`
-  for the inset, `> :last-child` for the 0.75rem bottom. The inset is `margin-inline`,
-  not padding, so a `pre` puts the gap outside its own background instead of inside it.
-  A site that was overriding `.admonition p` to reclaim the padding no longer needs to,
-  and one that was adding its own inset to a `pre` inside an admonition now doubles it.
+- **Every child of an admonition takes the 1rem inline inset, not just `p`.** The rule
+  is keyed to the children of the box rather than to a tag, `> :not(.admonition-title)`,
+  and it is `margin-inline` rather than padding so a `pre` puts the gap outside its own
+  background instead of inside it. Vertical spacing is untouched: the children keep the
+  prose rhythm they had, and the 0.75rem bottom is still `p:last-child`. A site that was
+  overriding `.admonition p` to reclaim the padding no longer needs to, and one that was
+  adding its own inset to a `pre` inside an admonition now doubles it.
 
 ## [4.5.0] - 2026-08-21 — the table of contents keeps its place
 

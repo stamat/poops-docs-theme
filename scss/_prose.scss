@@ -213,14 +213,14 @@ code-preview copy-elemental { display: none; }
   padding: 0 !important;
 }
 // The box keeps `padding: 0` so the title's tint reaches its own border, which leaves the
-// inset to the children. Keyed to `p` these two rules only ever insetted prose: a `pre`,
-// list or table in an admonition sat flush against the border and kept the 1.75rem bottom
-// a code block takes out in the open. Margin, not padding, so a `pre` puts the gap outside
-// its own background rather than inside it.
+// inset to the children. Keyed to `p` it only ever insetted prose: a `pre`, list or table
+// in an admonition sat flush against the border. Margin, not padding, so a `pre` puts the
+// gap outside its own background rather than inside it. Only the inline pair moves - the
+// block spacing between children is the prose rhythm, and it reads the same in here.
 .admonition > :not(.admonition-title),
 .marked-github-alert > :not(.marked-github-alert-title) { margin-inline: 1rem; }
-.admonition > :last-child,
-.marked-github-alert > :last-child { margin-bottom: 0.75rem; }
+.admonition p:last-child,
+.marked-github-alert p:last-child { margin-bottom: 0.75rem; }
 .admonition-title,
 .marked-github-alert-title {
   background: color-mix(in srgb, var(--adm) 7%, var(--bg));
