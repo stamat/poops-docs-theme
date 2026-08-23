@@ -15,7 +15,28 @@ Give the heading a short title after an em dash and open with one paragraph
 saying what was wrong before:
 
 ```markdown
-## [Unreleased] — a code block in an admonition is no longer flush against the border
+## [Unreleased] — the sidebar remembers where you were
+
+Navigating between pages scrolled the nav tree back to the top.
+
+### Fixed
+
+- ...
+```
+
+Write it for the person upgrading the theme. This package ships markup, styles
+and script that a site already depends on, so call out anything that changes
+**the DOM a layout produces**, **a CSS custom property or class an author may be
+overriding**, or **the shape of `poops.json` a consumer needs** — none of those
+show up in a function signature.
+
+On `script/publish`, `script/changelog` cuts this section into a released entry
+in the same commit as the version bump, and the entry becomes the body of the
+GitHub release verbatim.
+
+## [Unreleased]
+
+## [4.5.1] - 2026-08-23 — a code block in an admonition is no longer flush against the border
 
 An admonition carried no padding of its own, so the title's tint could reach its own
 border, and the inset was handed down to the children — but only to `p`. Anything else
