@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — small print is set as tight as it reads
+## [Unreleased]
+
+## [5.1.1] - 2026-08-24 — small print is set as tight as it reads
 
 A credit line under a sample came out smaller but no closer together. `smaller`
 shrinks the glyphs and leaves the leading built for body copy, so a caption that
