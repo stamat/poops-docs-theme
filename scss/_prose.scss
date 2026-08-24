@@ -65,6 +65,11 @@
 // element the spec gives that, so a page writes the meaning and gets the look; the browser
 // already sizes it down, and the colour is the only part left for the theme.
 .prose small { color: var(--fg-muted); }
+// A paragraph that is nothing but small print is set tight: `smaller` shrinks the glyphs and
+// leaves the leading built for body copy, so a credit that wraps sits as far apart as the
+// prose above it and stops reading as an aside. On the paragraph rather than the inline
+// `small`, whose line boxes cannot come out shorter than the strut the block builds for them.
+.prose p:has(> small:only-child) { line-height: 1.2; }
 
 // inline code
 .prose :not(pre) > code {

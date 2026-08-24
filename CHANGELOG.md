@@ -34,7 +34,20 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — small print is set as tight as it reads
+
+A credit line under a sample came out smaller but no closer together. `smaller`
+shrinks the glyphs and leaves the leading built for body copy, so a caption that
+wrapped sat as far apart as the paragraphs above it.
+
+### Changed
+
+- **A paragraph that is nothing but `<small>` is set at `line-height: 1.2`.** The
+  selector is `.prose p:has(> small:only-child)`, so it reaches only a paragraph whose
+  whole content is small print — a `<small>` inside a sentence keeps the prose leading.
+  It is on the paragraph and not the inline element because a line box cannot come out
+  shorter than the strut its block builds. A site setting its own line height on those
+  paragraphs at equal specificity now needs to win on source order or specificity.
 
 ## [5.1.0] - 2026-08-24 — the search field says which key opens it
 
