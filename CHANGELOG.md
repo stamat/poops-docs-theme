@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — the search field says which key opens it
+## [Unreleased]
+
+## [5.1.0] - 2026-08-24 — the search field says which key opens it
 
 `/` and ⌘K have focused the search field since 4.0, and nothing on the page said so. A
 shortcut nobody is told about is a shortcut nobody presses.
