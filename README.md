@@ -403,9 +403,17 @@ theme fetches, builds the rows and owns the rest:
   another field and selects what is already typed; the slash does not, because it is a
   character somebody may be mid-word in. Both are taken off the browser when they land, so
   Firefox's quick-find and Chrome's address-bar shortcut do not fire on a docs page.
-  `Ctrl+Shift+K` is left alone — the web console is not a docs site's to take. There is no
-  visible hint beside the field: the shortcut is a shortcut, and at the small end that field
-  is the width of the screen.
+  `Ctrl+Shift+K` is left alone — the web console is not a docs site's to take. A <kbd>/</kbd>
+  badge sits at the end of the field saying so, and steps aside on focus, when the clear button
+  may want the same lane and the hint has stopped being news; it is off below `40rem`, where the
+  field is an icon button and the keyboard it names is not the one a phone has. Hovering it says
+  `Press / to search` — [`<tooltip-elemental>`](https://stamat.github.io/book-of-elementals/elementals/tooltip.html)
+  in its `for` shape, so the badge is a trigger without being a tab stop — and clicking it puts
+  the caret in the field, since the badge is a `<label>` for it and a click that lands on it
+  lands where it was aimed. The badge is `aria-hidden`, and the words reach a screen reader
+  another way: the field is `aria-describedby` the bubble, which is read on focus whether or not
+  it is showing, and carries `aria-keyshortcuts` beside it, whose support is partial where a
+  description's is not.
 - **<kbd>Escape</kbd> empties the field**, and the panel goes with it. The element's own
   staging is one press to close and a second to clear; a reader pressing Escape at a search
   box means the search.

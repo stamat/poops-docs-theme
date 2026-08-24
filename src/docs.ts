@@ -293,8 +293,9 @@ function setupSearch(base: string): void {
   // whose `isContentEditable` is false — so a slash typed into one would read as "nothing
   // editable has focus" and be eaten.
   //
-  // No visible `⌘K` hint in the field — the shortcut is a shortcut, and the field is already
-  // the width of a phone's screen at the small end.
+  // The `/` badge in the field is the only one of the two drawn: it is one glyph, and at the
+  // small end the field is the width of a phone's screen. The pair lives on the field as
+  // `aria-keyshortcuts`, where both are named and neither costs any room.
   document.addEventListener('keydown', (e) => {
     const target = (e.composedPath?.()[0] ?? e.target) as HTMLElement | null
     const editable = target instanceof HTMLElement &&

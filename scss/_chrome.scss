@@ -54,6 +54,12 @@
 .search {
   width: min(16rem, 40vw);
 
+  // Both are read twice — the height by the field and by the badge that centres itself against
+  // it, the badge's size by its own box and by that same sum. Written once here so the badge
+  // cannot drift out of the middle of a field somebody resized.
+  --search-field-height: 2.2rem;
+  --search-kbd-size: 1.375rem;
+
   // The spinner is the theme's, and its default corner is the end of the field — where the
   // clear button now is. Moved one control inward, and centred on a 2.2rem field rather than
   // left near its bottom edge: the button is the thing a reader reaches for and the thing that
@@ -105,6 +111,72 @@
 // button out of the tab order along with the look, where `display: none` would also let the
 // field's text run under where the button was about to be.
 #search-input:placeholder-shown ~ .search-clear { visibility: hidden; }
+
+// The `/` badge. Same right edge as the clear button because the two never show together: this
+// one goes on focus, which is both when the clear button may arrive and when the hint has
+// stopped being news. `display: none` rather than `visibility: hidden` — it is `aria-hidden`
+// and not a tab stop either way, so there is nothing to take out of the tree, and the field's
+// own text is what would otherwise run under a reserved gap.
+.search-kbd {
+  position: absolute;
+
+  // Inset by what the vertical centring already gives it: half of what the badge leaves inside
+  // the field's height. The clear button's 0.35rem is a smaller gap than that, and it is right
+  // for a glyph with no box around it — a bordered box that close to the end reads as pinned to
+  // the edge, because its edge is drawn and the icon's is not.
+  right: calc(var(--actions-inset, 0rem) + (var(--search-field-height) - var(--search-kbd-size)) / 2);
+  top: 50%;
+  transform: translateY(-50%);
+
+  // Square, and sized rather than padded to it: a slash is a narrow glyph, so padding that
+  // squares the box at one font size stops squaring it at another. Same 1.375rem the clear
+  // button comes out at — 16px of glyph inside 0.25rem of padding — so the two ends of the
+  // field hold the same box whichever of them is showing.
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--search-kbd-size);
+  height: var(--search-kbd-size);
+
+  // The edge is the placeholder's weight, not the field's: `--border` is drawn to disappear
+  // around a 16rem box and around a 22px one it disappears altogether, and the glyph's own
+  // colour makes a key louder than the words beside it. Mixed off `--fg-muted` rather than
+  // set to the placeholder's actual colour, which is the browser's — `#757575` in Chrome and
+  // Safari, something else in Firefox, and the same grey in dark mode where the theme's muted
+  // has already moved. The mix lands beside Chrome's in both themes and follows the tokens
+  // where Chrome's would not. 75% and not less: at 70 the light theme measured 2.98:1 against
+  // the field, and the border is the whole of what says "key" — a graphical object, which WCAG
+  // 1.4.11 puts at 3:1. 75 measures 3.27 light and 4.14 dark.
+  border: 1px solid color-mix(in srgb, var(--fg-muted) 75%, var(--bg-alt));
+
+  // Not `--radius`: the token is 0.5rem, which on a 22px box is most of the way to a circle.
+  border-radius: 0.3rem;
+  color: var(--fg-muted);
+
+  // A kbd is monospace by default, and one glyph of it beside the field's own text reads as a
+  // different font rather than as a key. The size is below the field's 16px floor on purpose:
+  // the floor is there so iOS does not zoom a field being typed in, and nothing is typed here.
+  font-family: inherit;
+  font-size: 0.8rem;
+
+  // It sits over the end of a text field and clicking it puts the caret in that field, so the
+  // pointer says text rather than turning into an arrow halfway across the box.
+  cursor: text;
+
+  // `place-items` centres the line box, not the ink in it, and a font's line box carries room
+  // for descenders the slash does not use — so it is centred by its own box rather than left
+  // to one built for `gjpqy`.
+  line-height: 1;
+}
+.search-kbd kbd { font: inherit; }
+.search:focus-within .search-kbd { display: none; }
+
+// The bubble is this element itself in the `for` shape, so until the bundle lands it is a
+// sentence sitting in the middle of the topbar. Nothing is lost by hiding it: the `title` on
+// the badge says the same words for exactly as long as it is still there to say them.
+.search tooltip-elemental:not(:defined) { display: none; }
+.search tooltip-elemental kbd { font: inherit; }
+
 #search-input {
   width: 100%;
 
@@ -112,7 +184,7 @@
   // taller than the 2.25rem icon buttons it stands next to, and the tallest thing in a bar
   // whose height is a token. Above the 24px a tap target owes at every width this field is
   // drawn at.
-  height: 2.2rem;
+  height: var(--search-field-height);
 
   // Both ends carry an icon, so both ends keep the room for one.
   padding: 0.4rem 2rem;
@@ -464,6 +536,10 @@ disclosure-elemental[data-mode="free"] .nav-toggle { display: inline-flex; }
   // field that no longer has an inset for it to clear.
   .search { flex: 0 0 auto; width: 2.25rem; --actions-inset: 0rem; margin-left: auto; }
   .search-icon { left: 50%; transform: translate(-50%, -50%); }
+
+  // The field is an icon button here and the hint would sit on top of the magnifier. No loss:
+  // the keyboard it names is not the one a phone has.
+  .search-kbd { display: none; }
 
   #search-input {
     padding: 0.4rem;

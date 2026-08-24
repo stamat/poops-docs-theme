@@ -34,7 +34,51 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — the search field says which key opens it
+
+`/` and ⌘K have focused the search field since 4.0, and nothing on the page said so. A
+shortcut nobody is told about is a shortcut nobody presses.
+
+### Added
+
+- **A `/` badge at the end of the search field**, the one GitHub, MDN and DocSearch all draw.
+  It steps aside on focus — that is when the clear button may want the same lane, and when the
+  hint has stopped being news — and it is off below `40rem`, where the field is an icon button
+  and the keyboard it names is not the one a phone has.
+
+  Hovering it says `Press / to search`, in the same bubble the icon links beside it use —
+  `<tooltip-elemental for="search-hint">` rather than the wrapping shape, which takes the first
+  *focusable* child as its trigger: a key hint you can Tab onto is a stop that does nothing.
+  A `title` on the badge says the same words until the element upgrades, and the element takes
+  the attribute off when it does.
+
+  A hover-only hint tells sighted readers something nobody else is told, so the field is
+  `aria-describedby` the bubble and reads `Search documentation … Press / to search` on focus,
+  bubble showing or not — `aria-describedby` reaches hidden content, and it does the job with
+  the script blocked too, where the bubble is `display: none`. `aria-keyshortcuts` stays beside
+  it: it is the right attribute for the fact, and its support is partial where a description's
+  is not.
+
+  Three things change in the DOM `topbar.html` produces: a
+  `<label class="search-kbd" id="search-hint" for="search-input">` holding a `<kbd>`, after the
+  clear button inside `<search>`; the `<tooltip-elemental>` that names it, next to it; and
+  `aria-keyshortcuts="/ Meta+K Control+K"` on `#search-input`. It is a label because the badge
+  covers the end of the field and a click on it has to land in the field; it is `aria-hidden`,
+  so those words stay out of the name computation and the field's `aria-label` is still its
+  name. **Overriding `.search-clear`'s position by hand?** The badge sits near the same `right`
+  — half of what it leaves inside the field's height, so its gap from the end matches its gap
+  from the top and bottom — and `display: none` on `.search-kbd` takes it off entirely.
+
+  Measured, not assumed: the glyph is 5.49:1 against the field in light and 6.25:1 in dark, and
+  the border — a graphical object, so 3:1 under WCAG 1.4.11 — is 3.27:1 and 4.14:1. The bubble
+  is dismissible with Escape and stays open under the pointer, per 1.4.13. The badge is 22px
+  where SC 2.5.8 asks for 24; it passes on the equivalent exception, since clicking it does what
+  clicking the field it sits in does, and it takes no area away from that field.
+
+  Two custom properties come with it, both on `.search`: `--search-field-height` (`2.2rem`, and
+  now what sets the field's height) and `--search-kbd-size` (`1.375rem`). A stylesheet that was
+  overriding `#search-input`'s height still wins on specificity; setting the property instead is
+  what keeps the badge centred against the new one.
 
 ## [5.0.0] - 2026-08-23 — the sidebar says where you are before the script runs, and the topbar's breakpoints say what they switch
 

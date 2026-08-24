@@ -84,7 +84,7 @@
     <search-elemental class="search" delay="100" empty-text="No results" error-text="Search failed">
       <search>
         <svg class="search-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"></path></svg>
-        <input type="search" id="search-input" placeholder="Search docs…" autocomplete="off" aria-label="Search documentation">
+        <input type="search" id="search-input" placeholder="Search docs…" autocomplete="off" aria-label="Search documentation" aria-keyshortcuts="/ Meta+K Control+K" aria-describedby="search-hint-text">
         {#- Chromium and Safari draw a cross in a `type="search"` field and Firefox draws none,
             so this replaces the one they draw and supplies the one they do not. The native one
             is mouse-only: the field reports to the accessibility tree as a single searchbox
@@ -96,6 +96,33 @@
         <button type="button" class="search-clear" aria-label="Clear the search" data-search-clear>
           <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"></path></svg>
         </button>
+        {#- The hint GitHub, MDN and DocSearch all draw: the `/` shortcut is invisible
+            otherwise, and a shortcut nobody is told about is a shortcut nobody presses. It
+            shares the end of the field with the clear button and gives the lane up on focus,
+            which is also when it has stopped being news.
+
+            A `<label>` rather than a bare `<kbd>`, because the badge sits over the end of the
+            field and something has to happen when it is clicked: a label activates the control
+            it names, so the click lands in the field the reader was aiming at. It is
+            `aria-hidden` so that a label reading "/" is not competing with the field's own
+            `aria-label`, and the words reach a screen reader from the field instead —
+            `aria-describedby` at the bubble below, read on focus whether or not the bubble is
+            showing, with `aria-keyshortcuts` beside it because support for that one is partial
+            and a description's is not. Without them the shortcut would be a thing only a
+            sighted reader is ever told about.
+
+            `<tooltip-elemental for>` rather than the wrapping shape the icon links use: that
+            shape takes the first *focusable* child as its trigger, and this badge must not be a
+            tab stop — a key hint you can Tab onto is a stop that does nothing. Named by `for`,
+            any element is a trigger, and hover is the only way in that is left.
+
+            `title` says the same words for the same reason it does on the links: it is the
+            tooltip until the element upgrades, and the element takes the attribute off when it
+            does so the two cannot double up. It only does that for words matching it exactly,
+            which is why the `<kbd>` in the bubble is written around them rather than in place
+            of them. -#}
+        <label class="search-kbd" id="search-hint" for="search-input" aria-hidden="true" title="Press / to search"><kbd>/</kbd></label>
+        <tooltip-elemental for="search-hint" id="search-hint-text">Press <kbd>/</kbd> to search</tooltip-elemental>
       </search>
       <suggest-elemental for="search-input"><ul></ul></suggest-elemental>
       {#- The two answers that are not a list of links, outside the panel and shown by CSS off
