@@ -34,7 +34,9 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased] — a site can wear its own logo
+## [Unreleased]
+
+## [5.2.0] - 2026-08-31 — a site can wear its own logo
 
 The brand mark was a text glyph and nothing else: `brandMark` is escaped into the
 topbar and urlencoded into an inline `<svg><text>` for the tab icon, so a site with
