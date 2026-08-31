@@ -36,12 +36,15 @@
       and `false` takes the pill off: a site whose docs *are* the root has no second place
       to send anyone, and a pill pointing at a `docs/` that was never built is a 404 on
       every page of it. -#}
+  {#- `site.brandImage` is a file — the logo the site already ships — and replaces the glyph
+      here and the tab icon in both layouts' heads. `alt=""` because the title beside it says
+      the name: a logo announced next to the word it draws is the name read twice. -#}
   {%- set brandUrl = site.brandUrl or '' -%}
   {%- set brandExternal = '//' in brandUrl -%}
   {%- set docsUrl = site.docsUrl if site.docsUrl is defined else 'docs/' -%}
   <div class="brand-group">
     <a href="{{ (brandUrl if brandExternal else prefix + brandUrl) | escape }}" class="brand"{% if brandExternal %} target="_blank" rel="noopener"{% endif %}>
-      <span class="brand-mark">{{ (site.brandMark or '💩') | escape }}</span> {{ (site.brand or site.title) | escape }}
+      {% if site.brandImage %}<img class="brand-mark" src="{{ (site.brandImage if '//' in site.brandImage else prefix + site.brandImage) | escape }}" alt="">{% else %}<span class="brand-mark">{{ (site.brandMark or '💩') | escape }}</span>{% endif %} {{ (site.brand or site.title) | escape }}
     </a>
     {%- if docs and docsUrl %}<a href="{{ (prefix + docsUrl) | escape }}" class="brand-docs">docs</a>{% endif %}
   </div>

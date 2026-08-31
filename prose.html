@@ -13,7 +13,11 @@
   {{ page | canonical(site) }}
   {{ page | og(site) }}
   {{ page | jsonld(site) }}
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{ (site.brandMark or '💩') | urlencode }}</text></svg>">
+  {# `site.brandImage` is the tab icon when it is set; without one the mark is drawn as an
+     inline svg, so a site needs no favicon file to have a tab icon that is not the browser's
+     blank page. No `type`: the browser sniffs it, and one guessed wrong from an extension is
+     an icon silently dropped. #}
+  {% if site.brandImage %}<link rel="icon" href="{{ (site.brandImage if '//' in site.brandImage else relativePathPrefix + site.brandImage) | escape }}">{% else %}<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{{ (site.brandMark or '💩') | urlencode }}</text></svg>">{% endif %}
   <link rel="stylesheet" href="{{ relativePathPrefix }}css/prose.min.css">
   {# site.theme pins the theme: no boot script, no toggle. "light"/"dark" go on <html>; "system"
      sets nothing and lets the stylesheet's prefers-color-scheme block do it. Unset = this script:

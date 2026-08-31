@@ -122,6 +122,13 @@ button — omit both and the button disappears. The line at the bottom of the pa
 
 `brandMark` is also the tab icon, drawn as an inline svg — no favicon file needed.
 
+`site.brandImage` puts a file there instead, in both places: an `<img>` in the topbar and
+a `<link rel="icon">` in the head, for a site with a logo of its own. Site-relative urls
+get the page's path prefix, absolute ones are used as given. It wins over `brandMark`,
+which stays the fallback for a site that never sets one. The image is `alt=""` — the
+title beside it already says the name — and the topbar sizes it by height, so any aspect
+ratio fits.
+
 The title is its own link and goes to the site root. `site.brandUrl` retargets it — a
 site-relative url gets the page's path prefix, an absolute one opens in a new tab. On the
 `docs` layout the `docs` pill next to it is a second link, back to `docs/`, so the title
@@ -527,7 +534,7 @@ All Poops built-ins, present in any Poops build:
 | Data    | `nav` tree (`markup.nav`), `search-index.json` (`markup.searchIndex`) | —                           |
 
 Both read `site` config: `title`, `description`, `lang`, `repo`, `branch` (edit link, docs
-only), plus the optional `brand`, `brandMark`, `brandUrl`, `docsUrl` and `links` covered
+only), plus the optional `brand`, `brandMark`, `brandImage`, `brandUrl`, `docsUrl` and `links` covered
 under [Topbar config](#topbar-config), and `builtWith` and `footer` under
 [Footer config](#footer-config).
 

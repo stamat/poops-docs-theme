@@ -34,7 +34,28 @@ On `script/publish`, `script/changelog` cuts this section into a released entry
 in the same commit as the version bump, and the entry becomes the body of the
 GitHub release verbatim.
 
-## [Unreleased]
+## [Unreleased] — a site can wear its own logo
+
+The brand mark was a text glyph and nothing else: `brandMark` is escaped into the
+topbar and urlencoded into an inline `<svg><text>` for the tab icon, so a site with
+a real logo had nowhere to put it and no way to replace the favicon the theme draws.
+
+### Added
+
+- **`site.brandImage` — a file as the brand mark and the tab icon.** Set it and the
+  topbar renders `<img class="brand-mark" alt="">` in place of the glyph span, and both
+  layouts' heads emit `<link rel="icon">` pointing at the same file instead of the
+  inline svg. Site-relative urls take the page's path prefix, absolute ones are used as
+  given — the rule `brandUrl` already follows. `brandMark` stays the fallback and is
+  untouched for a site that sets no image.
+
+  `alt=""`: the title sits beside it in the same link, and a logo announced next to
+  the word it draws is the name read twice. No `type` on the link — the browser sniffs
+  the file, and a type guessed from an extension is an icon silently dropped.
+
+  Sizing is `img.brand-mark { height: 1.3rem; width: auto }`, matched to the glyph's
+  box, so a logo that is not square is not squeezed into one. A site overriding
+  `.brand-mark` for the glyph now has an `img` selector at higher specificity above it.
 
 ## [5.1.1] - 2026-08-24 — small print is set as tight as it reads
 

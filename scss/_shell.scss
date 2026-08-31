@@ -205,6 +205,9 @@ html { scroll-padding-top: calc(var(--topbar-h) + 1rem); }
 }
 .brand:hover { text-decoration: none; }
 .brand-mark { font-size: 1.3rem; vertical-align: middle; margin-inline-end: 0.2rem; }
+// An image mark has no font-size to take. Height matched to the glyph's box and width left
+// to the file's own ratio, so a logo that is not square is not squeezed into one.
+img.brand-mark { height: 1.3rem; width: auto; }
 
 // ---- Icon buttons (GitHub link, theme switcher) ----
 .icon-btn {
